@@ -1,0 +1,69 @@
+#################################################
+#						#
+# .gitignore for Eclipse / Android projects     #
+#						#
+#################################################
+
+# misc files
+*.patch
+lint.xml
+
+# built application files
+*.apk
+*.ap_
+
+# files for the dex VM
+*.dex
+
+# Java class files
+*.class
+
+# generated files
+bin/
+gen/
+API/
+
+# Local configuration file (sdk path, etc)
+local.properties
+
+*.pydevproject
+.project
+.metadata
+bin/**
+tmp/**
+tmp/**/*
+*.tmp
+*.bak
+*.swp
+*~.nib
+.classpath
+.settings/
+.loadpath
+.codepro/
+
+# Android studio / IntelliJ config files
+.idea/
+*.iml
+
+# External tool builders
+.externalToolBuilders/
+
+# Locally stored "Eclipse launch configurations"
+*.launch
+
+# CDT-specific
+.cproject
+
+# PDT-specific
+.buildpath
+.directory
+
+# If running on OSX-slave
+.DS_Store
+
+# Gradle build
+build/
+.gradle/
+gradle/
+gradlew
+gradlew.bat
