@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/dashboard_connected_peripheral_item_layout_height"
+    android:background="@color/sensirion_grey_light"
+    android:gravity="center_horizontal">
+
+    <ImageView
+        android:id="@+id/item_gadget_color"
+        android:layout_width="@dimen/dashboard_connected_peripheral_item_image_width"
+        android:layout_height="@dimen/dashboard_connected_peripheral_item_layout_height"
+        android:layout_alignParentLeft="true"
+        android:layout_margin="@dimen/dashboard_connected_peripheral_item_image_global_margin"
+        android:contentDescription="@string/desc_imgview_generic"
+        android:gravity="center"
+        tools:ignore="RtlHardcoded" />
+
+    <TextView
+        android:id="@+id/item_gadget_displayname"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_toRightOf="@+id/item_gadget_color"
+        android:gravity="center"
+        android:textSize="@dimen/dashboard_connected_peripheral_item_text_size"
+        tools:ignore="RtlHardcoded,SpUsage" />
+
+    <ImageView
+        android:id="@+id/item_icon"
+        android:layout_width="@dimen/dashboard_connected_peripheral_item_image_width"
+        android:layout_height="@dimen/dashboard_connected_peripheral_item_layout_height"
+        android:layout_alignParentRight="true"
+        android:layout_margin="@dimen/dashboard_connected_peripheral_item_image_global_margin"
+        android:contentDescription="@string/desc_imgview_generic"
+        tools:ignore="RtlHardcoded" />
+</RelativeLayout>

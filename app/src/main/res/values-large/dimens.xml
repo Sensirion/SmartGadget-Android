@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="actionbar_title_size" format="float" type="dimen">46</item>
+    <integer name="extra_padding_bottom_graph">66</integer>
+    <dimen name="menu_item_text_size">16sp</dimen>
+</resources>

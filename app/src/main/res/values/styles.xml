@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <style name="SensirionTheme" parent="@android:style/Theme.Holo.Light">
+        <item name="android:actionBarStyle">@style/SensirionActionBar</item>
+        <item name="android:windowBackground">@android:color/white</item>
+    </style>
+
+    <style name="SensirionActionBar" parent="@android:style/Widget.Holo.Light.ActionBar">
+        <item name="android:background">@color/sensirion_green</item>
+        <item name="android:backgroundStacked">@color/sensirion_grey_dark</item>
+        <item name="android:backgroundSplit">@color/sensirion_grey_light</item>
+        <item name="android:showDividers">middle</item>
+        <item name="android:divider">@color/font_light</item>
+        <item name="android:titleTextStyle">@style/SensirionActionBarTitle</item>
+    </style>
+
+    <style name="SensirionActionBarTitle" parent="android:TextAppearance.Holo.Widget.ActionBar.Title">
+        <item name="android:textColor">@android:color/white</item>
+    </style>
+
+    <style name="manage_device_seek_bar_style">
+        <item name="android:textSize">@dimen/manage_device_switch_text_size</item>
+    </style>
+</resources>

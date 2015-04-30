@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Global attributes -->
+    <dimen name="manage_device_general_padding">10dp</dimen>
+    <dimen name="manage_device_margin_top">20dp</dimen>
+    <dimen name="manage_device_label_margin_right">28dp</dimen>
+    <dimen name="manage_device_text_margin_left">2dp</dimen>
+    <dimen name="manage_device_label_text_size">17sp</dimen>
+    <dimen name="manage_device_labels_margin_bottom">3dp</dimen>
+
+    <!-- Gadget Name  -->
+    <dimen name="manage_device_edit_text_gadget_name_text_size">18.5sp</dimen>
+
+    <!-- Battery Bar -->
+    <dimen name="manage_device_seek_bar_battery_margin_left">3dp</dimen>
+
+    <!-- Interval -->
+    <dimen name="manage_device_label_interval_margin_right">12dp</dimen>
+    <dimen name="manage_device_interval_button_margin_left_right">1dp</dimen>
+
+    <!-- Switch -->
+    <dimen name="manage_device_switch_text_size">14sp</dimen>
+
+    <!-- Bottom Buttons-->
+    <dimen name="manage_device_bottom_buttons_margin_top">30dp</dimen>
+    <dimen name="manage_device_bottom_buttons_left_right_margin">38dp</dimen>
+</resources>

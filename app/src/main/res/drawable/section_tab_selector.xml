@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- Based on the work found in in http://stackoverflow.com/questions/17897351/how-to-customize-android-tabs-or-background-change
+ Created by: Abdulkadir NURKALEM
+ Licence: Creative Commons Licence - http://creativecommons.org/licenses/by/4.0/
+-->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Non focused states -->
+    <item android:drawable="@drawable/section_tab_unselected" android:state_focused="false" android:state_pressed="false" android:state_selected="false" />
+    <item android:drawable="@drawable/section_tab_selected" android:state_focused="false" android:state_pressed="false" android:state_selected="true" />
+    <!-- Focused states -->
+    <item android:drawable="@drawable/section_tab_focused" android:state_focused="true" android:state_pressed="false" android:state_selected="true" />
+    <!-- Pressed state -->
+    <item android:drawable="@drawable/section_tab_pressed" android:state_pressed="true" />
+</selector>

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginLeft="@dimen/glossary_layout_margin_left"
+    android:layout_marginRight="@dimen/glossary_layout_margin_right"
+    android:layout_marginTop="@dimen/glossary_layout_margin_top"
+    android:padding="@dimen/glossary_layout_padding"
+    tools:ignore="RtlHardcoded">
+
+    <ImageView
+        android:id="@+id/glossary_icon"
+        android:layout_width="wrap_content"
+        android:layout_height="fill_parent"
+        android:layout_centerVertical="true"
+        android:layout_marginRight="@dimen/glossary_icon_margin_right"
+        android:src="@drawable/ic_launcher"
+        tools:ignore="RtlHardcoded" />
+
+    <TextView
+        android:id="@+id/glossary_item_description"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_below="@+id/glossary_item_title"
+        android:layout_marginLeft="@dimen/glossary_text_margin_left"
+        android:layout_marginRight="@dimen/glossary_description_margin_right"
+        android:layout_marginTop="@dimen/glossary_description_margin_top"
+        android:layout_toRightOf="@id/glossary_icon"
+        android:singleLine="false"
+        android:text="@string/app_name"
+        android:textSize="@dimen/glossary_description_text_size"
+        tools:ignore="RtlHardcoded" />
+
+    <TextView
+        android:id="@+id/glossary_item_title"
+        android:layout_width="fill_parent"
+        android:layout_height="@dimen/glossary_title_text_size"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:layout_alignWithParentIfMissing="true"
+        android:layout_marginLeft="@dimen/glossary_text_margin_left"
+        android:layout_marginRight="@dimen/glossary_title_margin_right"
+        android:layout_marginTop="@dimen/glossary_title_margin_top"
+        android:layout_toRightOf="@id/glossary_icon"
+        android:gravity="center_vertical"
+        android:text="@string/label_gadgetLogging"
+        android:textAllCaps="true"
+        android:textSize="@dimen/glossary_title_text_size"
+        tools:ignore="RtlHardcoded" />
+
+</RelativeLayout>

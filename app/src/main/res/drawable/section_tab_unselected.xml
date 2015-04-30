@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- Based on the work found in in http://stackoverflow.com/questions/17897351/how-to-customize-android-tabs-or-background-change
+ Created by: Abdulkadir NURKALEM
+ Licence: Creative Commons Licence - http://creativecommons.org/licenses/by/4.0/
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <gradient
+        android:angle="-90"
+        android:centerColor="#424242"
+        android:endColor="#222222"
+        android:startColor="#5C5C5C" />
+</shape>

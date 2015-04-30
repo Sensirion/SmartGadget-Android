@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="log_download_notification_title" formatted="false">Downloading stored data</string>
+    <string name="log_download_notification_download_finished" formatted="false">Download has finished successfully</string>
+    <string name="log_download_notification_progress_text" formatted="false" tools:ignore="StringFormatInvalid">%s: %d/%d (%d%%)</string>
+</resources>

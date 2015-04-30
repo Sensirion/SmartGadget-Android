@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<Button xmlns:android="http://schemas.android.com/apk/res/android"
+
+    android:id="@+id/history_tab"
+
+    android:layout_width="0dp"
+    android:layout_height="match_parent"
+    android:layout_weight="1"
+
+    android:background="@drawable/button_released"
+
+    android:drawablePadding="@dimen/dashboard_padding"
+
+    android:gravity="center"
+    android:textAllCaps="true" />
+

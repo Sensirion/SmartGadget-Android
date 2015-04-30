@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- Based on the work found in in http://stackoverflow.com/questions/17897351/how-to-customize-android-tabs-or-background-change
+ Created by: Abdulkadir NURKALEM
+ Licence: Creative Commons Licence - http://creativecommons.org/licenses/by/4.0/
+-->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:color="@android:color/white" android:state_selected="true" />
+    <item android:color="@android:color/white" android:state_focused="true" />
+    <item android:color="@android:color/white" android:state_pressed="true" />
+    <item android:color="#f8f8f8" />
+</selector>

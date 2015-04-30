@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="0dp"
+    android:layout_height="match_parent"
+    android:layout_weight="1"
+    android:background="@drawable/section_tab_selector"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:padding="@dimen/tab_padding">
+
+    <ImageView
+        android:id="@+id/iconImage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="@string/tab_icon_description" />
+
+    <TextView
+        android:id="@+id/text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@drawable/section_tab_text_selector"
+        android:textSize="11dp"
+        android:textStyle="bold"
+        tools:ignore="SpUsage" />
+</LinearLayout>
+

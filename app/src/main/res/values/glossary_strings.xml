@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- TEMPERATURE -->
+    <string name="glossary_temperature_title">TEMPERATURE</string>
+    <string name="glossary_temperature_description" formatted="false">
+        A temperature is a comparative objective measure of hot and cold.
+        It is measured, typically by a thermometer, through the bulk behavior
+        of a thermometric material, detection of heat radiation, or by particle
+        velocity or kinetic energy. It may be calibrated in any of various
+        temperature scales, Celsius, Fahrenheit, Kelvin, etc.
+
+        Temperature is important in all fields of natural science,
+        including physics, geology, chemistry, atmospheric sciences and biology.
+    </string>
+
+    <!-- HUMIDITY -->
+    <string name="glossary_humidity_title">HUMIDITY</string>
+    <string name="glossary_humidity_description" formatted="false">Humidity is the amount of water vapor in the air.
+        Water vapor is the gaseous state of water and is invisible. Humidity indicates the likelihood
+        of precipitation, dew, or fog. Higher humidity reduces the effectiveness of sweating in cooling
+        the body by reducing the rate of evaporation of moisture from the skin.
+    </string>
+
+    <!-- DEW POINT -->
+    <string name="glossary_dewpoint_title">DEW POINT</string>
+    <string name="glossary_dewpoint_description" formatted="false">
+        The dew point is the temperature at which the water vapor
+        in air at constant barometric pressure condenses into liquid
+        water at the same rate at which it evaporates.
+        At temperatures below the dew point, water will leave the air.
+    </string>
+
+    <!-- HEAT INDEX -->
+    <string name="glossary_heatindex_title">HEAT INDEX</string>
+    <string name="glossary_heatindex_description" formatted="false">
+        The heat index (HI) or humiture or humidex (not to be confused with the Canadian humidex)
+        is an index that combines air temperature and relative humidity in an attempt to determine
+        the human-perceived equivalent temperature—how hot it feels. The result is also known as
+        the "felt air temperature" or "apparent temperature". For example, when the temperature
+        is 32 °C (90 °F) with very high humidity, the heat index can be about 41 °C (106 °F)
+        The human body normally cools itself by perspiration, or sweating. Heat is removed from
+        the body by evaporation of that sweat. However, relative humidity reduces the evaporation
+        rate because the higher vapor content of the surrounding air does not allow the maximum
+        amount of evaporation from the body to occur. This results in a lower rate of heat removal
+        from the body, hence the sensation of being overheated. This effect is subjective; its
+        measurement has been based on subjective descriptions of how hot subjects feel for a
+        given temperature and humidity. This results in a heat index that relates one
+        combination of temperature and humidity to another.
+    </string>
+
+    <!-- SOURCE -->
+    <string name="glossary_source">Source: Wikipedia.org</string>
+</resources>

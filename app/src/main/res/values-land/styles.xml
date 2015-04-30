@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <style name="SensirionTheme" parent="@android:style/Theme.Holo.Light">
+        <item name="android:actionBarStyle">@style/SensirionActionBar</item>
+        <item name="android:actionMenuTextAppearance">@style/SensirionActionBarMenu</item>
+        <item name="android:windowBackground">@android:color/white</item>
+    </style>
+
+    <style name="SensirionActionBar" parent="@android:style/Widget.Holo.Light.ActionBar">
+        <item name="android:background">@color/sensirion_green</item>
+        <item name="android:backgroundStacked">@color/sensirion_grey_dark</item>
+        <item name="android:backgroundSplit">@color/sensirion_grey_light</item>
+        <item name="android:showDividers">middle</item>
+        <item name="android:divider">@color/font_light</item>
+        <item name="android:titleTextStyle">@style/SensirionActionBarTitle</item>
+    </style>
+
+    <style name="SensirionActionBarTitle" parent="android:TextAppearance.Holo.Widget.ActionBar.Title">
+        <item name="android:textColor">@android:color/white</item>
+    </style>
+
+    <style name="SensirionActionBarMenu" parent="@android:style/TextAppearance.Holo.Widget.ActionBar.Menu">
+        <item name="android:textSize">@dimen/menu_item_text_size</item>
+    </style>
+
+    <style name="SensirionLeftMenu" parent="@android:style/Widget.Holo.Light.ActionBar">
+        <item name="android:background">@color/sensirion_green</item>
+        <item name="android:backgroundStacked">@color/sensirion_grey_dark</item>
+        <item name="android:backgroundSplit">@color/sensirion_grey_light</item>
+        <item name="android:showDividers">middle</item>
+        <item name="android:divider">@color/font_light</item>
+        <item name="android:titleTextStyle">@style/SensirionActionBarTitle</item>
+    </style>
+</resources>

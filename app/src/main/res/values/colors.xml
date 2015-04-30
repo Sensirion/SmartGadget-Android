@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <color name="sensirion_green">#FF81C12D</color>
+    <color name="sensirion_grey_light">#FFE9E4E0</color>
+    <color name="sensirion_grey_dark">#FFBCB0A7</color>
+
+    <!-- Fonts -->
+    <color name="font_light">#FFF0EFF0</color>
+    <color name="font_dark">#FF3D3A38</color>
+    <color name="font_shadow">#99000000</color>
+
+    <!-- Predefined colors mapped to sensors -->
+    <color name="green">#FF48782A</color>
+    <color name="red">#FFA33315</color>
+    <color name="cyan">#FF12A1BF</color>
+    <color name="yellow">#FFE7CE1E</color>
+    <color name="royalblue">#FF4D5D92</color>
+    <color name="orange">#FFD58925</color>
+    <color name="violet">#FF763880</color>
+    <color name="lila">#FFA685AC</color>
+
+    <!-- Default device color -->
+    <color name="default_device_color">#FF000000</color>
+
+    <!-- History Plot -->
+    <color name="background_light">#FFE9E4E0</color>
+    <color name="background_dark">#FFBCB0A7</color>
+</resources>

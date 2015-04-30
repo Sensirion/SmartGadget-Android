@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- TEMPERATURE ISSUES TEXT -->
+    <dimen name="comfort_zone_issues_text_size">20sp</dimen>
+    <dimen name="comfort_zone_issues_margin_A">200dp</dimen>
+    <dimen name="comfort_zone_issues_margin_B">120dp</dimen>
+    <dimen name="comfort_zone_issues_margin_C">179dp</dimen>
+    <dimen name="comfort_zone_issues_margin_D">129dp</dimen>
+
+    <!-- COMFORT ZONE MARGINS -->
+    <dimen name="comfort_zone_upper_labels_text_size">22sp</dimen>
+    <dimen name="comfort_zone_layout_margin_left">3dp</dimen>
+    <dimen name="comfort_zone_layout_margin_top">14dp</dimen>
+    <dimen name="comfort_zone_layout_margin_bottom">5dp</dimen>
+    <dimen name="comfort_zone_layout_margin_right">30dp</dimen>
+
+    <!-- PLOT LABELS -->
+    <dimen name="comfort_zone_graph_label_margin_bottom">10dp</dimen>
+    <dimen name="comfort_zone_graph_label_margin_left">20dp</dimen>
+    <dimen name="comfort_zone_graph_label_margin_right">20dp</dimen>
+    <dimen name="comfort_zone_graph_label_margin_top">39dp</dimen>
+    <dimen name="comfort_zone_graph_text_margin_left">45dp</dimen>
+
+    <!-- GENERAL -->
+    <integer name="comfort_zone_stroke_size_boundary">4</integer>
+    <integer name="comfort_zone_label_text_size_in_graph" format="float" type="dimen">32</integer>
+    <integer name="comfort_zone_temperature_and_humidity_text_size_graph">14</integer>
+    <integer name="comfort_zone_temperature_humidity_text_size_graph">20</integer>
+    <integer name="comfort_zone_values_text_size">13</integer>
+</resources>

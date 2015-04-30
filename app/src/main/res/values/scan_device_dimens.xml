@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- GLOBAL MARGINS -->
+    <dimen name="scan_device_margin_left">5dp</dimen>
+
+    <!-- HEADER MARGINS -->
+    <dimen name="scan_device_header_padding_top">11dp</dimen>
+    <dimen name="scan_device_header_padding_bottom">6dp</dimen>
+
+    <dimen name="scan_device_header_text_size">16sp</dimen>
+
+    <!-- ITEM MARGINS -->
+    <dimen name="scan_device_item_margin_top_bottom">2dp</dimen>
+    <dimen name="scan_device_item_margin_left">0dp</dimen>
+    <dimen name="scan_device_item_text_margin_left">6dp</dimen>
+    <dimen name="scan_device_item_text_rssi_margin_left">14dp</dimen>
+
+    <!-- TEXT SIZE -->
+    <dimen name="scan_device_address_text_size">18sp</dimen>
+    <dimen name="scan_device_info_text_size">13sp</dimen>
+
+    <!-- IMAGE SIZE -->
+    <dimen name="scan_device_image_size">38dp</dimen>
+</resources>

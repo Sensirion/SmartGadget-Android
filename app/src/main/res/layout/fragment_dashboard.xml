@@ -1,0 +1,130 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/dashboard_fragment"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:fillViewport="true"
+    android:orientation="vertical"
+    tools:context=".MainActivity$DashboardFragment"
+    tools:ignore="RtlHardcoded,RtlSymmetry,SpUsage">
+
+    <RelativeLayout
+        android:id="@+id/dashboard_content_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/dashboard_lateral_margin"
+        android:layout_marginRight="@dimen/dashboard_lateral_margin"
+        android:padding="@dimen/dashboard_padding">
+
+        <Button
+            android:id="@+id/dashboard_temperature_button"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/dashboard_button_height"
+            android:layout_marginTop="@dimen/dashboard_button_margin_top"
+            android:background="@drawable/button_released"
+            android:drawableLeft="@drawable/temperature_icon"
+            android:drawablePadding="@dimen/dashboard_padding"
+            android:gravity="center_vertical"
+            android:paddingLeft="@dimen/dashboard_button_padding_left"
+            android:text="@string/label_t"
+            android:textSize="@dimen/dashboard_button_text_size" />
+
+        <TextView
+            android:id="@+id/dashboard_temperature_value"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@id/dashboard_temperature_button"
+            android:layout_alignLeft="@id/dashboard_temperature_button"
+            android:layout_marginBottom="@dimen/dashboard_button_text_margin_bottom"
+            android:layout_marginLeft="@dimen/dashboard_button_text_margin_left"
+            android:text="@string/label_empty_t"
+            android:textIsSelectable="false"
+            android:textSize="@dimen/dashboard_button_text_size" />
+
+        <Button
+            android:id="@+id/dashboard_humidity_button"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/dashboard_button_height"
+            android:layout_below="@id/dashboard_temperature_button"
+            android:layout_marginTop="@dimen/dashboard_button_margin_top"
+            android:background="@drawable/button_released"
+            android:drawableLeft="@drawable/humidity_icon"
+            android:drawablePadding="@dimen/dashboard_padding"
+            android:gravity="center_vertical"
+            android:paddingLeft="@dimen/dashboard_button_padding_left"
+            android:text="@string/label_rh"
+            android:textSize="@dimen/dashboard_button_text_size" />
+
+        <TextView
+            android:id="@+id/dashboard_humidity_value"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@id/dashboard_humidity_button"
+            android:layout_alignLeft="@id/dashboard_humidity_button"
+            android:layout_marginBottom="@dimen/dashboard_button_text_margin_bottom"
+            android:layout_marginLeft="@dimen/dashboard_button_text_margin_left"
+            android:text="@string/label_empty_rh"
+            android:textIsSelectable="false"
+            android:textSize="@dimen/dashboard_button_text_size" />
+
+        <Button
+            android:id="@+id/dashboard_dew_point_button"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/dashboard_button_height"
+            android:layout_below="@id/dashboard_humidity_button"
+            android:layout_marginTop="@dimen/dashboard_button_margin_top"
+            android:background="@drawable/button_released"
+            android:drawableLeft="@drawable/dew_point_icon"
+            android:drawablePadding="@dimen/dashboard_padding"
+            android:gravity="center_vertical"
+            android:paddingLeft="@dimen/dashboard_button_padding_left"
+            android:text="@string/label_dp"
+            android:textSize="@dimen/dashboard_button_text_size" />
+
+        <TextView
+            android:id="@+id/dashboard_dew_point_value"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@id/dashboard_dew_point_button"
+            android:layout_alignLeft="@id/dashboard_dew_point_button"
+            android:layout_marginBottom="@dimen/dashboard_button_text_margin_bottom"
+            android:layout_marginLeft="@dimen/dashboard_button_text_margin_left"
+            android:text="@string/label_empty_t"
+            android:textIsSelectable="false"
+            android:textSize="@dimen/dashboard_button_text_size" />
+
+        <Button
+            android:id="@+id/dashboard_heat_index_button"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/dashboard_button_height"
+            android:layout_below="@id/dashboard_dew_point_button"
+            android:layout_marginTop="@dimen/dashboard_button_margin_top"
+            android:background="@drawable/button_released"
+            android:drawableLeft="@drawable/heat_index_icon"
+            android:drawablePadding="@dimen/dashboard_padding"
+            android:gravity="center_vertical"
+            android:paddingLeft="@dimen/dashboard_button_padding_left"
+            android:text="@string/label_hi"
+            android:textSize="@dimen/dashboard_button_text_size" />
+
+        <TextView
+            android:id="@+id/dashboard_heat_index_value"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@id/dashboard_heat_index_button"
+            android:layout_alignLeft="@id/dashboard_heat_index_button"
+            android:layout_marginBottom="@dimen/dashboard_button_text_margin_bottom"
+            android:layout_marginLeft="@dimen/dashboard_button_text_margin_left"
+            android:text="@string/label_empty_t"
+            android:textIsSelectable="false"
+            android:textSize="@dimen/dashboard_button_text_size" />
+
+        <com.sensirion.smartgadget.utils.view.NestedListView
+            android:id="@+id/dashboard_connected_device_nested_list_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/dashboard_heat_index_button"
+            android:layout_marginTop="@dimen/activity_vertical_margin" />
+    </RelativeLayout>
+
+</ScrollView>

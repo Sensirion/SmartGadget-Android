@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="comfort_zone_point_outline_size" format="float" type="dimen">1.7</item>
+    <item name="comfort_zone_point_outline_size_clicked" format="float" type="dimen">2.2</item>
+    <item name="comfort_zone_point_inner_point_size" format="float" type="dimen">2.1</item>
+    <item name="comfort_zone_point_inner_point_size_clicked" format="float" type="dimen">1.7</item>
+</resources>

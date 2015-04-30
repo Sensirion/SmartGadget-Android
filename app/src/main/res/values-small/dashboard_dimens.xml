@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- GLOBAL MARGINS -->
+    <dimen name="dashboard_padding">10dp</dimen>
+    <dimen name="dashboard_lateral_margin">1dp</dimen>
+
+    <!-- BUTTON DIMENSIONS -->
+    <dimen name="dashboard_button_height">60dp</dimen>
+
+    <!-- BUTTON MARGINS -->
+    <dimen name="dashboard_button_padding_left">2dp</dimen>
+    <dimen name="dashboard_button_margin_top">10dp</dimen>
+    <dimen name="dashboard_button_text_margin_left">198dp</dimen>
+    <dimen name="dashboard_button_text_margin_bottom">17dp</dimen>
+
+    <!-- BUTTON TEXT SIZE -->
+    <dimen name="dashboard_button_text_size">21sp</dimen>
+
+    <!-- CONNECTED PERIPHERAL ITEM -->
+    <dimen name="dashboard_connected_peripheral_item_layout_height">37dp</dimen>
+    <dimen name="dashboard_connected_peripheral_item_image_width">32dp</dimen>
+    <dimen name="dashboard_connected_peripheral_item_image_height">32dp</dimen>
+    <dimen name="dashboard_connected_peripheral_item_image_global_margin">8dp</dimen>
+    <dimen name="dashboard_connected_peripheral_item_text_size">19dp</dimen>
+
+    <!-- ICONS -->
+    <dimen name="dashboard_drawable_padding">11dp</dimen>
+</resources>

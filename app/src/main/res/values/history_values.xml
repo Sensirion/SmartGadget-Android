@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <color name="history_graph_view_bar_color">#ff0094ff</color>
+    <integer name="history_graph_view_default_num_domain_labels">11</integer>
+    <integer name="history_graph_view_num_default_range_labels">10</integer>
+
+    <!-- Number representation settings in labels-->
+    <string name="history_format_resistance_label">0.00000E0</string>
+    <string name="history_format_resistance_axis_scientific_notation">0.00E0</string>
+    <string name="history_format_resistance_axis_decimal_notation">0.00</string>
+    <integer name="history_number_decimals_temperature">1</integer>
+    <integer name="history_number_decimals_humidity">0</integer>
+    <item name="history_graph_top_bottom_margin" format="float" type="dimen">0.005</item>
+
+    <!-- graph values-->
+    <integer name="history_graph_max_humidity_range">100</integer>
+    <integer name="history_graph_min_humidity_range">0</integer>
+    <integer name="history_graph_min_separation">10</integer>
+
+    <!-- format -->
+    <string name="history_temperature_decimal_format_celsius">0.0</string>
+    <string name="history_temperature_decimal_format_fahrenheit">0</string>
+    <string name="history_humidity_decimal_format">0</string>
+
+    <!-- separation -->
+    <item name="history_temperature_separation_fahrenheit" format="float" type="dimen">1.0</item>
+    <item name="history_temperature_separation_celsius" format="float" type="dimen">0.5</item>
+    <item name="history_humidity_separation" format="float" type="dimen">1.0</item>
+
+</resources>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    style="?android:attr/listSeparatorTextViewStyle"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center"
+    android:paddingBottom="@dimen/scan_device_header_padding_bottom"
+    android:paddingStart="@dimen/scan_device_item_text_margin_left"
+    android:paddingTop="@dimen/scan_device_header_padding_top"
+    android:scrollbars="none"
+    android:textSize="@dimen/scan_device_header_text_size"
+    tools:ignore="RtlHardcoded,RtlSymmetry" />

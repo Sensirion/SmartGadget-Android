@@ -1,0 +1,139 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity$ComfortZoneFragment"
+    tools:ignore="RelativeOverlap,RtlHardcoded">
+
+    <ImageView
+        android:id="@+id/imgview_background"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:adjustViewBounds="true"
+        android:contentDescription="@string/desc_imgview_generic"
+        android:scaleType="fitXY"
+        android:src="@drawable/img_background" />
+
+    <TextView
+        android:id="@+id/textview_left"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginLeft="@dimen/comfort_zone_issues_margin_A"
+        android:layout_marginTop="@dimen/comfort_zone_issues_margin_B"
+        android:shadowColor="@android:color/darker_gray"
+        android:shadowDx="1"
+        android:shadowDy="1"
+        android:shadowRadius="1"
+        android:text="@string/text_zone_topleft"
+        android:textColor="@android:color/white"
+        android:textSize="@dimen/comfort_zone_issues_text_size" />
+
+    <TextView
+        android:id="@+id/textview_top"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginRight="@dimen/comfort_zone_issues_margin_C"
+        android:layout_marginTop="@dimen/comfort_zone_issues_margin_B"
+        android:shadowColor="@android:color/darker_gray"
+        android:shadowDx="1"
+        android:shadowDy="1"
+        android:shadowRadius="1"
+        android:text="@string/text_zone_topright"
+        android:textColor="@android:color/white"
+        android:textSize="@dimen/comfort_zone_issues_text_size" />
+
+    <TextView
+        android:id="@+id/textview_right"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginBottom="@dimen/comfort_zone_issues_margin_D"
+        android:layout_marginRight="@dimen/comfort_zone_issues_margin_C"
+        android:shadowColor="@android:color/darker_gray"
+        android:shadowDx="1"
+        android:shadowDy="1"
+        android:shadowRadius="1"
+        android:text="@string/text_zone_bottomright"
+        android:textColor="@android:color/white"
+        android:textSize="@dimen/comfort_zone_issues_text_size" />
+
+    <TextView
+        android:id="@+id/textview_bottom"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_marginBottom="@dimen/comfort_zone_issues_margin_D"
+        android:layout_marginLeft="@dimen/comfort_zone_issues_margin_A"
+        android:shadowColor="@android:color/darker_gray"
+        android:shadowDx="1"
+        android:shadowDy="1"
+        android:shadowRadius="1"
+        android:text="@string/text_zone_bottomleft"
+        android:textColor="@android:color/white"
+        android:textSize="@dimen/comfort_zone_issues_text_size" />
+
+    <!-- This FrameLayout insets its children -->
+
+    <FrameLayout
+        android:id="@+id/parentframe"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <com.sensirion.smartgadget.view.comfort_zone.graph.XyPlotView
+            android:id="@+id/plotview"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_gravity="right|bottom"
+            android:layout_marginBottom="@dimen/comfort_zone_graph_label_margin_bottom"
+            android:layout_marginLeft="@dimen/comfort_zone_graph_label_margin_left"
+            android:layout_marginRight="@dimen/comfort_zone_graph_label_margin_right"
+            android:layout_marginTop="@dimen/comfort_zone_graph_label_margin_top" />
+
+        <LinearLayout
+            android:id="@+id/layout_text_ambTemp_RH"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top"
+            android:layout_marginBottom="@dimen/comfort_zone_layout_margin_bottom"
+            android:layout_marginLeft="@dimen/comfort_zone_layout_margin_left"
+            android:layout_marginRight="@dimen/comfort_zone_layout_margin_right"
+            android:layout_marginTop="@dimen/comfort_zone_layout_margin_top"
+            android:orientation="horizontal"
+            tools:ignore="UselessParent">
+
+            <TextView
+                android:id="@+id/tv_sensor_name"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/comfort_zone_graph_text_margin_left"
+                android:layout_weight="2"
+                android:background="@android:color/transparent"
+                android:text="@string/text_sensor_name_default"
+                android:textSize="@dimen/comfort_zone_upper_labels_text_size" />
+
+            <TextView
+                android:id="@+id/text_amb_temp"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/text_amb_temp_default"
+                android:textColor="@android:color/white"
+                android:textSize="@dimen/comfort_zone_upper_labels_text_size" />
+
+            <TextView
+                android:id="@+id/text_rh"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/text_rh_default"
+                android:textColor="@android:color/white"
+                android:textSize="@dimen/comfort_zone_upper_labels_text_size" />
+        </LinearLayout>
+    </FrameLayout>
+</RelativeLayout>

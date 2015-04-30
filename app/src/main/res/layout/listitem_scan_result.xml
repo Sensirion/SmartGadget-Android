@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/listitem_content"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginLeft="@dimen/scan_device_margin_left"
+    android:orientation="vertical"
+    tools:ignore="RtlHardcoded">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/scan_device_item_margin_top_bottom"
+        android:layout_marginLeft="@dimen/scan_device_item_margin_left"
+        android:layout_marginTop="@dimen/scan_device_item_margin_top_bottom"
+        android:layout_toStartOf="@+id/listitem_icon"
+        tools:ignore="DisableBaselineAlignment">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="@dimen/scan_device_item_text_margin_left"
+            android:layout_weight="5.2"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/device_address"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/scan_device_address_text_size"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/listitem_advertised_name_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/label_advertised_name"
+                    android:textSize="@dimen/scan_device_info_text_size" />
+
+                <TextView
+                    android:id="@+id/listitem_advertised_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/scan_device_item_text_rssi_margin_left"
+                    android:textSize="@dimen/scan_device_info_text_size" />
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="8.5"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/listitem_state"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/scan_device_address_text_size" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/listitem_label_rssi"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/scan_device_item_text_margin_left"
+                    android:text="@string/label_listitem_rssi"
+                    android:textSize="@dimen/scan_device_info_text_size" />
+
+                <TextView
+                    android:id="@+id/listitem_value_rssi"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/activity_vertical_margin"
+                    android:textSize="@dimen/scan_device_info_text_size" />
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+    <ImageView
+        android:id="@+id/listitem_icon"
+        android:layout_width="@dimen/scan_device_image_size"
+        android:layout_height="@dimen/scan_device_image_size"
+        android:layout_alignParentEnd="true"
+        android:layout_centerVertical="true"
+        android:contentDescription="@string/desc_imgview_generic"
+        android:src="@drawable/ic_action_settings" />
+
+</RelativeLayout>
