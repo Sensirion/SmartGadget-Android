@@ -1,7 +1,4 @@
 apply plugin: 'com.android.application'
-apply from: '../../gradle-helpers/utils.gradle'
-
-setupBuildTypes()
 
 // additional repository for androidplot
 repositories {
@@ -9,19 +6,14 @@ repositories {
 }
 
 dependencies {
-    compile 'com.android.support:support-v4:22.1.1'
+    compile 'com.android.support:support-v4:23.1.0'
     compile 'com.androidplot:androidplot-core:0.6.2-SNAPSHOT@aar'
     compile 'com.sensirion:libble:1.0.0'
 }
 
 android {
-    applicationVariants.all { variant ->
-        variant.outputs.each { output ->
-            output.outputFile = new File(output.outputFile.parentFile, getApkName(variant, 'smartgadget-android'))
-        }
-    }
-    compileSdkVersion 22
-    buildToolsVersion '22.0.1'
+    compileSdkVersion 23
+    buildToolsVersion "23.0.1"
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_7
         targetCompatibility JavaVersion.VERSION_1_7
