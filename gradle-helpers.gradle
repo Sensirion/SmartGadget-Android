@@ -1,0 +1,17 @@
+ext {
+    have_gradle_helpers = { project.file('../../gradle-helpers/utils.gradle').exists() }
+    if (have_gradle_helpers()) {
+        apply from: '../../gradle-helpers/utils.gradle'
+        setupBuildTypes()
+    }
+}
+
+android {
+    if (have_gradle_helpers()) {
+        applicationVariants.all { variant ->
+            variant.outputs.each { output ->
+                output.outputFile = new File(output.outputFile.parentFile, getApkName(variant, 'smartgadget-android'))
+            }
+        }
+    }
+}

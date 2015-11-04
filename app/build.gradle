@@ -1,7 +1,5 @@
 apply plugin: 'com.android.application'
-apply from: '../../gradle-helpers/utils.gradle'
-
-setupBuildTypes()
+apply from: '../gradle-helpers.gradle'
 
 // additional repository for androidplot
 repositories {
@@ -15,11 +13,6 @@ dependencies {
 }
 
 android {
-    applicationVariants.all { variant ->
-        variant.outputs.each { output ->
-            output.outputFile = new File(output.outputFile.parentFile, getApkName(variant, 'smartgadget-android'))
-        }
-    }
     compileSdkVersion 22
     buildToolsVersion '22.0.1'
     compileOptions {
