@@ -252,8 +252,10 @@ public class ScanDeviceFragment extends ParentListFragment implements ScanListen
         Executors.newSingleThreadExecutor().execute(new Runnable() {
             @Override
             public void run() {
-                while (true) {
+                byte numberTries = 0;
+                while (++numberTries < DEVICE_SYNCHRONIZATION_MAX_NUMBER_SYNCHRONIZATION_TRIES) {
                     try {
+                        RHTHumigadgetSensorManager.getInstance().synchronizeDeviceServices(device);
                         Thread.sleep(DEVICE_SYNCHRONIZATION_TIMEOUT_MILLISECONDS);
                         break;
                     } catch (@NonNull final InterruptedException e) {
