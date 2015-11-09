@@ -9,6 +9,13 @@ import com.sensirion.smartgadget.view.comfort_zone.graph.XyPlotView;
 
 public abstract class XyPlotViewUnderTest extends AndroidTestCase {
 
+    public static final int Y_AXIS_GRID_SIZE = 10;
+    public static final int MAX_Y_AXIS_VALUE = 100;
+    public static final int MIN_Y_AXIS_VALUE = 0;
+    public static final int X_AXIS_GRID_SIZE = 1;
+    public static final int MAX_X_AXIS_VALUE = 30;
+    public static final int MIN_X_AXIS_VALUE = 15;
+
     protected XyPlotView mPlotView = null;
 
     protected PointF mTopLeft = null;
@@ -26,9 +33,9 @@ public abstract class XyPlotViewUnderTest extends AndroidTestCase {
         mPlotView = new XyPlotView(getContext());
 
         mPlotView.setXAxisLabel(getContext().getString(R.string.graph_label_temperature_celsius));
-        mPlotView.setXAxisScale(ComfortZoneFragment.MIN_X_AXIS_VALUE, ComfortZoneFragment.MAX_X_AXIS_VALUE, ComfortZoneFragment.X_AXIS_GRID_SIZE);
+        mPlotView.setXAxisScale(MIN_X_AXIS_VALUE, MAX_X_AXIS_VALUE, X_AXIS_GRID_SIZE);
         mPlotView.setYAxisLabel(getContext().getString(R.string.graph_label_humidity));
-        mPlotView.setYAxisScale(ComfortZoneFragment.MIN_Y_AXIS_VALUE, ComfortZoneFragment.MAX_Y_AXIS_VALUE, ComfortZoneFragment.Y_AXIS_GRID_SIZE);
+        mPlotView.setYAxisScale(MIN_Y_AXIS_VALUE, MAX_Y_AXIS_VALUE, Y_AXIS_GRID_SIZE);
     }
 
 }
