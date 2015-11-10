@@ -449,8 +449,12 @@ public class ScanDeviceFragment extends ParentListFragment implements ScanListen
      */
     @Override
     public void onDeviceDisconnected(@NonNull final BleDevice device) {
-        Log.i(TAG, String.format("onDeviceConnected -> %s has lost the connected with the device: %s ", TAG, device.getAddress()));
-        onDeviceConnectionStateChange(device.getAddress());
+        final String deviceAddress = device.getAddress();
+        Log.i(TAG, String.format("onDeviceConnected -> %s has lost the connected with the device: %s ", TAG, deviceAddress));
+        onDeviceConnectionStateChange(deviceAddress);
+        if (mConnectionDialogDeviceAddress != null && mConnectionDialogDeviceAddress.equals(deviceAddress)) {
+            dismissConnectingProgressDialog(deviceAddress);
+        }
     }
 
     private void onDeviceConnectionStateChange(@NonNull final String deviceAddress) {
