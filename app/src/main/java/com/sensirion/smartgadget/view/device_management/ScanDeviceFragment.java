@@ -1,5 +1,6 @@
 package com.sensirion.smartgadget.view.device_management;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.graphics.Typeface;
@@ -73,7 +74,9 @@ public class ScanDeviceFragment extends ParentListFragment implements ScanListen
     private volatile boolean mIsRequestingCharacteristicsFromPeripheral = false;
 
     @Override
-    public View onCreateView(@NonNull final LayoutInflater inflater, @Nullable final ViewGroup container, @Nullable final Bundle savedInstanceState) {
+    public View onCreateView(@NonNull final LayoutInflater inflater,
+                             @Nullable final ViewGroup container,
+                             @Nullable final Bundle savedInstanceState) {
         Log.i(TAG, "onCreateView()");
         final View rootView = inflater.inflate(R.layout.fragment_device_scan, container, false);
         initListAdapter();
@@ -90,7 +93,10 @@ public class ScanDeviceFragment extends ParentListFragment implements ScanListen
                         @Override
                         public boolean onTouch(View view, MotionEvent motionEvent) {
                             if (getResources().getBoolean(R.bool.is_tablet)) {
-                                ((MainActivity) getParent()).toggleTabletMenu();
+                                final MainActivity parent = (MainActivity) getParent();
+                                if (parent != null && isVisible()) {
+                                    parent.toggleTabletMenu();
+                                }
                             }
                             return true;
                         }
@@ -103,10 +109,13 @@ public class ScanDeviceFragment extends ParentListFragment implements ScanListen
         mSectionAdapter = new SectionAdapter() {
             @Nullable
             @Override
-            protected View getHeaderView(final String caption, final int itemIndex, @Nullable final View convertView, final ViewGroup parent) {
+            protected View getHeaderView(final String caption,
+                                         final int itemIndex,
+                                         @Nullable final View convertView,
+                                         final ViewGroup parent) {
                 TextView headerTextView = (TextView) convertView;
                 if (convertView == null) {
-                    final Typeface typefaceBold = Typeface.createFromAsset(getParent().getAssets(), "HelveticaNeueLTStd-Bd.otf");
+                    final Typeface typefaceBold = Typeface.createFromAsset(getContext().getAssets(), "HelveticaNeueLTStd-Bd.otf");
                     headerTextView = (TextView) View.inflate(getParent(), R.layout.listitem_scan_header, null);
                     headerTextView.setTypeface(typefaceBold);
                 }
@@ -114,11 +123,11 @@ public class ScanDeviceFragment extends ParentListFragment implements ScanListen
                 return headerTextView;
             }
         };
-        mConnectedDevicesAdapter = new HumigadgetListItemAdapter(getParent());
-        mDiscoveredDevicesAdapter = new HumigadgetListItemAdapter(getParent());
+        mConnectedDevicesAdapter = new HumigadgetListItemAdapter(getContext());
+        mDiscoveredDevicesAdapter = new HumigadgetListItemAdapter(getContext());
 
-        mSectionAdapter.addSectionToAdapter(getParent().getString(R.string.label_connected), mConnectedDevicesAdapter);
-        mSectionAdapter.addSectionToAdapter(getParent().getString(R.string.label_discovered), mDiscoveredDevicesAdapter);
+        mSectionAdapter.addSectionToAdapter(getContext().getString(R.string.label_connected), mConnectedDevicesAdapter);
+        mSectionAdapter.addSectionToAdapter(getContext().getString(R.string.label_discovered), mDiscoveredDevicesAdapter);
 
         setListAdapter(mSectionAdapter);
     }
@@ -126,11 +135,11 @@ public class ScanDeviceFragment extends ParentListFragment implements ScanListen
     private void initToggleButton(@NonNull final View rootView) {
         final ToggleButton toggleButton = (ToggleButton) rootView.findViewById(R.id.togglebutton_scan);
 
-        toggleButton.setTypeface(Typeface.createFromAsset(getParent().getAssets(), "HelveticaNeueLTStd-Bd.otf"));
+        toggleButton.setTypeface(Typeface.createFromAsset(getContext().getAssets(), "HelveticaNeueLTStd-Bd.otf"));
 
         toggleButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (RHTHumigadgetSensorManager.getInstance().bluetoothIsEnabled()) {
+                if (BleManager.getInstance().isBluetoothEnabled()) {
                     final ToggleButton toggleButton = (ToggleButton) rootView.findViewById(R.id.togglebutton_scan);
                     if (isChecked) {
                         BleManager.getInstance().registerNotificationListener(ScanDeviceFragment.this);
@@ -143,7 +152,7 @@ public class ScanDeviceFragment extends ParentListFragment implements ScanListen
                         setRefreshActionButtonState(false);
                     }
                 } else {
-                    RHTHumigadgetSensorManager.getInstance().requestEnableBluetooth(getParent());
+                    BleManager.getInstance().requestEnableBluetooth(getContext());
                 }
             }
         });
@@ -155,10 +164,10 @@ public class ScanDeviceFragment extends ParentListFragment implements ScanListen
     public void onListItemClick(final ListView l, final View v, final int position, final long id) {
         super.onListItemClick(l, v, position, id);
         final BleManager bleManager = BleManager.getInstance();
-        if (RHTHumigadgetSensorManager.getInstance().bluetoothIsEnabled()) {
+        if (bleManager.isBluetoothEnabled()) {
             Log.d(TAG, String.format("onListItemClick -> Clicked on position %s.", position));
         } else {
-            bleManager.requestEnableBluetooth(getParent());
+            bleManager.requestEnableBluetooth(getContext());
             return;
         }
         bleManager.stopScanning();
@@ -400,18 +409,18 @@ public class ScanDeviceFragment extends ParentListFragment implements ScanListen
     public boolean onOptionsItemSelected(@NonNull final MenuItem item) {
         switch (item.getItemId()) {
             case R.id.scan_device_refresh:
-                final BleManager manager = BleManager.getInstance();
-                if (RHTHumigadgetSensorManager.getInstance().bluetoothIsEnabled()) {
-                    if (manager.isScanning()) {
-                        manager.stopScanning();
+                final BleManager bleManager = BleManager.getInstance();
+                if (bleManager.isBluetoothEnabled()) {
+                    if (bleManager.isScanning()) {
+                        bleManager.stopScanning();
                         setRefreshActionButtonState(false);
                     } else {
-                        manager.startScanning();
+                        bleManager.startScanning();
                         setRefreshActionButtonState(true);
                     }
                     return true;
                 } else {
-                    manager.requestEnableBluetooth(getParent());
+                    bleManager.requestEnableBluetooth(getContext());
                 }
         }
         return super.onOptionsItemSelected(item);
