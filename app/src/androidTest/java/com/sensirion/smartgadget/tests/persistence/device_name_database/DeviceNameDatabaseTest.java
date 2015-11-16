@@ -1,79 +1,63 @@
 package com.sensirion.smartgadget.tests.persistence.device_name_database;
 
-import android.support.annotation.NonNull;
+import android.content.Context;
 import android.support.annotation.Nullable;
-import android.test.ActivityInstrumentationTestCase2;
+import android.test.AndroidTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import com.sensirion.database_library.DatabaseFacade;
-import com.sensirion.database_library.parser.QueryResult;
 import com.sensirion.smartgadget.persistence.device_name_database.DeviceNameDatabaseManager;
-import com.sensirion.smartgadget.view.MainActivity;
 
-public class DeviceNameDatabaseTest extends ActivityInstrumentationTestCase2<MainActivity> {
+public class DeviceNameDatabaseTest extends AndroidTestCase {
 
     private static final String mGadgetAddress001 = "AA:BB:CC:DD:EE:FF";
     private static final String mGadgetName001 = "Kitchen";
     private static final String mGadgetName002 = "Laundry";
-    private static final Long mTestNumber001 = 10l;
 
     @Nullable
-    private final DeviceNameDatabaseManager mDeviceNameDatabaseManager;
-    @NonNull
-    private final DatabaseFacade mDatabaseFacade;
+    private DeviceNameDatabaseManager mDeviceNameDatabaseManager;
 
-    public DeviceNameDatabaseTest() {
-        super(MainActivity.class);
-        DeviceNameDatabaseManager.init(getActivity().getApplicationContext(), true);
+    /**
+     * {@inheritDoc}
+     */
+    public void setUp() throws Exception {
+        super.setUp();
+        final Context context = getContext();
+        DeviceNameDatabaseManager.init(context.getApplicationContext(), true);
         mDeviceNameDatabaseManager = DeviceNameDatabaseManager.getInstance();
-        mDatabaseFacade = mDeviceNameDatabaseManager.getDatabaseFacade();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
-        mDatabaseFacade.closeDatabaseConnection();
+        if (mDeviceNameDatabaseManager != null) {
+            final DatabaseFacade dbFacade = mDeviceNameDatabaseManager.getDatabaseFacade();
+            dbFacade.closeDatabaseConnection();
+        }
     }
 
     @SmallTest
-    public void testCheckSelectDatabaseStandardQuery() {
-        final QueryResult result = mDatabaseFacade.query("DUAL", new String[]{mTestNumber001.toString()}, null, null, null, null, null, null);
-        assertEquals(result.getFirstQueryResult().getLong(0), mTestNumber001);
-    }
-
-    @SmallTest
-    public void testCheckSelectRawQueryWithoutAttributes() {
-        final QueryResult result = mDatabaseFacade.rawDatabaseQuery("SELECT " + mTestNumber001 + " FROM DUAL");
-        assertEquals(result.getFirstQueryResult().getLong(0), mTestNumber001);
-    }
-
-    @SmallTest
-    public void testCheckSelectRawQueryWithAttributes() {
-        final QueryResult result = mDatabaseFacade.rawDatabaseQuery("SELECT ? FROM DUAL", new String[]{mTestNumber001.toString()});
-        assertEquals(result.getFirstQueryResult().getLong(0), mTestNumber001);
+    public void testPrerequisites() {
+        assertNotNull("testPrerequisites: mDeviceNameDatabaseManager is needed", mDeviceNameDatabaseManager);
     }
 
     @SmallTest
     public void testAddDevice() {
+        assertNotNull("testAddDevice: Device name manager is needed", mDeviceNameDatabaseManager);
         mDeviceNameDatabaseManager.updateDeviceName(mGadgetAddress001, mGadgetName001);
-        String retrievedString = DeviceNameDatabaseManager.getInstance().readDeviceName(mGadgetAddress001);
-        assertEquals(retrievedString, mGadgetName001);
+        final String retrievedString = mDeviceNameDatabaseManager.readDeviceName(mGadgetAddress001);
+        assertEquals("testAddDevice: Inserted device was not retrieved successfully", retrievedString, mGadgetName001);
     }
 
     @SmallTest
     public void testUpdateDevice() {
+        assertNotNull("testUpdateDevice: Device name manager is needed", mDeviceNameDatabaseManager);
+        this.testAddDevice();
         mDeviceNameDatabaseManager.updateDeviceName(mGadgetAddress001, mGadgetName002);
-        String retrievedString = DeviceNameDatabaseManager.getInstance().readDeviceName(mGadgetAddress001);
-        assertEquals(retrievedString, mGadgetName002);
-    }
-
-    @SmallTest
-    public void testDatabaseConnectivity() {
-        mDatabaseFacade.openClosedDatabaseConnection();
-        assertTrue(mDatabaseFacade.isDatabaseOpenForWrite());
-        mDatabaseFacade.closeDatabaseConnection();
-        assertFalse(mDatabaseFacade.isDatabaseOpenForWrite());
-        mDatabaseFacade.openClosedDatabaseConnection();
-        assertTrue(mDatabaseFacade.isDatabaseOpenForWrite());
+        final String updatedString = mDeviceNameDatabaseManager.readDeviceName(mGadgetAddress001);
+        assertEquals("testUpdateDevice: Device was not updated successfully", updatedString, mGadgetName002);
     }
 }
