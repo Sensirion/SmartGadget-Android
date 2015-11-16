@@ -6,7 +6,6 @@ import android.test.suitebuilder.annotation.SmallTest;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-
 public class XyPlotViewGridTest extends XyPlotViewUnderTest {
 
     protected static final float OFFSET_ERROR = 0.1f;
@@ -49,5 +48,4 @@ public class XyPlotViewGridTest extends XyPlotViewUnderTest {
         assertFalse((Boolean) reflection_isWithinGrids.invoke(mPlotView, outsideBottomRight));
         assertFalse((Boolean) reflection_isWithinGrids.invoke(mPlotView, outsideBottomLeft));
     }
-
 }
