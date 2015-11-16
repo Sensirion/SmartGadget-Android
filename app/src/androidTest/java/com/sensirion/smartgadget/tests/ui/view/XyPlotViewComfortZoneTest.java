@@ -6,7 +6,6 @@ import android.test.suitebuilder.annotation.SmallTest;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-
 public abstract class XyPlotViewComfortZoneTest extends XyPlotViewUnderTest {
 
     private Method reflection_isWithinComfortZone;

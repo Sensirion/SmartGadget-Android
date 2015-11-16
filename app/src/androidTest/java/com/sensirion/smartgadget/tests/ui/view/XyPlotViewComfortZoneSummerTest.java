@@ -2,7 +2,6 @@ package com.sensirion.smartgadget.tests.ui.view;
 
 import android.graphics.PointF;
 
-
 public class XyPlotViewComfortZoneSummerTest extends XyPlotViewComfortZoneTest {
 
     public XyPlotViewComfortZoneSummerTest() {

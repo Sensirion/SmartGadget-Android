@@ -4,7 +4,6 @@ import android.graphics.PointF;
 import android.test.AndroidTestCase;
 
 import com.sensirion.smartgadget.R;
-import com.sensirion.smartgadget.view.comfort_zone.ComfortZoneFragment;
 import com.sensirion.smartgadget.view.comfort_zone.graph.XyPlotView;
 
 public abstract class XyPlotViewUnderTest extends AndroidTestCase {
@@ -29,13 +28,10 @@ public abstract class XyPlotViewUnderTest extends AndroidTestCase {
 
     protected void setUp() throws Exception {
         super.setUp();
-
         mPlotView = new XyPlotView(getContext());
-
         mPlotView.setXAxisLabel(getContext().getString(R.string.graph_label_temperature_celsius));
         mPlotView.setXAxisScale(MIN_X_AXIS_VALUE, MAX_X_AXIS_VALUE, X_AXIS_GRID_SIZE);
         mPlotView.setYAxisLabel(getContext().getString(R.string.graph_label_humidity));
         mPlotView.setYAxisScale(MIN_Y_AXIS_VALUE, MAX_Y_AXIS_VALUE, Y_AXIS_GRID_SIZE);
     }
-
 }
