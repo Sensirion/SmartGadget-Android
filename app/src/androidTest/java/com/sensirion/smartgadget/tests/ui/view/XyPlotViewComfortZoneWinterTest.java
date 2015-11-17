@@ -2,7 +2,6 @@ package com.sensirion.smartgadget.tests.ui.view;
 
 import android.graphics.PointF;
 
-
 public class XyPlotViewComfortZoneWinterTest extends XyPlotViewComfortZoneTest {
 
     public XyPlotViewComfortZoneWinterTest() {
@@ -19,6 +18,4 @@ public class XyPlotViewComfortZoneWinterTest extends XyPlotViewComfortZoneTest {
 
         mPlotView.setComfortZoneWinter(true);
     }
-
-
 }
