@@ -1,17 +1,6 @@
 apply plugin: 'com.android.application'
 apply from: '../gradle-helpers.gradle'
 
-// additional repository for androidplot
-repositories {
-    maven { url 'https://oss.sonatype.org/content/groups/public' }
-}
-
-dependencies {
-    compile 'com.android.support:support-v4:23.1.0'
-    compile 'com.androidplot:androidplot-core:0.6.2-SNAPSHOT@aar'
-    compile 'com.sensirion:libble:1.0.0'
-}
-
 android {
     compileSdkVersion 23
     buildToolsVersion '23.0.2'
@@ -19,4 +8,22 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_7
         targetCompatibility JavaVersion.VERSION_1_7
     }
+    repositories {
+        // additional repository for androidplot
+        maven { url 'https://oss.sonatype.org/content/groups/public' }
+    }
+    dependencies {
+        compile 'com.android.support:support-v4:23.1.0'
+        compile 'com.androidplot:androidplot-core:0.6.2-SNAPSHOT@aar'
+        compile 'com.sensirion:libble:1.0.0'
+        compile 'com.jakewharton:butterknife:7.0.1'
+    }
+    // Custom options for the Butterknife library
+    lintOptions {
+        disable 'InvalidPackage'
+    }
+    packagingOptions {
+        exclude 'META-INF/services/javax.annotation.processing.Processor'
+    }
+    // End of the custom options for the Butterknife library
 }
