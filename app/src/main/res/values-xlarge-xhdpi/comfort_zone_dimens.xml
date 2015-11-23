@@ -25,7 +25,7 @@
     <!-- GENERAL -->
     <integer name="comfort_zone_stroke_size_boundary">8</integer>
     <integer name="comfort_zone_label_text_size_in_graph" format="float" type="dimen">50</integer>
-    <integer name="comfort_zone_temperature_and_humidity_text_size_graph">18</integer>
-    <integer name="comfort_zone_temperature_humidity_text_size_graph">30</integer>
+    <integer name="comfort_zone_temperature_humidity_value_text_size_graph">18</integer>
+    <integer name="comfort_zone_temperature_humidity_label_text_size">30</integer>
     <integer name="comfort_zone_values_text_size">17</integer>
 </resources>
