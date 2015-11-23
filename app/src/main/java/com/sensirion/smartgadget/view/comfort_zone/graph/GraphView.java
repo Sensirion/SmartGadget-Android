@@ -15,6 +15,7 @@ import android.graphics.RectF;
 import android.graphics.Region;
 import android.graphics.Shader;
 import android.os.Build;
+import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
@@ -343,7 +344,7 @@ public class GraphView extends View {
      *
      * @param resId Resource Id of the image
      */
-    public void setBackgroundImage(final int resId) {
+    public void setBackgroundImage(@DrawableRes final int resId) {
         mBackgroundBitmap = BitmapFactory.decodeResource(getContext().getResources(), resId);
         mBackgroundBitmap.setHasAlpha(true);
         mBackgroundPaint.setColor(Color.TRANSPARENT); // keep bitmap clean
