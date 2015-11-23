@@ -12,54 +12,73 @@ import android.util.Log;
 
 import com.sensirion.smartgadget.R;
 
+import butterknife.BindColor;
+import butterknife.BindInt;
+
 public class XyPlotView extends GraphView {
 
     private static final String TAG = XyPlotView.class.getSimpleName();
 
     // Points that describe the comfort-zone according to:
     // http://www.sensirion.com/nc/en/products/humidity-temperature/download-center/?cid=882&did=121&sechash=355082bc
+    @NonNull
     private static final PointF[] COMFORT_ZONE_WINTER_POSITIONS = {
             new PointF(19.5f, 86.5f),
             new PointF(23.5f, 58.3f),
             new PointF(24.5f, 23.0f),
             new PointF(20.5f, 29.3f)
     };
+    @NonNull
     private static final PointF[] COMFORT_ZONE_SUMMER_POSITIONS = {
             new PointF(22.5f, 79.5f),
             new PointF(26.0f, 57.3f),
             new PointF(27.0f, 19.8f),
             new PointF(23.5f, 24.4f)
     };
-
-    //Attributes stores the correct map coordinates for the comfort  zone in each station.
+    //Attributes stores the correct map coordinates for the comfort zone in each station.
     @Nullable
     private static PointF[] mapCoordinatesWinter = null;
+
     @Nullable
     private static PointF[] mapCoordinatesSummer = null;
 
-    private boolean mIsCzWinter = true;
+    @BindInt(R.integer.comfort_zone_axis_label_text_size)
+    int AXIS_LABEL_TEXT_SIZE;
+
+    @BindInt(R.integer.comfort_zone_stroke_size_boundary)
+    int STROKE_SIZE_BOUNDARY;
+
+    @BindColor(R.color.sensirion_green)
+    int SENSIRION_GREEN;
+
     @Nullable
     private PointF[] mCzActive = new PointF[4];
 
     @Nullable
     private Paint mPaintComfortZone = null;
+
     @Nullable
     private Path mPathComfortZone = null;
 
     @Nullable
     private PointF mClippedPoint = null;
 
+    private boolean mIsCzWinter = true;
+
     public XyPlotView(@NonNull final Context context) {
         super(context);
         init();
     }
 
-    public XyPlotView(@NonNull final Context context, final AttributeSet attrs) {
+    public XyPlotView(@NonNull final Context context,
+                      @NonNull final AttributeSet attrs) {
         super(context, attrs);
         init();
     }
 
-    public XyPlotView(@NonNull final Context context, final AttributeSet attrs, final int defStyle) {
+    public XyPlotView(@NonNull final Context context,
+                      @NonNull final AttributeSet attrs,
+                      final int defStyle) {
         super(context, attrs, defStyle);
         init();
     }
@@ -71,13 +90,13 @@ public class XyPlotView extends GraphView {
         mPaintComfortZone = new Paint();
         mPaintComfortZone.setStyle(Paint.Style.STROKE);
 
-        super.setAxisLabelTextSize(getResources().getInteger(R.integer.comfort_zone_axis_label_text_size));
+        super.setAxisLabelTextSize(AXIS_LABEL_TEXT_SIZE);
 
         //Sets the size of the point
-        mPaintComfortZone.setStrokeWidth(getResources().getInteger(R.integer.comfort_zone_stroke_size_boundary));
+        mPaintComfortZone.setStrokeWidth(STROKE_SIZE_BOUNDARY);
 
         mPaintComfortZone.setAntiAlias(true);
-        mPaintComfortZone.setColor(getResources().getColor(R.color.sensirion_green));
+        mPaintComfortZone.setColor(SENSIRION_GREEN);
 
         updatePath();
     }
@@ -166,7 +185,10 @@ public class XyPlotView extends GraphView {
     }
 
     @Override
-    protected void onSizeChanged(final int width, final int height, final int oldWidth, final int oldHeight) {
+    protected void onSizeChanged(final int width,
+                                 final int height,
+                                 final int oldWidth,
+                                 final int oldHeight) {
         super.onSizeChanged(width, height, oldWidth, oldHeight);
         updatePath();
     }
