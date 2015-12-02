@@ -13,7 +13,10 @@ import java.util.Map;
 public class HistoryResult {
 
     @NonNull
-    private final Map<String, List<RHTDataPoint>> mResultValues = Collections.synchronizedMap(new HashMap<String, List<RHTDataPoint>>());
+    private final Map<String, List<RHTDataPoint>> mResultValues =
+            Collections.synchronizedMap(
+                    new HashMap<String, List<RHTDataPoint>>()
+            );
 
     public HistoryResult(@NonNull final List<String> devices) {
         for (final String device : devices) {
@@ -36,7 +39,8 @@ public class HistoryResult {
      *
      * @param dataPoint that is going to be added.
      */
-    public void addResult(@NonNull final String deviceAddress, @NonNull final RHTDataPoint dataPoint) {
+    public void addResult(@NonNull final String deviceAddress,
+                          @NonNull final RHTDataPoint dataPoint) {
         mResultValues.get(deviceAddress).add(dataPoint);
     }
 
@@ -59,8 +63,12 @@ public class HistoryResult {
         final StringBuilder sb = new StringBuilder();
         for (final String deviceAddress : mResultValues.keySet()) {
             for (final RHTDataPoint datapoint : mResultValues.get(deviceAddress)) {
-                sb.append(String.format("\nDevice with address: %s - Temperature: %f - Humidity: %f, Seconds ago: %d",
-                        deviceAddress, datapoint.getTemperatureCelsius(), datapoint.getRelativeHumidity(), (System.currentTimeMillis() - datapoint.getTimestamp() / 1000)));
+                sb.append(
+                        String.format(
+                                "\nDevice with address: %s - %s",
+                                deviceAddress,
+                                datapoint.toString())
+                );
             }
         }
         return sb.toString();
