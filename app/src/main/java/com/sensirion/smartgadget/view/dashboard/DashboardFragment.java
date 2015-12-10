@@ -1,13 +1,16 @@
 package com.sensirion.smartgadget.view.dashboard;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.res.AssetManager;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.UiThread;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -33,53 +36,115 @@ import java.text.NumberFormat;
 import java.util.List;
 import java.util.Locale;
 
+import butterknife.Bind;
+import butterknife.BindBool;
+import butterknife.BindString;
+import butterknife.ButterKnife;
+
 public class DashboardFragment extends ParentFragment implements RHTSensorListener {
 
     private static final String TAG = DashboardFragment.class.getSimpleName();
 
+    //BUTTON STATES
     private static final int BUTTON_STATE_TEMPERATURE = 0;
     private static final int DEFAULT_STATE_BUTTON = BUTTON_STATE_TEMPERATURE;
     private static final int BUTTON_STATE_HUMIDITY = 1;
     private static final int BUTTON_STATE_DEW_POINT = 2;
     private static final int BUTTON_STATE_HEAT_INDEX = 3;
+
+    //VIEWS
+    @Bind(R.id.dashboard_connected_device_nested_list_view)
+    ListView mConnectedDeviceView;
+    @Bind(R.id.dashboard_temperature_button)
+    Button mTemperatureButton;
+    @Bind(R.id.dashboard_humidity_button)
+    Button mHumidityButton;
+    @Bind(R.id.dashboard_dew_point_button)
+    Button mDewPointButton;
+    @Bind(R.id.dashboard_heat_index_button)
+    Button mHeatIndexButton;
+    @Bind(R.id.dashboard_temperature_value)
+    TextView mTemperatureValueTextView;
+    @Bind(R.id.dashboard_humidity_value)
+    TextView mHumidityValueTextView;
+    @Bind(R.id.dashboard_dew_point_value)
+    TextView mDewPointValueTextView;
+    @Bind(R.id.dashboard_heat_index_value)
+    TextView mHeatIndexValueTextView;
+
+    //Extracted attributes from the XML
+    @BindBool(R.bool.is_tablet)
+    boolean IS_TABLET;
+    @BindString(R.string.unit_fahrenheit)
+    String FAHRENHEIT_UNIT;
+    @BindString(R.string.unit_celsius)
+    String CELSIUS_UNIT;
+    @BindString(R.string.unit_humidity)
+    String HUMIDITY_UNIT;
+    @BindString(R.string.label_empty_t)
+    String EMPTY_TEMPERATURE_LABEL;
+    @BindString(R.string.label_empty_rh)
+    String EMPTY_HUMIDITY_LABEL;
+    @BindString(R.string.label_empty_heat_index)
+    String EMPTY_HEAT_INDEX_LABEL;
+    @BindString(R.string.typeface_condensed)
+    String TYPEFACE_CONDENSED_LOCATION;
+    @BindString(R.string.typeface_bold)
+    String TYPEFACE_BOLD_LOCATION;
+
+    //Temperature state
     private boolean mIsFahrenheit;
 
+    //Connection Adapter
     private ConnectedDeviceAdapter mConnectedDeviceAdapter;
 
     private void updateViewForSelectedTemperatureUnit() {
-        mIsFahrenheit = Settings.getInstance().isTemperatureUnitFahrenheit(getParent());
-        Log.i(TAG, String.format("updateViewForSelectedTemperatureUnit(): The temperature unit it's %s.", (mIsFahrenheit) ? "Fahrenheit" : "Celsius"));
+        mIsFahrenheit = Settings.getInstance().isTemperatureUnitFahrenheit(getContext());
+        Log.i(TAG, String.format(
+                        "updateViewForSelectedTemperatureUnit(): The temperature unit it's %s.",
+                        (mIsFahrenheit) ? "Fahrenheit" : "Celsius"
+                )
+        );
     }
 
     private void updateListView() {
         if (isAdded()) {
             Log.i(TAG, "updateListView()");
             final List<DeviceModel> connectedDevices = RHTSensorFacade.getInstance().getConnectedSensors();
-            final ListView listView = (ListView) getParent().findViewById(R.id.dashboard_connected_device_nested_list_view);
-            final ConnectedDeviceAdapter adapter = ((ConnectedDeviceAdapter) listView.getAdapter());
-            getParent().runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    adapter.update(connectedDevices);
-                }
-            });
+            final ConnectedDeviceAdapter adapter = ((ConnectedDeviceAdapter) mConnectedDeviceView.getAdapter());
+            final Activity parent = getParent();
+            if (parent == null) {
+                Log.e(TAG, "updateListView() -> Received a null activity.");
+            } else {
+                parent.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        adapter.update(connectedDevices);
+                    }
+                });
+            }
         }
     }
 
     @Override
-    public View onCreateView(@NonNull final LayoutInflater inflater, final ViewGroup container, final Bundle savedInstanceState) {
+    public View onCreateView(@NonNull final LayoutInflater inflater,
+                             @Nullable final ViewGroup container,
+                             @Nullable final Bundle savedInstanceState) {
         Log.i(TAG, "OnCreateView()");
-        return inflater.inflate(R.layout.fragment_dashboard, container, false);
+        final View view = inflater.inflate(R.layout.fragment_dashboard, container, false);
+        ButterKnife.bind(this, view);
+        return view;
     }
 
     @Override
-    public void onViewCreated(final View view, final Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull final View view,
+                              @Nullable final Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         Log.i(TAG, "onViewCreated()");
-        final Typeface typefaceNormal = Typeface.createFromAsset(getParent().getAssets(), "HelveticaNeueLTStd-Cn.otf");
-        final Typeface typefaceBold = Typeface.createFromAsset(getParent().getAssets(), "HelveticaNeueLTStd-Bd.otf");
+        final AssetManager assets = getContext().getAssets();
+        final Typeface typefaceNormal = Typeface.createFromAsset(assets, TYPEFACE_CONDENSED_LOCATION);
+        final Typeface typefaceBold = Typeface.createFromAsset(assets, TYPEFACE_BOLD_LOCATION);
         initButtons(typefaceNormal, typefaceBold);
-
         initListView();
     }
 
@@ -88,7 +153,6 @@ public class DashboardFragment extends ParentFragment implements RHTSensorListen
         super.onResume();
         Log.i(TAG, "onResume()");
         RHTSensorFacade.getInstance().registerListener(this);
-
         updateViewForSelectedTemperatureUnit();
         updateListView();
     }
@@ -101,50 +165,53 @@ public class DashboardFragment extends ParentFragment implements RHTSensorListen
         resetViewValues();
     }
 
+    @UiThread
     @SuppressLint("CommitPrefEdits")
     //Using apply instead of commit can cause a Parallel writing Exception.
-    private void initButtons(final Typeface typefaceNormal, final Typeface typefaceBold) {
-        ((TextView) getParent().findViewById(R.id.dashboard_temperature_value)).setTypeface(typefaceBold);
-        ((TextView) getParent().findViewById(R.id.dashboard_humidity_value)).setTypeface(typefaceBold);
-        ((TextView) getParent().findViewById(R.id.dashboard_dew_point_value)).setTypeface(typefaceBold);
-        ((TextView) getParent().findViewById(R.id.dashboard_heat_index_value)).setTypeface(typefaceBold);
+    private void initButtons(@NonNull final Typeface typefaceNormal,
+                             @NonNull final Typeface typefaceBold) {
 
-        final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getParent().getApplicationContext());
+        mTemperatureValueTextView.setTypeface(typefaceBold);
+        mHumidityValueTextView.setTypeface(typefaceBold);
+        mDewPointValueTextView.setTypeface(typefaceBold);
+        mHeatIndexValueTextView.setTypeface(typefaceBold);
 
-        final Button button1 = (Button) getParent().findViewById(R.id.dashboard_temperature_button);
-        button1.setTypeface(typefaceNormal);
-        prefs.edit().putInt(String.valueOf(button1.getId()), BUTTON_STATE_TEMPERATURE).commit();
-        addButtonListener(button1);
+        final SharedPreferences prefs =
+                PreferenceManager.getDefaultSharedPreferences(getContext().getApplicationContext());
 
-        final Button button2 = (Button) getParent().findViewById(R.id.dashboard_humidity_button);
-        button2.setTypeface(typefaceNormal);
-        prefs.edit().putInt(String.valueOf(button2.getId()), BUTTON_STATE_HUMIDITY).commit();
-        addButtonListener(button2);
+        mTemperatureButton.setTypeface(typefaceNormal);
+        prefs.edit().putInt(String.valueOf(mTemperatureButton.getId()), BUTTON_STATE_TEMPERATURE).commit();
+        addButtonListener(mTemperatureButton);
 
-        final Button button3 = (Button) getParent().findViewById(R.id.dashboard_dew_point_button);
-        button3.setTypeface(typefaceNormal);
-        prefs.edit().putInt(String.valueOf(button3.getId()), BUTTON_STATE_DEW_POINT).commit();
-        addButtonListener(button3);
+        mHumidityButton.setTypeface(typefaceNormal);
+        prefs.edit().putInt(String.valueOf(mHumidityButton.getId()), BUTTON_STATE_HUMIDITY).commit();
+        addButtonListener(mHumidityButton);
 
-        final Button button4 = (Button) getParent().findViewById(R.id.dashboard_heat_index_button);
-        button4.setTypeface(typefaceNormal);
-        prefs.edit().putInt(String.valueOf(button4.getId()), BUTTON_STATE_HEAT_INDEX).commit();
-        addButtonListener(button4);
+        mDewPointButton.setTypeface(typefaceNormal);
+        prefs.edit().putInt(String.valueOf(mDewPointButton.getId()), BUTTON_STATE_DEW_POINT).commit();
+        addButtonListener(mDewPointButton);
+
+        mHeatIndexButton.setTypeface(typefaceNormal);
+        prefs.edit().putInt(String.valueOf(mHeatIndexButton.getId()), BUTTON_STATE_HEAT_INDEX).commit();
+        addButtonListener(mHeatIndexButton);
     }
 
     private void initListView() {
-        mConnectedDeviceAdapter = new ConnectedDeviceAdapter(getParent().getApplicationContext());
+        mConnectedDeviceAdapter = new ConnectedDeviceAdapter(getContext().getApplicationContext());
 
-        final ListView listView = (ListView) getParent().findViewById(R.id.dashboard_connected_device_nested_list_view);
-        listView.setAdapter(mConnectedDeviceAdapter);
-        listView.setOnItemClickListener(new OnItemClickListener() {
+        mConnectedDeviceView.setAdapter(mConnectedDeviceAdapter);
+        mConnectedDeviceView.setOnItemClickListener(new OnItemClickListener() {
             @Override
-            public void onItemClick(final AdapterView<?> adapterView, View arg1, final int position, long arg3) {
-                final String selectedAddress = mConnectedDeviceAdapter.getItem(position).getAddress();
-                if (Settings.getInstance().getSelectedAddress().equals(selectedAddress)) {
+            public void onItemClick(@NonNull final AdapterView<?> adapterView,
+                                    @NonNull final View arg1,
+                                    final int position,
+                                    final long arg3) {
+                final String clickedAddress = mConnectedDeviceAdapter.getItem(position).getAddress();
+                final String selectedAddress = Settings.getInstance().getSelectedAddress();
+                if (selectedAddress == null || selectedAddress.equals(clickedAddress)) {
                     return;
                 }
-                Settings.getInstance().setSelectedAddress(selectedAddress);
+                Settings.getInstance().setSelectedAddress(clickedAddress);
                 mConnectedDeviceAdapter.notifyDataSetChanged();
                 resetViewValues();
             }
@@ -156,8 +223,13 @@ public class DashboardFragment extends ParentFragment implements RHTSensorListen
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (getParent().getResources().getBoolean(R.bool.is_tablet)) {
-                    ((MainActivity) getParent()).toggleTabletMenu();
+                if (IS_TABLET) {
+                    final MainActivity activity = (MainActivity) getParent();
+                    if (activity == null) {
+                        Log.e(TAG, "addButtonListener.onClick -> Cannot toogle menu with a null activity.");
+                    } else {
+                        activity.toggleTabletMenu();
+                    }
                 }
             }
         });
@@ -167,14 +239,23 @@ public class DashboardFragment extends ParentFragment implements RHTSensorListen
      * {@inheritDoc}
      */
     @Override
-    public void onGadgetConnectionChanged(@Nullable final String deviceAddress, final boolean deviceIsConnected) {
+    public void onGadgetConnectionChanged(@Nullable final String deviceAddress,
+                                          final boolean deviceIsConnected) {
         if (isAdded()) {
             updateListView();
             if (deviceIsConnected) {
-                Log.i(TAG, String.format("onGadgetConnectionChanged() -> Sensor with address %s was connected.", deviceAddress));
+                Log.i(TAG, String.format(
+                                "onGadgetConnectionChanged() -> Sensor with address %s was connected.",
+                                deviceAddress
+                        )
+                );
             } else {
                 resetViewValues();
-                Log.i(TAG, String.format("onGadgetConnectionChanged() -> Sensor with address %s was disconnected.", deviceAddress));
+                Log.i(TAG, String.format(
+                                "onGadgetConnectionChanged() -> Sensor with address %s was disconnected.",
+                                deviceAddress
+                        )
+                );
             }
         }
     }
@@ -183,7 +264,9 @@ public class DashboardFragment extends ParentFragment implements RHTSensorListen
      * {@inheritDoc}
      */
     @Override
-    public void onNewRHTSensorData(final float temperature, final float relativeHumidity, @Nullable final String deviceAddress) {
+    public void onNewRHTSensorData(final float temperature,
+                                   final float relativeHumidity,
+                                   @Nullable final String deviceAddress) {
         if (deviceAddress == null) {
             updateViewValues(temperature, relativeHumidity, RHTInternalSensorManager.INTERNAL_SENSOR_ADDRESS);
         } else {
@@ -191,60 +274,49 @@ public class DashboardFragment extends ParentFragment implements RHTSensorListen
         }
     }
 
+    @UiThread
     private void resetViewValues() {
-        getParent().runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                final TextView temperatureTextView = ((TextView) getParent().findViewById(R.id.dashboard_temperature_value));
-                if (temperatureTextView != null) {
-                    temperatureTextView.setText(getString(R.string.label_empty_t));
-                }
-                final TextView humidityTextView = ((TextView) getParent().findViewById(R.id.dashboard_humidity_value));
-                if (humidityTextView != null) {
-                    humidityTextView.setText(getString(R.string.label_empty_rh));
-                }
-                final TextView dewPointTextView = ((TextView) getParent().findViewById(R.id.dashboard_dew_point_value));
-                if (dewPointTextView != null) {
-                    dewPointTextView.setText(getString(R.string.label_empty_t));
-                }
-                final TextView heatIndexTextView = ((TextView) getParent().findViewById(R.id.dashboard_heat_index_value));
-                if (heatIndexTextView != null) {
-                    heatIndexTextView.setText(getString(R.string.label_empty_t));
-                }
-            }
-        });
+        mTemperatureValueTextView.setText(EMPTY_TEMPERATURE_LABEL);
+        mHumidityValueTextView.setText(EMPTY_HUMIDITY_LABEL);
+        mDewPointValueTextView.setText(EMPTY_TEMPERATURE_LABEL);
+        mHeatIndexValueTextView.setText(EMPTY_TEMPERATURE_LABEL);
     }
 
-    private void updateViewValues(final float temperature, final float humidity, @NonNull final String deviceAddress) {
+    @UiThread
+    private void updateViewValues(final float temperature,
+                                  final float humidity,
+                                  @NonNull final String deviceAddress) {
         if (isAdded()) {
-            getParent().runOnUiThread(new Runnable() {
+            final Activity parent = getParent();
+            if (parent == null) {
+                Log.e(TAG, "updateViewValues -> Received null parent.");
+                return;
+            }
+            parent.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     final String selectedAddress = Settings.getInstance().getSelectedAddress();
                     if (deviceAddress.equals(selectedAddress)) {
-
-                        changeButtonValue((Button) getParent().findViewById(R.id.dashboard_temperature_button),
-                                (TextView) getParent().findViewById(R.id.dashboard_temperature_value));
-                        changeButtonValue((Button) getParent().findViewById(R.id.dashboard_humidity_button),
-                                (TextView) getParent().findViewById(R.id.dashboard_humidity_value));
-                        changeButtonValue((Button) getParent().findViewById(R.id.dashboard_dew_point_button),
-                                (TextView) getParent().findViewById(R.id.dashboard_dew_point_value));
-                        changeButtonValue((Button) getParent().findViewById(R.id.dashboard_heat_index_button),
-                                (TextView) getParent().findViewById(R.id.dashboard_heat_index_value));
+                        changeButtonValue(mTemperatureButton, mTemperatureValueTextView);
+                        changeButtonValue(mHumidityButton, mHumidityValueTextView);
+                        changeButtonValue(mDewPointButton, mDewPointValueTextView);
+                        changeButtonValue(mHeatIndexButton, mHeatIndexValueTextView);
                     }
                 }
 
-                private void changeButtonValue(@NonNull final Button button, @NonNull final TextView textView) {
+                private void changeButtonValue(@NonNull final Button button,
+                                               @NonNull final TextView textView) {
                     final String unit;
                     if (mIsFahrenheit) {
-                        unit = getString(R.string.unit_fahrenheit);
+                        unit = FAHRENHEIT_UNIT;
                     } else {
-                        unit = getString(R.string.unit_celsius);
+                        unit = CELSIUS_UNIT;
                     }
-
                     final Context appContext = getParent().getApplicationContext();
                     final String buttonId = String.valueOf(button.getId());
-                    final int buttonState = PreferenceManager.getDefaultSharedPreferences(appContext).getInt(buttonId, DEFAULT_STATE_BUTTON);
+                    final SharedPreferences preferences =
+                            PreferenceManager.getDefaultSharedPreferences(appContext);
+                    final int buttonState = preferences.getInt(buttonId, DEFAULT_STATE_BUTTON);
 
                     final NumberFormat nf = NumberFormat.getNumberInstance(Locale.ENGLISH);
                     nf.setMaximumFractionDigits(1);
@@ -255,7 +327,7 @@ public class DashboardFragment extends ParentFragment implements RHTSensorListen
                     switch (buttonState) {
                         case BUTTON_STATE_HUMIDITY:
                             signGap = " ";
-                            textView.setText(String.format("%s%s%s", signGap, nf.format(humidity), getString(R.string.unit_humidity)));
+                            textView.setText(String.format("%s%s%s", signGap, nf.format(humidity), HUMIDITY_UNIT));
                             break;
                         case BUTTON_STATE_TEMPERATURE:
                             signGap = temperature < 0 ? "" : " ";
@@ -276,7 +348,7 @@ public class DashboardFragment extends ParentFragment implements RHTSensorListen
                                 heatIndex = Converter.calculateHeatIndexCelsius(humidity, temperature);
                             }
                             if (Float.isNaN(heatIndex)) {
-                                textView.setText(String.format(" %s", getString(R.string.label_empty_heat_index)));
+                                textView.setText(String.format(" %s", EMPTY_HEAT_INDEX_LABEL));
                             } else {
                                 signGap = heatIndex < 0 ? "" : " ";
                                 textView.setText(String.format("%s%s%s", signGap, nf.format(heatIndex), unit));
