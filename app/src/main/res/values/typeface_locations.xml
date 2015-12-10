@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="typeface_condensed">HelveticaNeueLTStd-Cn.otf</string>
+    <string name="typeface_bold">HelveticaNeueLTStd-Bd.otf</string>
+</resources>
