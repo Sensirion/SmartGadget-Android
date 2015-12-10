@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.res.AssetManager;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Handler;
@@ -27,6 +28,8 @@ import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -48,29 +51,75 @@ import com.sensirion.smartgadget.utils.download.LoggerInterval;
 import com.sensirion.smartgadget.utils.view.ParentFragment;
 import com.sensirion.smartgadget.view.MainActivity;
 
+import butterknife.Bind;
+import butterknife.BindBool;
+import butterknife.BindString;
+import butterknife.ButterKnife;
 
 public class ManageDeviceFragment extends ParentFragment implements HistoryListener {
 
+    // Class TAG used for testing
+    @NonNull
     private static final String TAG = ManageDeviceFragment.class.getSimpleName();
-    private EditText mGadgetEditText;
+
+    // Broadcast Views
+    @Nullable
+    private final BroadcastReceiver mDeviceConnectionReceiver = new ConnectionStateReceiver();
+
+    // XML Resources
+    @BindBool(R.bool.is_tablet)
+    boolean IS_TABLET;
+    @BindString(R.string.enable_logging)
+    String ENABLE_LOGGING_STRING;
+    @BindString(R.string.label_advice_logging_enable)
+    String GADGET_ENABLE_ADVICE_STRING;
+    @BindString(R.string.interval_modification)
+    String INTERVAL_MODIFICATION_TITLE;
+    @BindString(R.string.interval_modification_message)
+    String INTERVAL_MODIFICATION_MESSAGE;
+    @BindString(R.string.yes)
+    String YES_STRING;
+    @BindString(R.string.no)
+    String NO_STRING;
+    @BindString(R.string.typeface_condensed)
+    String TYPEFACE_CONDENSED_LOCATION;
+    @BindString(R.string.typeface_bold)
+    String TYPEFACE_BOLD_LOCATION;
+
+    // XML Views
+    @Bind(R.id.manage_device_gadget_name_label)
+    TextView mGadgetNameLabel;
+    @Bind(R.id.manage_device_label_logging_interval)
+    TextView mLoggingIntervalLabel;
+    @Bind(R.id.manage_device_label_gadget_logging)
+    TextView mGadgetLoggingLabel;
+    @Bind(R.id.manage_device_gadget_name_edit_field)
+    EditText mGadgetNameEditText;
+    @Bind(R.id.manage_device_button_disconnect)
+    Button mDisconnectButton;
+    @Bind(R.id.manage_device_button_download_log)
+    Button mDownloadLogButton;
+    @Bind(R.id.manage_device_button_logging_interval)
+    Button mLoggingIntervalButton;
+    @Bind(R.id.manage_device_layout_gadgetlogging_switch_layout)
+    LinearLayout mGadgetLoggingSwitch;
+    @Bind(R.id.manage_device_battery_level_layout)
+    RelativeLayout mBatteryLevelLayout;
+    @Bind(R.id.manage_device_battery_level_value)
+    TextView mBatteryLevelValue;
+    @Bind(R.id.manage_device_battery_seek_bar)
+    SeekBar mBatterySeekBar;
+    @Bind(R.id.manage_device_switch_toggle_logger)
+    Switch mLoggingToggle;
+    // BleDevice connectors
+    @Nullable
     private BleDevice mSelectedDevice;
     @Nullable
-    private final BroadcastReceiver mDeviceConnectionReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(final Context context, final Intent intent) {
-            Log.i(TAG, "mDeviceConnectionReceiver.onReceive() -> refreshing discovered and connected list");
-            if (BleManager.getInstance().getConnectedDevice(mSelectedDevice.getAddress()) == null) {
-                Log.e(TAG, String.format("mDeviceConnectionReceiver.onReceive() -> The device with address %s has been disconnected.", mSelectedDevice.getAddress()));
-                onGadgetDisconnected();
-            }
-        }
-    };
     private DeviceModel mDeviceModel;
     @Nullable
     private AbstractHistoryService mHistoryService = null;
-
+    // Fragment states
     private volatile boolean mCheckingDeviceState = false;
-
     private volatile boolean mFirstTimeRead = true;
 
     /**
@@ -84,17 +133,13 @@ public class ManageDeviceFragment extends ParentFragment implements HistoryListe
     }
 
     @Override
-    public View onCreateView(@NonNull final LayoutInflater inflater, final ViewGroup container, final Bundle savedInstanceState) {
-        final View root = inflater.inflate(R.layout.fragment_manage_device, container, false);
-        root.setOnTouchListener(new View.OnTouchListener() {
-            public boolean onTouch(View v, MotionEvent event) {
-                if (getParent().getResources().getBoolean(R.bool.is_tablet)) {
-                    ((MainActivity) getParent()).toggleTabletMenu();
-                }
-                return true;
-            }
-        });
-        return root;
+    public View onCreateView(@NonNull final LayoutInflater inflater,
+                             @Nullable final ViewGroup container,
+                             @Nullable final Bundle savedInstanceState) {
+        final View view = inflater.inflate(R.layout.fragment_manage_device, container, false);
+        ButterKnife.bind(this, view);
+        view.setOnTouchListener(new OnTouchOpenTabletMenuListener());
+        return view;
     }
 
     @Override
@@ -144,7 +189,7 @@ public class ManageDeviceFragment extends ParentFragment implements HistoryListe
         updateBatteryLevel();
         if (mHistoryService == null) {
             Log.i(TAG, "onResume -> The device is not compatible with logging service.");
-            getParent().findViewById(R.id.manage_device_layout_gadget_logging).setVisibility(View.GONE);
+            mGadgetLoggingLabel.setVisibility(View.GONE);
         } else {
             checkInterval();
             checkLoggingIsEnabled();
@@ -165,7 +210,7 @@ public class ManageDeviceFragment extends ParentFragment implements HistoryListe
         final IntentFilter filterDeviceState = new IntentFilter();
         filterDeviceState.addAction(BlePeripheralService.ACTION_PERIPHERAL_DISCOVERY);
         filterDeviceState.addAction(BlePeripheralService.ACTION_PERIPHERAL_CONNECTION_CHANGED);
-        LocalBroadcastManager.getInstance(getParent()).registerReceiver(mDeviceConnectionReceiver, filterDeviceState);
+        LocalBroadcastManager.getInstance(getContext()).registerReceiver(mDeviceConnectionReceiver, filterDeviceState);
     }
 
     private void onGadgetDisconnected() {
@@ -174,7 +219,7 @@ public class ManageDeviceFragment extends ParentFragment implements HistoryListe
     }
 
     private void unregisterDeviceState() {
-        LocalBroadcastManager.getInstance(getParent()).unregisterReceiver(mDeviceConnectionReceiver);
+        LocalBroadcastManager.getInstance(getContext()).unregisterReceiver(mDeviceConnectionReceiver);
     }
 
     @Override
@@ -186,14 +231,19 @@ public class ManageDeviceFragment extends ParentFragment implements HistoryListe
     private void enableUiElementsForConnectedGadget() {
         initButtonDisconnect();
         initGadgetName();
-        getParent().findViewById(R.id.manage_device_gadget_name_edit_field).setEnabled(true);
-        getParent().findViewById(R.id.manage_device_button_disconnect).setEnabled(true);
+        mGadgetNameEditText.setEnabled(true);
+        mDisconnectButton.setEnabled(true);
     }
 
     private void initButtonDisconnect() {
-        getParent().findViewById(R.id.manage_device_button_disconnect).setOnClickListener(new OnClickListener() {
+        mDisconnectButton.setOnClickListener(new OnClickListener() {
             @Override
-            public void onClick(View v) {
+            public void onClick(@NonNull final View v) {
+                if (mSelectedDevice == null) {
+                    Log.e(TAG, "initButtonDisconnect -> Selected device cannot be null");
+                    closeScreen();
+                    return;
+                }
                 BleManager.getInstance().disconnectDevice(mSelectedDevice.getAddress());
                 closeScreen();
             }
@@ -201,12 +251,19 @@ public class ManageDeviceFragment extends ParentFragment implements HistoryListe
     }
 
     private void initGadgetName() {
-        mGadgetEditText = (EditText) getParent().findViewById(R.id.manage_device_gadget_name_edit_field);
+        if (mSelectedDevice == null) {
+            Log.e(TAG, "initGadget -> The selected device cannot be null");
+            return;
+        }
+        if (mDeviceModel == null) {
+            Log.e(TAG, "initGadget -> The device model cannot be null");
+            return;
+        }
         final String deviceAddress = mSelectedDevice.getAddress();
         final String deviceName = DeviceNameDatabaseManager.getInstance().readDeviceName(deviceAddress);
-        mGadgetEditText.setText(deviceName);
+        mGadgetNameEditText.setText(deviceName);
         mDeviceModel.setDisplayName(deviceName);
-        mGadgetEditText.addTextChangedListener(new TextWatcher() {
+        mGadgetNameEditText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
             }
@@ -217,7 +274,7 @@ public class ManageDeviceFragment extends ParentFragment implements HistoryListe
 
             @Override
             public void afterTextChanged(Editable s) {
-                final String displayName = mGadgetEditText.getText().toString();
+                final String displayName = mGadgetNameEditText.getText().toString();
                 mDeviceModel.setDisplayName(displayName);
                 DeviceNameDatabaseManager.getInstance().updateDeviceName(deviceAddress, displayName);
             }
@@ -233,21 +290,21 @@ public class ManageDeviceFragment extends ParentFragment implements HistoryListe
     }
 
     private void initCustomFonts() {
-        Typeface typefaceNormal = Typeface.createFromAsset(getParent().getAssets(), "HelveticaNeueLTStd-Cn.otf");
-        Typeface typefaceBold = Typeface.createFromAsset(getParent().getAssets(), "HelveticaNeueLTStd-Bd.otf");
-        ((TextView) getParent().findViewById(R.id.manage_device_gadget_name_label)).setTypeface(typefaceBold);
-        ((TextView) getParent().findViewById(R.id.manage_device_battery_level_label)).setTypeface(typefaceBold);
-        ((TextView) getParent().findViewById(R.id.manage_device_label_logging_interval)).setTypeface(typefaceBold);
-        ((TextView) getParent().findViewById(R.id.manage_device_label_gadget_logging)).setTypeface(typefaceBold);
-        ((EditText) getParent().findViewById(R.id.manage_device_gadget_name_edit_field)).setTypeface(typefaceNormal);
-        ((Button) getParent().findViewById(R.id.manage_device_button_disconnect)).setTypeface(typefaceNormal);
-        ((Button) getParent().findViewById(R.id.manage_device_button_download_log)).setTypeface(typefaceNormal);
+        final AssetManager assets = getContext().getAssets();
+        final Typeface typefaceNormal = Typeface.createFromAsset(assets, TYPEFACE_CONDENSED_LOCATION);
+        final Typeface typefaceBold = Typeface.createFromAsset(assets, TYPEFACE_BOLD_LOCATION);
+        mGadgetNameLabel.setTypeface(typefaceBold);
+        mBatteryLevelValue.setTypeface(typefaceBold);
+        mLoggingIntervalLabel.setTypeface(typefaceBold);
+        mGadgetLoggingLabel.setTypeface(typefaceBold);
+        mGadgetNameEditText.setTypeface(typefaceNormal);
+        mDisconnectButton.setTypeface(typefaceNormal);
+        mDownloadLogButton.setTypeface(typefaceNormal);
+        mLoggingIntervalButton.setTypeface(typefaceBold);
     }
 
     private void initIntervalChooser() {
-        final Button logInterval = (Button) getParent().findViewById(R.id.manage_device_button_logging_interval);
-        logInterval.setTypeface(Typeface.createFromAsset(getParent().getAssets(), "HelveticaNeueLTStd-Cn.otf"));
-        logInterval.setOnClickListener(new OnClickListener() {
+        mLoggingIntervalButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(@NonNull final View v) {
                 initLoggingService();
@@ -255,12 +312,11 @@ public class ManageDeviceFragment extends ParentFragment implements HistoryListe
                     Log.e(TAG, "initIntervalChooser.onClick -> device cannot find the logging service.");
                 }
                 checkDeviceState();
-                final Button logInterval = (Button) getParent().findViewById(R.id.manage_device_button_logging_interval);
                 final Integer numberElements = mHistoryService.getNumberLoggedElements();
                 if (numberElements != null && numberElements > 0) {
                     showAdviceWhenModifyingInterval();
                 } else {
-                    showIntervalSelector(logInterval);
+                    showIntervalSelector(mLoggingIntervalButton);
                 }
             }
 
@@ -269,22 +325,21 @@ public class ManageDeviceFragment extends ParentFragment implements HistoryListe
              * to the user informing that the data will be deleted.
              */
             private void showAdviceWhenModifyingInterval() {
-                final Button logInterval = (Button) getParent().findViewById(R.id.manage_device_button_logging_interval);
-                final AlertDialog.Builder builder = new AlertDialog.Builder(getParent());
-                builder.setTitle(getResources().getString(R.string.interval_modification));
+                final AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+                builder.setTitle(INTERVAL_MODIFICATION_TITLE);
                 builder.setCancelable(false);
-                builder.setMessage(getResources().getString(R.string.interval_modification_message));
-                builder.setPositiveButton(getResources().getString(R.string.yes), new DialogInterface.OnClickListener() {
+                builder.setMessage(INTERVAL_MODIFICATION_MESSAGE);
+                builder.setPositiveButton(YES_STRING, new DialogInterface.OnClickListener() {
                     public void onClick(@NonNull final DialogInterface dialog, final int which) {
-                        if (mHistoryService.isLoggingStateEditable()) {
+                        if (mHistoryService != null && mHistoryService.isLoggingStateEditable()) {
                             mHistoryService.resetDeviceData();
                         }
                         dialog.cancel();
-                        showIntervalSelector(logInterval);
+                        showIntervalSelector(mLoggingIntervalButton);
                     }
                 });
-                builder.setNegativeButton(getResources().getString(R.string.no), new DialogInterface.OnClickListener() {
-                    public void onClick(@NonNull DialogInterface dialog, int which) {
+                builder.setNegativeButton(NO_STRING, new DialogInterface.OnClickListener() {
+                    public void onClick(@NonNull final DialogInterface dialog, final int which) {
                         dialog.cancel();
                     }
                 });
@@ -292,18 +347,37 @@ public class ManageDeviceFragment extends ParentFragment implements HistoryListe
             }
 
             private void showIntervalSelector(@NonNull final Button button) {
-                final AlertDialog.Builder builder = new Builder(getParent());
+                final AlertDialog.Builder builder = new Builder(getContext());
                 builder.setCancelable(false)
                         .setTitle(R.string.title_button_choice)
                         .setItems(R.array.array_interval_choices, new DialogInterface.OnClickListener() {
-
                             public void onClick(@NonNull DialogInterface dialog, int which) {
+                                if (mHistoryService == null) {
+                                    Log.e(TAG, "showIntervalSelected -> History service is null");
+                                    dialog.dismiss();
+                                    return;
+                                }
                                 checkDeviceState();
-                                final LoggerInterval l = LoggerInterval.fromNumberElement(which);
-                                Log.i(TAG, String.format("showIntervalSelector.onClickListener -> User selected interval %s in seconds.", l.getValueInSeconds()));
-                                mHistoryService.setDownloadInterval(l.getValueInMilliseconds());
-                                button.setText(l.toStringLabel(getParent().getApplicationContext()));
-                                PreferenceManager.getDefaultSharedPreferences(getParent().getApplicationContext()).edit().putInt(String.valueOf(button.getId()), which).commit();
+                                final LoggerInterval interval = LoggerInterval.fromNumberElement(which);
+                                if (interval == null) {
+                                    Log.e(TAG, "showIntervalSelected.onClick -> Interval is null");
+                                    dialog.dismiss();
+                                    return;
+                                }
+                                Log.i(TAG,
+                                        String.format(
+                                                "%s -> User selected interval %s in seconds.",
+                                                "showIntervalSelector.onClickListener",
+                                                interval.getValueInSeconds()
+                                        )
+                                );
+                                mHistoryService.setDownloadInterval(interval.getValueInMilliseconds());
+                                button.setText(interval.toStringLabel(getContext().getApplicationContext()));
+                                PreferenceManager.
+                                        getDefaultSharedPreferences(getContext().getApplicationContext()).
+                                        edit().
+                                        putInt(String.valueOf(button.getId()), which).
+                                        commit();
                                 dialog.dismiss();
                             }
                         });
@@ -320,51 +394,50 @@ public class ManageDeviceFragment extends ParentFragment implements HistoryListe
             return;
         }
         if (mHistoryService.isLoggingStateEditable()) {
-            final Switch loggingSwitch = (Switch) getParent().findViewById(R.id.manage_device_switch_toggle_logger);
-            loggingSwitch.setChecked(mHistoryService.isGadgetLoggingEnabled());
+            mLoggingToggle.setChecked(mHistoryService.isGadgetLoggingEnabled());
             if (mHistoryService.isDownloadInProgress()) {
-                loggingSwitch.setEnabled(false);
+                mLoggingToggle.setEnabled(false);
             } else {
-                loggingSwitch.setEnabled(true);
+                mLoggingToggle.setEnabled(true);
             }
-            loggingSwitch.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+            mLoggingToggle.setOnCheckedChangeListener(new OnCheckedChangeListener() {
                 @Override
                 public void onCheckedChanged(final CompoundButton buttonView, final boolean isChecked) {
                     if (isChecked) {
                         initLoggingAdviceAlert();
-                        getParent().findViewById(R.id.manage_device_button_logging_interval).setEnabled(false);
-                        getParent().findViewById((R.id.manage_device_button_download_log)).setEnabled(true);
+                        mLoggingIntervalButton.setEnabled(false);
+                        mDownloadLogButton.setEnabled(true);
                     } else {
                         mHistoryService.setLoggingState(false);
-                        getParent().findViewById(R.id.manage_device_button_logging_interval).setEnabled(true);
+                        mLoggingIntervalButton.setEnabled(true);
                         checkDownloadPermission();
                     }
                 }
             });
         } else {
-            getParent().findViewById(R.id.manage_device_layout_gadgetlogging_switch).setVisibility(View.GONE);
+            mGadgetLoggingSwitch.setVisibility(View.GONE);
         }
     }
 
     private void initLoggingAdviceAlert() {
-        final Switch logging = (Switch) getParent().findViewById(R.id.manage_device_switch_toggle_logger);
-
         final AlertDialog.Builder builder = new AlertDialog.Builder(getParent());
 
-        builder.setTitle(getResources().getString(R.string.enable_logging));
+        builder.setTitle(ENABLE_LOGGING_STRING);
         builder.setCancelable(false);
-        builder.setMessage(getResources().getString(R.string.label_advice_logging_enable));
-        builder.setPositiveButton(getResources().getString(R.string.yes), new DialogInterface.OnClickListener() {
-            public void onClick(@NonNull DialogInterface dialog, int which) {
+        builder.setMessage(GADGET_ENABLE_ADVICE_STRING);
+        builder.setPositiveButton(YES_STRING, new DialogInterface.OnClickListener() {
+            public void onClick(@NonNull final DialogInterface dialog, final int which) {
                 dialog.cancel();
-                mHistoryService.setLoggingState(true);
-                getParent().findViewById(R.id.manage_device_button_logging_interval).setEnabled(false);
+                if (mHistoryService != null) {
+                    mHistoryService.setLoggingState(true);
+                }
+                mLoggingIntervalButton.setEnabled(false);
             }
         });
-        builder.setNegativeButton(getResources().getString(R.string.no), new DialogInterface.OnClickListener() {
-            public void onClick(@NonNull DialogInterface dialog, int which) {
+        builder.setNegativeButton(NO_STRING, new DialogInterface.OnClickListener() {
+            public void onClick(@NonNull final DialogInterface dialog, final int which) {
                 dialog.cancel();
-                logging.setChecked(false);
+                mLoggingToggle.setChecked(false);
             }
         });
         builder.show();
@@ -372,7 +445,7 @@ public class ManageDeviceFragment extends ParentFragment implements HistoryListe
 
     private void initBatteryBar() {
         updateBatteryLevel();
-        getParent().findViewById(R.id.manage_device_battery_seek_bar).setOnTouchListener(new View.OnTouchListener() {
+        mBatterySeekBar.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(@NonNull View view, MotionEvent motionEvent) {
                 checkDeviceState();
@@ -383,44 +456,63 @@ public class ManageDeviceFragment extends ParentFragment implements HistoryListe
     }
 
     private void initDownloadButton() {
-        final View downloadButton = getParent().findViewById(R.id.manage_device_button_download_log);
-        downloadButton.setOnClickListener(new OnClickListener() {
+        if (mHistoryService == null) {
+            Log.e(TAG, "initDownloadButton -> History service is null");
+            mDownloadLogButton.setEnabled(false);
+            return;
+        }
+        mDownloadLogButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(final View v) {
                 checkDeviceState();
-                getParent().runOnUiThread(new Runnable() {
+                final Activity parent = getParent();
+                if (parent == null) {
+                    Log.e(TAG, "initDownloadButton -> Parent is null");
+                    return;
+                }
+                parent.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        getParent().findViewById(R.id.manage_device_switch_toggle_logger).setEnabled(false);
-                        getParent().findViewById(R.id.manage_device_button_logging_interval).setEnabled(false);
-                        DownloadLogHelper.getInstance().downloadLoggedData(getParent(), mHistoryService, new Handler());
+                        mLoggingToggle.setEnabled(false);
+                        mLoggingIntervalButton.setEnabled(false);
+                        final Activity parent = getParent();
+                        if (parent == null) {
+                            Log.e(TAG, "initDownloadButton -> Parent is null");
+                            return;
+                        }
+                        DownloadLogHelper.getInstance().downloadLoggedData(parent, mHistoryService, new Handler());
                     }
                 });
             }
         });
-        downloadButton.setEnabled(hasValuesToDownload());
+        mDownloadLogButton.setEnabled(hasValuesToDownload());
     }
 
     private void updateBatteryLevel() {
         if (mSelectedDevice == null) {
-            Log.e(TAG, "updateBatteryLevel -> Battery level is null, ");
+            Log.e(TAG, "updateBatteryLevel -> Cannot obtain the battery level.");
+            closeScreen();
+            return;
+        }
+        final Integer batteryLevel = getBatteryLevel();
+        if (batteryLevel == null) {
+            mBatteryLevelLayout.setVisibility(View.GONE);
         } else {
-            final Integer batteryLevel = getBatteryLevel();
-            if (batteryLevel == null) {
-                getParent().findViewById(R.id.manage_device_battery_level_layout).setVisibility(View.GONE);
-            } else {
-                getParent().findViewById(R.id.manage_device_battery_level_layout).setVisibility(View.VISIBLE);
-                Log.i(TAG, String.format("updateBatteryLevel -> Battery it's at %d%%", batteryLevel));
-                ((TextView) getParent().findViewById(R.id.manage_device_battery_level_value)).setText(String.format("%d%%", batteryLevel));
-                final SeekBar seekBar = (SeekBar) getParent().findViewById(R.id.manage_device_battery_seek_bar);
-                seekBar.setProgress(batteryLevel);
-                seekBar.setEnabled(false);
-            }
+            mBatteryLevelLayout.setVisibility(View.VISIBLE);
+            Log.i(TAG, String.format("updateBatteryLevel -> Battery it's at %d%%", batteryLevel));
+            mBatteryLevelValue.setText(String.format("%d%%", batteryLevel));
+            mBatterySeekBar.setProgress(batteryLevel);
+            mBatterySeekBar.setEnabled(false);
         }
     }
 
     @Nullable
     private Integer getBatteryLevel() {
+        if (mSelectedDevice == null) {
+            Log.e(TAG, "getBatteryLevel -> Selected device is null.");
+            closeScreen();
+            return null;
+        }
         final BatteryService service = mSelectedDevice.getDeviceService(BatteryService.class);
         if (service == null) {
             Log.e(TAG, "getBatteryLevel -> Battery Service was not found.");
@@ -430,6 +522,11 @@ public class ManageDeviceFragment extends ParentFragment implements HistoryListe
     }
 
     private void checkLoggingIsEnabled() {
+        if (mSelectedDevice == null) {
+            Log.e(TAG, "checkLoggingIsEnabled -> Selected Device cannot be null");
+            closeScreen();
+            return;
+        }
         initLoggingService();
         if (mHistoryService == null) {
             mHistoryService = BleManager.getInstance().getConnectedDevice(mSelectedDevice.getAddress()).getHistoryService();
@@ -440,10 +537,14 @@ public class ManageDeviceFragment extends ParentFragment implements HistoryListe
         }
         if (mHistoryService.isLoggingStateEditable()) {
             final boolean isLoggingEnabled = mHistoryService.isGadgetLoggingEnabled();
-            Log.i(TAG, String.format("checkLoggingIsEnabled -> Logging in device %s is %s.", mSelectedDevice.getAddress(), (isLoggingEnabled) ? "enabled" : "disabled"));
-            final Switch loggingToggle = ((Switch) getParent().findViewById(R.id.manage_device_switch_toggle_logger));
-            loggingToggle.setChecked(isLoggingEnabled);
-            loggingToggle.setEnabled(!mHistoryService.isDownloadInProgress());
+            Log.i(TAG,
+                    String.format(
+                            "checkLoggingIsEnabled -> Logging in device %s is %s.",
+                            mSelectedDevice.getAddress(),
+                            (isLoggingEnabled) ? "enabled" : "disabled")
+            );
+            mLoggingToggle.setChecked(isLoggingEnabled);
+            mLoggingToggle.setEnabled(!mHistoryService.isDownloadInProgress());
         }
     }
 
@@ -459,16 +560,15 @@ public class ManageDeviceFragment extends ParentFragment implements HistoryListe
         }
         final int intervalSeconds = intervalMs / Interval.ONE_SECOND.getNumberMilliseconds();
         Log.i(TAG, String.format("checkInterval() ->  Interval is at %d seconds.", intervalSeconds));
-        final Button logIntervalButton = (Button) getParent().findViewById(R.id.manage_device_button_logging_interval);
-        logIntervalButton.setText(new TimeFormatter(intervalSeconds).getShortTime(getParent().getApplicationContext()));
+        mLoggingIntervalButton.setText(new TimeFormatter(intervalSeconds).getShortTime(getContext().getApplicationContext()));
         if (mHistoryService.isDownloadInProgress()) {
             Log.d(TAG, "checkInterval -> During a download interval can't be enabled.");
-            logIntervalButton.setEnabled(false);
+            mLoggingIntervalButton.setEnabled(false);
         } else if (mHistoryService.isLoggingStateEditable() && mHistoryService.isGadgetLoggingEnabled()) {
             Log.d(TAG, "checkInterval -> Device is logging data, interval can't be modified.");
-            logIntervalButton.setEnabled(false);
+            mLoggingIntervalButton.setEnabled(false);
         } else {
-            logIntervalButton.setEnabled(true);
+            mLoggingIntervalButton.setEnabled(true);
         }
     }
 
@@ -481,19 +581,29 @@ public class ManageDeviceFragment extends ParentFragment implements HistoryListe
         }
         mCheckingDeviceState = true;
         if (mSelectedDevice != null && mSelectedDevice.isConnected()) {
-            Log.i(TAG, String.format("checkDeviceState -> Device with address %s is connected.", mSelectedDevice.getAddress()));
+            Log.i(TAG,
+                    String.format(
+                            "checkDeviceState -> Device with address %s is connected.",
+                            mSelectedDevice.getAddress()
+                    )
+            );
         } else {
-            Log.e(TAG, String.format("checkDeviceState -> Device with address %s is not connected, closing activity.", mDeviceModel.getAddress()));
+            Log.e(TAG, "checkDeviceState -> Device is not connected, closing activity.");
             closeScreen();
         }
     }
 
     private boolean initLoggingService() {
+        if (mSelectedDevice == null) {
+            Log.e(TAG, "initLoggingService -> Device cannot be null.");
+            closeScreen();
+            return false;
+        }
         try {
             if (mHistoryService == null) {
                 mHistoryService = mSelectedDevice.getHistoryService();
                 if (mHistoryService == null) {
-                    Log.e(TAG, "initLoggingService -> Logging service was not found in the selected humigadget.");
+                    Log.e(TAG, "initLoggingService -> Logging service was not found.");
                 } else {
                     return true;
                 }
@@ -501,7 +611,7 @@ public class ManageDeviceFragment extends ParentFragment implements HistoryListe
                 Log.i(TAG, "initLoggingService -> Logging service initialized correctly.");
             }
         } catch (@NonNull final Exception e) {
-            Log.e(TAG, "initLoggingService -> It was impossible to connect logging in the selected humigadget due the following error -> ", e);
+            Log.e(TAG, "initLoggingService -> The following error was thrown -> ", e);
         }
         return false;
     }
@@ -510,11 +620,15 @@ public class ManageDeviceFragment extends ParentFragment implements HistoryListe
      * Checks if the user has permission to download. (Has values to log)
      */
     private void checkDownloadPermission() {
-        Log.d(TAG, "checkDownloadPermission -> Checking download permission.");
-        if (mHistoryService.isDownloadInProgress()) {
-            getParent().findViewById(R.id.manage_device_button_download_log).setEnabled(false);
+        if (mHistoryService == null) {
+            Log.d(TAG, "checkDownloadPermission -> The device do not have logging capabilities");
         } else {
-            getParent().findViewById(R.id.manage_device_button_download_log).setEnabled(hasValuesToDownload());
+            Log.d(TAG, "checkDownloadPermission -> Checking download permission.");
+            if (mHistoryService.isDownloadInProgress()) {
+                mDownloadLogButton.setEnabled(false);
+            } else {
+                mDownloadLogButton.setEnabled(hasValuesToDownload());
+            }
         }
     }
 
@@ -524,12 +638,17 @@ public class ManageDeviceFragment extends ParentFragment implements HistoryListe
      * @return <code>true</code> if there values - <code>false</code> otherwise.
      */
     private boolean hasValuesToDownload() {
+        if (mSelectedDevice == null) {
+            Log.e(TAG, "hasValuesToDownload -> Selected device is null");
+            closeScreen();
+            return false;
+        }
         if (mHistoryService == null) {
-            Log.w(TAG, "hasValuesToDownload -> Logging service it's not initialized yet.");
+            Log.e(TAG, "hasValuesToDownload -> Logging service it's not initialized yet.");
             return false;
         }
         if (mHistoryService.isDownloadInProgress()) {
-            Log.w(TAG, "hasValuesToDownload -> User is downloading data from the device.");
+            Log.d(TAG, "hasValuesToDownload -> User is downloading data from the device.");
             return false;
         }
         final Integer numberLoggedElements = mHistoryService.getNumberLoggedElements();
@@ -537,7 +656,13 @@ public class ManageDeviceFragment extends ParentFragment implements HistoryListe
             Log.e(TAG, "hasValuesToDownload -> It was impossible to retrieve the number of elements.");
             return false;
         } else {
-            Log.i(TAG, String.format("hasValuesToDownload -> The device %s has %d elements to download.", mSelectedDevice.getAddress(), numberLoggedElements));
+            Log.i(TAG,
+                    String.format(
+                            "hasValuesToDownload -> The device %s has %d elements to download.",
+                            mSelectedDevice.getAddress(),
+                            numberLoggedElements
+                    )
+            );
         }
         return numberLoggedElements > 0;
     }
@@ -577,16 +702,55 @@ public class ManageDeviceFragment extends ParentFragment implements HistoryListe
     }
 
     private void onLogDownloadFinished() {
-        getParent().runOnUiThread(new Runnable() {
+        final Activity parent = getParent();
+        if (parent == null) {
+            Log.e(TAG, "onLogDownloadFinished -> cannot obtain the parent activity.");
+            return;
+        }
+        parent.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                if (mHistoryService.isLoggingStateEditable()) {
-                    final Switch loggingToggle = ((Switch) getParent().findViewById(R.id.manage_device_switch_toggle_logger));
-                    loggingToggle.setEnabled(true);
+                if (mHistoryService != null && mHistoryService.isLoggingStateEditable()) {
+                    mLoggingToggle.setEnabled(true);
                 }
-                final Button logIntervalButton = (Button) getParent().findViewById(R.id.manage_device_button_logging_interval);
-                logIntervalButton.setEnabled(true);
+                mLoggingIntervalButton.setEnabled(true);
             }
         });
+    }
+
+    private class ConnectionStateReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(@NonNull final Context context, @NonNull final Intent intent) {
+            Log.i(TAG, "mDeviceConnectionReceiver.onReceive() -> refreshing discovered and connected list");
+            if (mSelectedDevice == null) {
+                Log.e(TAG, "mDeviceConnectionReceiver.onReceive() -> Selected device cannot be null.");
+                return;
+            }
+            if (BleManager.getInstance().getConnectedDevice(mSelectedDevice.getAddress()) == null) {
+                Log.e(TAG,
+                        String.format(
+                                "%s -> The device with address %s has been disconnected.",
+                                "mDeviceConnectionReceiver.onReceive()",
+                                mSelectedDevice.getAddress()
+                        )
+                );
+                onGadgetDisconnected();
+            }
+        }
+    }
+
+    public class OnTouchOpenTabletMenuListener implements View.OnTouchListener {
+        public boolean onTouch(@NonNull final View v, @NonNull final MotionEvent event) {
+            if (IS_TABLET) {
+                final MainActivity parent = (MainActivity) getParent();
+                if (parent == null) {
+                    final String mainActivityName = MainActivity.class.getSimpleName();
+                    Log.e(TAG, String.format("onCreateView -> Cannot obtain the %s", mainActivityName));
+                } else {
+                    parent.toggleTabletMenu();
+                }
+            }
+            return true;
+        }
     }
 }
