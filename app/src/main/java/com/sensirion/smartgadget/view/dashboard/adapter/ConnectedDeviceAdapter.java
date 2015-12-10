@@ -2,6 +2,8 @@ package com.sensirion.smartgadget.view.dashboard.adapter;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.annotation.UiThread;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -14,36 +16,58 @@ import com.sensirion.smartgadget.utils.Settings;
 
 import java.util.List;
 
+import butterknife.Bind;
+import butterknife.ButterKnife;
+
 public class ConnectedDeviceAdapter extends ArrayAdapter<DeviceModel> {
 
     public ConnectedDeviceAdapter(@NonNull final Context context) {
         super(context, R.layout.listitem_dashboard);
     }
 
-    public void update(final List<DeviceModel> connectedDevices) {
+    @UiThread
+    public void update(@NonNull final List<DeviceModel> connectedDevices) {
         clear();
         addAll(connectedDevices);
     }
 
     @Override
-    public View getView(final int position, final View convertView, @NonNull final ViewGroup parent) {
-        final View rowView = View.inflate(parent.getContext(), R.layout.listitem_dashboard, null);
-        final DeviceModel item = getItem(position);
+    public View getView(final int position,
+                        @Nullable View view,
+                        @NonNull final ViewGroup parent) {
 
-        final TextView titleView = (TextView) rowView.findViewById(R.id.item_gadget_displayname);
-        titleView.setText(item.getUserDeviceName());
-
-        final ImageView colorView = (ImageView) rowView.findViewById(R.id.item_gadget_color);
-        colorView.setBackgroundColor(item.getColor());
-
-        final ImageView iconView = (ImageView) rowView.findViewById(R.id.item_icon);
-
-        if (item.getAddress().equals(Settings.getInstance().getSelectedAddress())) {
-            iconView.setImageResource(R.drawable.ic_action_accept);
+        final DashboardViewHolder holder;
+        if (view != null) {
+            holder = (DashboardViewHolder) view.getTag();
         } else {
-            iconView.setImageResource(0);
+            view = View.inflate(parent.getContext(), R.layout.listitem_dashboard, null);
+            holder = new DashboardViewHolder(view);
+            view.setTag(holder);
         }
 
-        return rowView;
+        final DeviceModel item = getItem(position);
+        holder.titleView.setText(item.getUserDeviceName());
+        holder.colorView.setBackgroundColor(item.getColor());
+
+        if (item.getAddress().equals(Settings.getInstance().getSelectedAddress())) {
+            holder.itemIcon.setImageResource(R.drawable.ic_action_accept);
+        } else {
+            holder.itemIcon.setImageResource(0);
+        }
+
+        return view;
+    }
+
+    static class DashboardViewHolder {
+        @Bind(R.id.item_gadget_displayname)
+        TextView titleView;
+        @Bind(R.id.item_gadget_color)
+        ImageView colorView;
+        @Bind(R.id.item_icon)
+        ImageView itemIcon;
+
+        DashboardViewHolder(@NonNull final View view) {
+            ButterKnife.bind(this, view);
+        }
     }
 }
