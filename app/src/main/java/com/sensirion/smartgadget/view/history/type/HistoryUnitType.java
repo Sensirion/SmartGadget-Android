@@ -2,8 +2,10 @@ package com.sensirion.smartgadget.view.history.type;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
+import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.StringRes;
 
 import com.sensirion.smartgadget.R;
 import com.sensirion.smartgadget.utils.Settings;
@@ -20,10 +22,14 @@ public enum HistoryUnitType {
     private static final String TAG = HistoryUnitType.class.getSimpleName();
 
     private final int mUnitPosition;
+    @StringRes
     private final int mDisplayNameId;
+    @DrawableRes
     private final int mIconId;
 
-    HistoryUnitType(final int position, final int displayNameId, final int iconId) {
+    HistoryUnitType(final int position,
+                    @StringRes final int displayNameId,
+                    @DrawableRes final int iconId) {
         mUnitPosition = position;
         mDisplayNameId = displayNameId;
         mIconId = iconId;
@@ -61,6 +67,7 @@ public enum HistoryUnitType {
      * @param context cannot be <code>null</code>
      * @return {@link java.lang.String} with the name of the unit.
      */
+    @NonNull
     public String getDisplayName(@NonNull final Context context) {
         return context.getResources().getString(mDisplayNameId);
     }
