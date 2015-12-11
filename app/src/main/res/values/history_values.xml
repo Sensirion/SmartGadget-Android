@@ -24,6 +24,8 @@
     <string name="history_humidity_decimal_format">0</string>
 
     <!-- separation -->
+    <integer name="history_graph_threshold_time_representation_ms">15000</integer>
+    <integer name="history_graph_gap_resolution_multiplier">5</integer>
     <item name="history_temperature_separation_fahrenheit" format="float" type="dimen">1.0</item>
     <item name="history_temperature_separation_celsius" format="float" type="dimen">0.5</item>
     <item name="history_humidity_separation" format="float" type="dimen">1.0</item>

@@ -3,6 +3,7 @@ package com.sensirion.smartgadget.view.history.adapter;
 import android.content.Context;
 import android.os.Handler;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,16 +15,18 @@ import com.sensirion.smartgadget.R;
 import com.sensirion.smartgadget.utils.DeviceModel;
 import com.sensirion.smartgadget.utils.view.ColorManager;
 
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+
+import butterknife.Bind;
+import butterknife.ButterKnife;
 
 public class HistoryDeviceAdapter extends ArrayAdapter<DeviceModel> {
 
     private static final String TAG = HistoryDeviceAdapter.class.getSimpleName();
 
     @NonNull
-    private List<DeviceModel> mSelectedItems = Collections.synchronizedList(new LinkedList<DeviceModel>());
+    private final List<DeviceModel> mSelectedItems = new LinkedList<>();
 
     public HistoryDeviceAdapter(@NonNull final Context context) {
         super(context, R.layout.listitem_dashboard);
@@ -35,7 +38,8 @@ public class HistoryDeviceAdapter extends ArrayAdapter<DeviceModel> {
      * @param handler           needed to update the GUI.
      * @param updatedDeviceList new gadgets with history data available to select.
      */
-    public synchronized void update(@NonNull final Handler handler, @NonNull final List<DeviceModel> updatedDeviceList) {
+    public synchronized void update(@NonNull final Handler handler,
+                                    @NonNull final List<DeviceModel> updatedDeviceList) {
         if (isListTheSame(updatedDeviceList)) {
             return;
         }
@@ -66,61 +70,76 @@ public class HistoryDeviceAdapter extends ArrayAdapter<DeviceModel> {
     }
 
     private void removeUnavailableGadgetsFromSelectedList(@NonNull final List<DeviceModel> updatedDeviceList) {
-        final List<DeviceModel> newSelectedList = Collections.synchronizedList(new LinkedList<DeviceModel>());
+        final List<DeviceModel> newSelectedList = new LinkedList<>();
         for (final DeviceModel model : mSelectedItems) {
             if (updatedDeviceList.contains(model)) {
                 newSelectedList.add(model);
             }
         }
-        mSelectedItems = newSelectedList;
+        synchronized (mSelectedItems) {
+            mSelectedItems.clear();
+            mSelectedItems.addAll(newSelectedList);
+        }
     }
 
     private void checkAreGadgetsSelected(@NonNull final List<DeviceModel> updatedDeviceList) {
-        if (mSelectedItems.isEmpty()) {
-            if (updatedDeviceList.size() > 0) {
-                mSelectedItems.add(updatedDeviceList.get(0));
+        synchronized (mSelectedItems) {
+            if (mSelectedItems.isEmpty()) {
+                if (updatedDeviceList.size() > 0) {
+                    mSelectedItems.add(updatedDeviceList.get(0));
+                }
             }
         }
     }
 
     @Override
-    public View getView(final int position, final View convertView, @NonNull final ViewGroup parent) {
-        final View rowView = View.inflate(parent.getContext(), R.layout.listitem_dashboard, null);
-        final DeviceModel item = getItem(position);
+    public View getView(final int position,
+                        @Nullable final View convertView,
+                        @NonNull final ViewGroup parent) {
 
-        final TextView titleView = (TextView) rowView.findViewById(R.id.item_gadget_displayname);
-        titleView.setText(item.getUserDeviceName());
-
-        setDeviceColor(rowView, item);
-
-        final ImageView iconView = (ImageView) rowView.findViewById(R.id.item_icon);
-
-        if (mSelectedItems.contains(item)) {
-            iconView.setImageResource(R.drawable.ic_action_accept);
+        final View view;
+        if (convertView == null) {
+            view = View.inflate(parent.getContext(), R.layout.listitem_dashboard, null);
         } else {
-            iconView.setImageResource(0);
+            view = convertView;
         }
 
-        return rowView;
-    }
+        DeviceViewHolder holder = (DeviceViewHolder) view.getTag();
 
-    private void setDeviceColor(@NonNull final View rowView, @NonNull final DeviceModel item) {
-        final ImageView colorView = (ImageView) rowView.findViewById(R.id.item_gadget_color);
+        if (holder == null) {
+            holder = new DeviceViewHolder(view);
+            view.setTag(holder);
+        }
+
+        final DeviceModel item = getItem(position);
+
+        holder.title.setText(item.getUserDeviceName());
+
         final int color = ColorManager.getInstance().getDeviceColor(item.getAddress());
-        colorView.setBackgroundColor(color);
+        holder.color.setBackgroundColor(color);
+
+        if (mSelectedItems.contains(item)) {
+            holder.icon.setImageResource(R.drawable.ic_action_accept);
+        } else {
+            holder.icon.setImageResource(0);
+        }
+
+        return view;
     }
 
     /**
+     * Marks an 'unselected' element or removes a mark of a 'selected' element.
+     *
      * @param position of the selected item.
      */
     public void itemSelected(final int position) {
         final DeviceModel model = getItem(position);
-        if (mSelectedItems.contains(model)) {
-            if (mSelectedItems.size() > 1) {
+        synchronized (mSelectedItems) {
+            if (mSelectedItems.contains(model)) {
                 mSelectedItems.remove(model);
+            } else {
+                mSelectedItems.add(model);
             }
-        } else {
-            mSelectedItems.add(model);
         }
     }
 
@@ -136,5 +155,21 @@ public class HistoryDeviceAdapter extends ArrayAdapter<DeviceModel> {
             listOfItems.add(model.getAddress());
         }
         return listOfItems;
+    }
+
+    static class DeviceViewHolder {
+
+        @Bind(R.id.item_gadget_displayname)
+        TextView title;
+
+        @Bind(R.id.item_icon)
+        ImageView icon;
+
+        @Bind(R.id.item_gadget_color)
+        ImageView color;
+
+        public DeviceViewHolder(@NonNull final View view) {
+            ButterKnife.bind(this, view);
+        }
     }
 }
