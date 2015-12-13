@@ -2,8 +2,11 @@ package com.sensirion.smartgadget.view.preference;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.content.res.AssetManager;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -29,31 +32,72 @@ import com.sensirion.smartgadget.view.preference.adapter.PreferenceAdapter;
 
 import java.util.Calendar;
 
+import butterknife.BindString;
+import butterknife.ButterKnife;
+
 import static android.content.pm.PackageManager.NameNotFoundException;
 
 public class SmartgadgetPreferenceFragment extends ParentListFragment {
 
+    // Class name
+    @NonNull
     private static final String TAG = SmartgadgetPreferenceFragment.class.getSimpleName();
 
-    @Nullable
-    private Toast mLastAboutToast = null;
+    // XML resources
+    @BindString(R.string.app_name)
+    String APP_NAME;
+    @BindString(R.string.app_platform)
+    String APP_PLATFORM;
+    @BindString(R.string.txt_about_url)
+    String APP_ABOUT_URL;
+    @BindString(R.string.txt_about_char_copyright)
+    String ABOUT_CHAR_COPYRIGHT;
+    @BindString(R.string.typeface_condensed)
+    String CONDENSED_TYPEFACE;
+    @BindString(R.string.typeface_bold)
+    String BOLD_TYPEFACE;
+    @BindString(R.string.label_season)
+    String SEASON_PREFERENCE_LABEL;
+    @BindString(R.string.label_smart_gadgets)
+    String DEVICES_PREFERENCE_LABEL;
+    @BindString(R.string.key_pref_season)
+    String KEY_PREFERENCE_SEASON;
+    @BindString(R.string.label_glossary)
+    String GLOSSARY_PREFERENCE_LABEL;
+    @BindString(R.string.about_sensirion_ag)
+    String ABOUT_SENSIRION_AG;
+    @BindString(R.string.header_connections)
+    String CONNECTION_HEADER;
+    @BindString(R.string.key_pref_temp_unit)
+    String TEMPERATURE_PREFERENCE_KEY;
+    @BindString(R.string.label_temperature_unit)
+    String TEMPERATURE_PREFERENCE_LABEL;
+    @BindString(R.string.header_user_prefs)
+    String USER_PREFERENCES_HEADER;
+    @BindString(R.string.label_about)
+    String ABOUT_PREFERENCE_LABEL;
+    @BindString(R.string.header_app_information)
+    String APP_INFORMATION_HEADER;
 
+    // Layout Adapters
     @Nullable
     private SectionAdapter mSectionAdapter;
+    @Nullable
     private PreferenceAdapter mConnectionsAdapter;
+    @Nullable
     private PreferenceAdapter mUserPreferencesAdapter;
 
-    @Override
-    public void onCreate(@Nullable final Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        initPreferencesList();
-        setListAdapter(mSectionAdapter);
-    }
+    // Last printed Toast
+    @Nullable
+    private Toast mLastAboutToast = null;
 
     @Override
     public void onResume() {
         super.onResume();
         Log.d(TAG, "onResume() -> Refreshing number of devices.");
+        if (mConnectionsAdapter == null) {
+            initPreferencesList();
+        }
         mConnectionsAdapter.clear();
         refreshPreferenceAdapter();
         refreshUserPreferenceAdapter();
@@ -62,30 +106,47 @@ public class SmartgadgetPreferenceFragment extends ParentListFragment {
 
     @Override
     @NonNull
-    public View onCreateView(@NonNull final LayoutInflater inflater, @Nullable final ViewGroup container, @Nullable final Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_smartgadget_list, container, false);
+    public View onCreateView(@NonNull final LayoutInflater inflater,
+                             @Nullable final ViewGroup container,
+                             @Nullable final Bundle savedInstanceState) {
+        final View view = inflater.inflate(R.layout.fragment_smartgadget_list, container, false);
+        ButterKnife.bind(this, view);
+        initPreferencesList();
+        return view;
     }
 
     private void initPreferencesList() {
         mSectionAdapter = new SectionAdapter() {
-            @Nullable
+            @NonNull
             @Override
-            protected View getHeaderView(@NonNull final String caption, final int itemIndex, @Nullable final View convertView, @Nullable final ViewGroup parent) {
-                TextView headerTextView = (TextView) convertView;
-                if (convertView == null) {
-                    final Typeface typefaceBold = Typeface.createFromAsset(getParent().getAssets(), "HelveticaNeueLTStd-Bd.otf");
-                    headerTextView = (TextView) View.inflate(getParent(), R.layout.listitem_scan_header, null);
-                    headerTextView.setTypeface(typefaceBold);
+            protected View getHeaderView(@NonNull final String caption,
+                                         final int itemIndex,
+                                         @Nullable final View convertView,
+                                         @Nullable final ViewGroup parent) {
+                TextView listItemHeader = (TextView) convertView;
+                if (listItemHeader == null) {
+                    final AssetManager assets = getContext().getAssets();
+                    final Typeface typefaceBold = Typeface.createFromAsset(assets, BOLD_TYPEFACE);
+                    listItemHeader = (TextView) View.inflate(getParent(), R.layout.listitem_scan_header, null);
+                    listItemHeader.setTypeface(typefaceBold);
                 }
-                headerTextView.setText(caption);
-                return headerTextView;
+                listItemHeader.setText(caption);
+                return listItemHeader;
             }
         };
         initConnectionPreferenceAdapter();
         initUserPreferenceAdapter();
-        mSectionAdapter.addSectionToAdapter(getString(R.string.header_connections), mConnectionsAdapter);
-        mSectionAdapter.addSectionToAdapter(getString(R.string.header_user_prefs), mUserPreferencesAdapter);
-        mSectionAdapter.addSectionToAdapter(getString(R.string.header_app_information), obtainAppInformationAdapter());
+        if (mConnectionsAdapter == null) {
+            Log.e(TAG, "initPreferencesList -> Connection adapter can't be null");
+            return;
+        }
+        if (mUserPreferencesAdapter == null) {
+            Log.e(TAG, "initPreferencesList -> User preferences adapter can't be null");
+            return;
+        }
+        mSectionAdapter.addSectionToAdapter(CONNECTION_HEADER, mConnectionsAdapter);
+        mSectionAdapter.addSectionToAdapter(USER_PREFERENCES_HEADER, mUserPreferencesAdapter);
+        mSectionAdapter.addSectionToAdapter(APP_INFORMATION_HEADER, getAppInformationAdapter());
     }
 
     /**
@@ -95,20 +156,32 @@ public class SmartgadgetPreferenceFragment extends ParentListFragment {
      */
 
     private void initConnectionPreferenceAdapter() {
-        mConnectionsAdapter = new PreferenceAdapter(getParent());
+        final AssetManager assets = getContext().getAssets();
+        final Typeface typefaceCondensed = Typeface.createFromAsset(assets, CONDENSED_TYPEFACE);
+        mConnectionsAdapter = new PreferenceAdapter(typefaceCondensed);
         refreshPreferenceAdapter();
     }
 
     private void refreshPreferenceAdapter() {
-        final String title = obtainConnectedDevicesTitle();
+        if (mConnectionsAdapter == null) {
+            Log.e(TAG, "refreshPreferenceAdapter -> Connection adapter can't be null");
+            return;
+        }
+        final String title = getConnectedDevicesTitle();
         final View.OnClickListener clickListener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (RHTHumigadgetSensorManager.getInstance().bluetoothIsEnabled()) {
                     getListView().setVisibility(View.GONE);
-                    ((MainActivity) getParent()).changeFragment(new ScanDeviceFragment());
+                    final MainActivity mainActivity = (MainActivity) getParent();
+                    if (mainActivity == null) {
+                        Log.e(TAG, "refreshPreferenceAdapter.onClick -> getParent() returned null");
+                    } else {
+                        mainActivity.changeFragment(new ScanDeviceFragment());
+                    }
                 }
-                Log.w(TAG, "initConnectionPreferences -> Bluetooth has to be active in order to scan for new devices.");
+                Log.w(TAG, "initConnectionPreferences -> Bluetooth has to be active in" +
+                        " order to scan for new devices.");
                 RHTHumigadgetSensorManager.getInstance().requestEnableBluetooth(getParent());
             }
         };
@@ -116,12 +189,12 @@ public class SmartgadgetPreferenceFragment extends ParentListFragment {
     }
 
     @NonNull
-    private String obtainConnectedDevicesTitle() {
+    private String getConnectedDevicesTitle() {
         final int numberConnectedGadgets = BleManager.getInstance().getConnectedBleDeviceCount();
         if (numberConnectedGadgets == 0) {
-            return getString(R.string.label_smart_gadgets);
+            return DEVICES_PREFERENCE_LABEL;
         }
-        return String.format("%s (%d)", getString(R.string.label_smart_gadgets), numberConnectedGadgets);
+        return String.format("%s (%d)", DEVICES_PREFERENCE_LABEL, numberConnectedGadgets);
     }
 
 
@@ -131,11 +204,17 @@ public class SmartgadgetPreferenceFragment extends ParentListFragment {
      * ************************************************************************
      */
     private void initUserPreferenceAdapter() {
-        mUserPreferencesAdapter = new PreferenceAdapter(getParent());
+        final AssetManager assets = getContext().getAssets();
+        final Typeface typefaceCondensed = Typeface.createFromAsset(assets, CONDENSED_TYPEFACE);
+        mUserPreferencesAdapter = new PreferenceAdapter(typefaceCondensed);
         refreshUserPreferenceAdapter();
     }
 
     private void refreshUserPreferenceAdapter() {
+        if (mUserPreferencesAdapter == null) {
+            Log.e(TAG, "refreshUserPreferenceAdapter -> mUserPreferenceAdapter can't be null");
+            return;
+        }
         mUserPreferencesAdapter.clear();
         addTemperatureUnitPreferenceAdapter();
         addSeasonPreferenceAdapter();
@@ -143,15 +222,18 @@ public class SmartgadgetPreferenceFragment extends ParentListFragment {
 
     @SuppressLint("CommitPrefEdits")
     private void addTemperatureUnitPreferenceAdapter() {
-        final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getParent().getApplicationContext());
+        if (mUserPreferencesAdapter == null) {
+            Log.e(TAG, "addTemperatureUnitPreferenceAdapter -> mUserPreferenceAdapter can't be null");
+            return;
+        }
+        final Context appContext = getContext().getApplicationContext();
+        final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(appContext);
 
-        final String title = getResources().getString(R.string.label_temperature_unit);
-
-        String summary = prefs.getString(getResources().getString(R.string.key_pref_temp_unit), Settings.UNKNOWN_VALUE);
+        String summary = prefs.getString(TEMPERATURE_PREFERENCE_KEY, Settings.UNKNOWN_VALUE);
         if (summary.equals(Settings.UNKNOWN_VALUE)) {
             Log.d(TAG, "addTemperaturePreferenceAdapter -> Temperature settings is not known ");
             summary = getResources().getTextArray(R.array.array_temp_unit)[0].toString();
-            prefs.edit().putString(getResources().getString(R.string.key_pref_temp_unit), summary).commit();
+            prefs.edit().putString(TEMPERATURE_PREFERENCE_KEY, summary).commit();
         }
 
         final View.OnClickListener clickListener = new View.OnClickListener() {
@@ -161,11 +243,15 @@ public class SmartgadgetPreferenceFragment extends ParentListFragment {
                 builder.setCancelable(true)
                         .setTitle(R.string.title_button_choice)
                         .setItems(R.array.array_temp_unit, new DialogInterface.OnClickListener() {
-                            public void onClick(@NonNull final DialogInterface dialog, final int which) {
-                                final String newSummary = getResources().getTextArray(R.array.array_temp_unit)[which].toString();
-                                Log.d(TAG, String.format("addTemperaturePreferenceAdapter -> Selected temperature unit %s.", newSummary));
+                            public void onClick(@NonNull final DialogInterface dialog,
+                                                final int which) {
+                                final String newSummary =
+                                        getResources().getTextArray(R.array.array_temp_unit)[which].toString();
+                                Log.d(TAG, String.format(
+                                        "addTemperaturePreferenceAdapter -> Selected temperature unit %s.",
+                                        newSummary));
                                 final TextView summaryTextView = (TextView) v.findViewById(R.id.preference_summary);
-                                prefs.edit().putString(getResources().getString(R.string.key_pref_temp_unit), newSummary).commit();
+                                prefs.edit().putString(TEMPERATURE_PREFERENCE_KEY, newSummary).commit();
                                 summaryTextView.setText(newSummary);
                             }
                         });
@@ -173,19 +259,22 @@ public class SmartgadgetPreferenceFragment extends ParentListFragment {
                 dialog.show();
             }
         };
-        mUserPreferencesAdapter.addPreference(title, summary, clickListener);
+        mUserPreferencesAdapter.addPreference(TEMPERATURE_PREFERENCE_LABEL, summary, clickListener);
     }
 
     @SuppressLint("CommitPrefEdits")
     private void addSeasonPreferenceAdapter() {
-        final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getParent().getApplicationContext());
+        if (mUserPreferencesAdapter == null) {
+            Log.e(TAG, "addSeasonPreferenceAdapter -> mUserPreferenceAdapter can't be null");
+            return;
+        }
+        final Context appContext = getContext().getApplicationContext();
+        final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(appContext);
 
-        final String title = getResources().getString(R.string.label_season);
-
-        String summary = prefs.getString(getResources().getString(R.string.key_pref_season), Settings.UNKNOWN_VALUE);
+        String summary = prefs.getString(KEY_PREFERENCE_SEASON, Settings.UNKNOWN_VALUE);
         if (summary.equals(Settings.UNKNOWN_VALUE)) {
             summary = getResources().getTextArray(R.array.array_season)[0].toString();
-            prefs.edit().putString(getResources().getString(R.string.key_pref_season), summary).commit();
+            prefs.edit().putString(KEY_PREFERENCE_SEASON, summary).commit();
         }
 
         final View.OnClickListener clickListener = new View.OnClickListener() {
@@ -195,20 +284,23 @@ public class SmartgadgetPreferenceFragment extends ParentListFragment {
                 builder.setCancelable(true)
                         .setTitle(R.string.title_button_choice)
                         .setItems(R.array.array_season, new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int which) {
-                                final String newSummary = getResources().getTextArray(R.array.array_season)[which].toString();
-                                final TextView summaryTextView = (TextView) v.findViewById(R.id.preference_summary);
-                                prefs.edit().putString(getResources().getString(R.string.key_pref_season), newSummary).commit();
-                                summaryTextView.setText(newSummary);
+                            public void onClick(@NonNull final DialogInterface dialog,
+                                                final int which) {
+                                final String newSummary =
+                                        getResources().
+                                                getTextArray(R.array.array_season)[which].
+                                                toString();
+                                prefs.edit().putString(KEY_PREFERENCE_SEASON, newSummary).commit();
+                                final TextView summaryView = ((TextView) v.findViewById(R.id.preference_summary));
+                                summaryView.setText(newSummary);
                             }
                         });
                 final AlertDialog dialog = builder.create();
                 dialog.show();
             }
         };
-        mUserPreferencesAdapter.addPreference(title, summary, clickListener);
+        mUserPreferencesAdapter.addPreference(SEASON_PREFERENCE_LABEL, summary, clickListener);
     }
-
 
     /**
      * ************************************************************************
@@ -216,62 +308,69 @@ public class SmartgadgetPreferenceFragment extends ParentListFragment {
      * ************************************************************************
      */
     @NonNull
-    private PreferenceAdapter obtainAppInformationAdapter() {
-        final PreferenceAdapter appInformationAdapter = new PreferenceAdapter(getParent());
+    private PreferenceAdapter getAppInformationAdapter() {
+        final AssetManager assets = getContext().getAssets();
+        final Typeface typefaceCondensed = Typeface.createFromAsset(assets, CONDENSED_TYPEFACE);
+        final PreferenceAdapter appInformationAdapter = new PreferenceAdapter(typefaceCondensed);
         //  addGlossaryAdapter(appInformationAdapter);
         addShowAboutAdapter(appInformationAdapter);
         return appInformationAdapter;
     }
 
     private void addGlossaryAdapter(@NonNull final PreferenceAdapter adapter) {
-        final String title = getResources().getString(R.string.label_glossary);
-
         final View.OnClickListener clickListener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 getListView().setVisibility(View.GONE);
-                ((MainActivity) getParent()).changeFragment(new GlossaryFragment());
+                final MainActivity mainActivity = (MainActivity) getParent();
+                if (mainActivity == null) {
+                    Log.e(TAG, "addGlossaryAdapter -> Cannot obtain the MainActivity.");
+                } else {
+                    mainActivity.changeFragment(new GlossaryFragment());
+                }
             }
         };
-        adapter.addPreference(title, null, clickListener);
+        adapter.addPreference(GLOSSARY_PREFERENCE_LABEL, null, clickListener);
     }
 
     private void addShowAboutAdapter(@NonNull final PreferenceAdapter adapter) {
-        final String title = getResources().getString(R.string.label_about);
-
         final View.OnClickListener clickListener = new View.OnClickListener() {
             @Override
             public void onClick(@NonNull final View v) {
                 showAboutText();
             }
         };
-        adapter.addPreference(title, null, clickListener);
+        adapter.addPreference(ABOUT_PREFERENCE_LABEL, null, clickListener);
     }
+
 
     private void showAboutText() {
         String versionName = null;
+        final PackageManager packageManager = getContext().getPackageManager();
+        final String packageName = getContext().getPackageName();
         try {
-            versionName = getParent().getPackageManager().getPackageInfo(getParent().getPackageName(), 0).versionName;
-        } catch (@NonNull final NameNotFoundException e) {
-            Log.e(TAG, "showAboutText -> The following error was produced when obtaining the version name -> ", e);
+            versionName = packageManager.getPackageInfo(packageName, 0).versionName;
+        } catch (final NameNotFoundException e) {
+            Log.e(TAG, "showAboutText -> The following error was produced " +
+                    "when obtaining the version name -> ", e);
         }
 
         final StringBuilder aboutText = new StringBuilder();
 
         final int deviceYear = Calendar.getInstance().get(Calendar.YEAR);
-        aboutText.append(getString(R.string.app_name))
+        aboutText.append(APP_NAME)
                 .append(" ")
-                .append(getString(R.string.app_platform))
+                .append(APP_PLATFORM)
                 .append(" ")
                 .append(versionName)
                 .append(System.getProperty("line.separator"))
-                .append(getString(R.string.txt_about_url))
+                .append(APP_ABOUT_URL)
                 .append(System.getProperty("line.separator"))
-                .append(getString(R.string.txt_about_char_copyright))
+                .append(ABOUT_CHAR_COPYRIGHT)
                 .append(" ")
                 .append((deviceYear <= 2015 ? 2015 : deviceYear))
                 .append(" ")
-                .append(getString(R.string.txt_about_sensirionag));
+                .append(ABOUT_SENSIRION_AG);
 
         synchronized (this) {
             if (mLastAboutToast != null) {

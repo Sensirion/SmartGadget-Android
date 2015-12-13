@@ -48,7 +48,7 @@
     <!-- http://smart.sensirion.com/ -->
     <string name="txt_about_char_copyright">\u00A9</string>
     <!-- © -->
-    <string name="txt_about_sensirionag">Copyright Sensirion AG, Switzerland</string>
+    <string name="about_sensirion_ag">Copyright Sensirion AG, Switzerland</string>
     <!-- ScanDeviceFragment -->
     <string name="label_devicescan">SmartGadget Scan</string>
     <string name="action_refresh">Refresh</string>

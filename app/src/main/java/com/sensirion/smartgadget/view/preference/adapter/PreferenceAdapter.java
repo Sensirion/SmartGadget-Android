@@ -1,6 +1,5 @@
 package com.sensirion.smartgadget.view.preference.adapter;
 
-import android.content.Context;
 import android.graphics.Typeface;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -12,6 +11,11 @@ import android.widget.TextView;
 import com.sensirion.smartgadget.R;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import butterknife.Bind;
+import butterknife.ButterKnife;
 
 public class PreferenceAdapter extends BaseAdapter {
 
@@ -19,11 +23,12 @@ public class PreferenceAdapter extends BaseAdapter {
     private final Typeface mTypeface;
 
     @NonNull
-    private final ArrayList<PreferenceObject> mPreferenceList = new ArrayList<>();
+    private final List<PreferenceObject> mPreferenceList =
+            Collections.synchronizedList(new ArrayList<PreferenceObject>());
 
-    public PreferenceAdapter(@NonNull final Context context) {
+    public PreferenceAdapter(@NonNull final Typeface typeface) {
         super();
-        mTypeface = Typeface.createFromAsset(context.getAssets(), "HelveticaNeueLTStd-Cn.otf");
+        mTypeface = typeface;
     }
 
     /**
@@ -56,25 +61,32 @@ public class PreferenceAdapter extends BaseAdapter {
     @Nullable
     @Override
     public View getView(final int position,
-                        @Nullable final View convertView,
+                        @Nullable View view,
                         @NonNull final ViewGroup parent) {
-        final View view;
-        if (convertView == null) {
+
+        final PreferenceViewHolder holder;
+        if (view != null) {
+            holder = (PreferenceViewHolder) view.getTag();
+        } else {
             view = View.inflate(parent.getContext(), R.layout.listitem_preference, null);
-        } else {
-            view = convertView;
+            holder = new PreferenceViewHolder(view);
+            view.setTag(holder);
         }
+
         final PreferenceObject preference = mPreferenceList.get(position);
-        final TextView titleTextView = (TextView) view.findViewById(R.id.preference_title);
-        titleTextView.setTypeface(mTypeface);
-        titleTextView.setText(preference.title.trim());
-        final TextView summaryTextView = (TextView) view.findViewById(R.id.preference_summary);
-        summaryTextView.setTypeface(mTypeface);
+
+        holder.summaryTextView.setText(preference.summary);
+
+        holder.titleTextView.setTypeface(mTypeface);
+        holder.titleTextView.setText(preference.title.trim());
+
+        holder.summaryTextView.setTypeface(mTypeface);
         if (preference.summary == null) {
-            summaryTextView.setText("");
+            holder.summaryTextView.setText("");
         } else {
-            summaryTextView.setText(preference.summary.trim());
+            holder.summaryTextView.setText(preference.summary.trim());
         }
+
         view.setOnClickListener(preference.clickListener);
         return view;
     }
@@ -88,14 +100,26 @@ public class PreferenceAdapter extends BaseAdapter {
 
     /**
      * Adds a preference to the preference list.
-     * @param title of the preference.
-     * @param summary of the preference.
+     *
+     * @param title         of the preference.
+     * @param summary       of the preference.
      * @param clickListener that will be executed when the preference item is clicked.
      */
     public void addPreference(@NonNull final String title,
                               @Nullable final String summary,
                               @NonNull final View.OnClickListener clickListener) {
         mPreferenceList.add(new PreferenceObject(title, summary, clickListener));
+    }
+
+    static class PreferenceViewHolder {
+        @Bind(R.id.preference_summary)
+        TextView summaryTextView;
+        @Bind(R.id.preference_title)
+        TextView titleTextView;
+
+        PreferenceViewHolder(@NonNull final View view) {
+            ButterKnife.bind(this, view);
+        }
     }
 
     private static class PreferenceObject {
