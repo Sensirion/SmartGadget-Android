@@ -17,6 +17,7 @@ import com.sensirion.smartgadget.peripheral.rht_sensor.RHTSensorManager;
 import com.sensirion.smartgadget.persistence.device_name_database.DeviceNameDatabaseManager;
 import com.sensirion.smartgadget.persistence.history_database.HistoryDatabaseManager;
 import com.sensirion.smartgadget.utils.DeviceModel;
+import com.sensirion.smartgadget.utils.RhtCorruptnessChecker;
 import com.sensirion.smartgadget.utils.view.ColorManager;
 
 import java.util.Collections;
@@ -157,16 +158,29 @@ public class RHTHumigadgetSensorManager implements RHTListener, DeviceStateListe
     }
 
     /**
-     * Advices the listeners that the reading of a new data point was obtained.
-     *
-     * @param device     {@link com.sensirion.libble.devices.BleDevice} that reported the RHT_DATA.
-     * @param dataPoint  {@link com.sensirion.libble.utils.RHTDataPoint} with the RHT_DATA.
-     * @param sensorName {@link java.lang.String} with the name of the sensor that reported the RHT_DATA
+     * {@inheritDoc}
      */
     @Override
-    public void onNewRHTValue(@NonNull final BleDevice device, @NonNull final RHTDataPoint dataPoint, @NonNull final String sensorName) {
+    public void onNewRHTValue(@NonNull final BleDevice device,
+                              @NonNull final RHTDataPoint dataPoint,
+                              @NonNull final String sensorName) {
+        if (RhtCorruptnessChecker.isDatapointCorrupted(dataPoint)) {
+            Log.e(TAG,
+                    String.format(
+                            "onNewRHTValue -> Received a corrupt dataPoint from device %s - %s: %s",
+                            device,
+                            sensorName,
+                            dataPoint
+                    )
+            );
+            return;
+        }
         for (final RHTSensorManager listener : mSensorManagers) {
-            listener.onNewRHTData(dataPoint.getTemperatureCelsius(), dataPoint.getRelativeHumidity(), device.getAddress());
+            listener.onNewRHTData(
+                    dataPoint.getTemperatureCelsius(),
+                    dataPoint.getRelativeHumidity(),
+                    device.getAddress()
+            );
         }
         HistoryDatabaseManager.getInstance().addRHTData(device, dataPoint, false);
     }
