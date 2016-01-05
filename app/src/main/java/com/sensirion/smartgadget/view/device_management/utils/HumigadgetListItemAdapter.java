@@ -1,9 +1,9 @@
 package com.sensirion.smartgadget.view.device_management.utils;
 
-import android.content.Context;
 import android.graphics.Typeface;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.UiThread;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -18,25 +18,34 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import butterknife.Bind;
+import butterknife.ButterKnife;
+
 /**
  * Represents a discovered or connected peripheral in a ListView
  */
 public class HumigadgetListItemAdapter extends BaseAdapter {
 
-    private final List<BleDevice> mBleDevices = Collections.synchronizedList(new ArrayList<BleDevice>());
+    // List of the adapter {@link BleDevice}
+    @NonNull
+    private final List<BleDevice> mBleDevices = new ArrayList<>();
 
-    private final Typeface mTypefaceNormal;
-    private final Typeface mTypefaceBold;
-
+    @NonNull
     private final Comparator<BleDevice> mRssiComparator = new Comparator<BleDevice>() {
         public int compare(@NonNull final BleDevice device1, @NonNull final BleDevice device2) {
             return device2.getRSSI() - device1.getRSSI();
         }
     };
 
-    public HumigadgetListItemAdapter(@NonNull final Context context) {
-        mTypefaceNormal = Typeface.createFromAsset(context.getAssets(), "HelveticaNeueLTStd-Cn.otf");
-        mTypefaceBold = Typeface.createFromAsset(context.getAssets(), "HelveticaNeueLTStd-Bd.otf");
+    @NonNull
+    private final Typeface mTypefaceNormal;
+    @NonNull
+    private final Typeface mTypefaceBold;
+
+    public HumigadgetListItemAdapter(@NonNull final Typeface typefaceNormal,
+                                     @NonNull final Typeface typefaceBold) {
+        mTypefaceNormal = typefaceNormal;
+        mTypefaceBold = typefaceBold;
     }
 
     @Override
@@ -54,51 +63,75 @@ public class HumigadgetListItemAdapter extends BaseAdapter {
         return position;
     }
 
-    @Nullable
+    @NonNull
     @Override
-    public View getView(final int position, @Nullable final View convertView, @NonNull final ViewGroup parent) {
-
-        final View view;
-        if (convertView == null) {
+    public View getView(final int position,
+                        @Nullable View view,
+                        @NonNull final ViewGroup parent) {
+        if (view == null) {
             view = View.inflate(parent.getContext(), R.layout.listitem_scan_result, null);
-        } else {
-            view = convertView;
         }
 
+        HumigadgetViewHolder holder = (HumigadgetViewHolder) view.getTag();
+
+        if (holder == null) {
+            holder = new HumigadgetViewHolder(view);
+            view.setTag(holder);
+        }
         final BleDevice bleDevice = mBleDevices.get(position);
 
-        final TextView advertisedName = (TextView) view.findViewById(R.id.listitem_advertised_name);
-        advertisedName.setTypeface(mTypefaceNormal);
-        advertisedName.setText(bleDevice.getAdvertisedName());
+        holder.advertisedName.setTypeface(mTypefaceNormal);
+        holder.advertisedName.setText(bleDevice.getAdvertisedName());
 
-        final TextView deviceNameView = (TextView) view.findViewById(R.id.device_address);
         final String deviceName = DeviceNameDatabaseManager.getInstance().readDeviceName(bleDevice.getAddress());
-        deviceNameView.setText(deviceName);
-        deviceNameView.setTypeface(mTypefaceBold);
+        holder.deviceAddress.setText(deviceName);
+        holder.deviceAddress.setTypeface(mTypefaceBold);
 
-        final TextView rssiLabelTextView = (TextView) view.findViewById(R.id.listitem_label_rssi);
-        rssiLabelTextView.setTypeface(mTypefaceNormal);
+        holder.rssiLabelTextView.setTypeface(mTypefaceNormal);
 
-        final TextView rssiTextView = (TextView) view.findViewById(R.id.listitem_value_rssi);
-        rssiTextView.setText(Integer.toString(bleDevice.getRSSI()));
-        rssiTextView.setTypeface(mTypefaceNormal);
-
+        holder.rssiValueTextView.setText(String.format("%d", bleDevice.getRSSI()));
+        holder.rssiValueTextView.setTypeface(mTypefaceNormal);
         return view;
     }
 
-    public synchronized void clear() {
-        mBleDevices.clear();
+    /**
+     * Removes all elements from the list of {@link BleDevice}
+     * and asks the GUI to update it to the new state.
+     */
+    @UiThread
+    public void clear() {
+        synchronized (mBleDevices) {
+            mBleDevices.clear();
+        }
         notifyDataSetChanged();
     }
 
-    public synchronized void addAll(@NonNull final Iterable<? extends BleDevice> devices) {
-        for (final BleDevice device : devices) {
-            if (mBleDevices.contains(device)) {
-                continue;
+    @UiThread
+    public void addAll(@NonNull final Iterable<? extends BleDevice> devices) {
+        synchronized (mBleDevices) {
+            for (final BleDevice device : devices) {
+                if (mBleDevices.contains(device)) {
+                    continue;
+                }
+                mBleDevices.add(device);
             }
-            mBleDevices.add(device);
+            Collections.sort(mBleDevices, mRssiComparator);
         }
-        Collections.sort(mBleDevices, mRssiComparator);
         notifyDataSetChanged();
+    }
+
+    static class HumigadgetViewHolder {
+        @Bind(R.id.listitem_advertised_name)
+        TextView advertisedName;
+        @Bind(R.id.device_address)
+        TextView deviceAddress;
+        @Bind(R.id.listitem_label_rssi)
+        TextView rssiLabelTextView;
+        @Bind(R.id.listitem_value_rssi)
+        TextView rssiValueTextView;
+
+        public HumigadgetViewHolder(@NonNull final View view) {
+            ButterKnife.bind(this, view);
+        }
     }
 }

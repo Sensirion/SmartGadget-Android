@@ -196,14 +196,14 @@
     <!-- Alert Views-->
     <string name="connecting_to_the_device">Connecting to the device</string>
     <string name="please_wait">Please Wait</string>
-    <string name="connection_timeout">Connection Timeout</string>
-    <string name="timeout_produced">A timeout was produced when connecting to:</string>
-    <string name="device_not_ready">Device not ready</string>
-    <string name="device_not_ready_message">Device %s is not ready. Try again later.</string>
+    <string name="connection_timeout_dialog_title">Connection Timeout</string>
+    <string name="connection_timeout_dialog_message">A timeout was produced when connecting to:</string>
+    <string name="device_not_ready_dialog_title">Device not ready</string>
+    <string name="device_not_ready_dialog_message_prefix">Device %s is not ready. Try again later.</string>
     <string name="confirmation_to_close_application">Do you want to close the application?</string>
-    <string name="trying_connect_device">Trying to connect to device: %s</string>
-    <string name="connecting_to_device">Connecting to the device with name: %s</string>
-    <string name="asking_for_unknown_device_characteristics">Retrieving missing information from the device: %s</string>
+    <string name="trying_connect_device_prefix">Trying to connect to device: %s</string>
+    <string name="connecting_to_device_prefix">Connecting to the device with name: %s</string>
+    <string name="asking_for_unknown_device_characteristics_prefix">Retrieving missing information from the device: %s</string>
 
     <!-- ManageDeviceFragment -->
     <string name="interval_modification">Interval Modification</string>
