@@ -2,7 +2,9 @@ package com.sensirion.smartgadget.view.device_management;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
+import android.content.res.AssetManager;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -16,6 +18,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CompoundButton;
+import android.widget.FrameLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.ToggleButton;
@@ -37,75 +40,138 @@ import com.sensirion.smartgadget.view.device_management.utils.HumigadgetListItem
 
 import java.util.concurrent.Executors;
 
+import butterknife.Bind;
+import butterknife.BindBool;
+import butterknife.BindColor;
+import butterknife.BindString;
+import butterknife.ButterKnife;
+
 /**
  * Holds all the UI elements needed for showing the devices in range in a list
  */
 public class ScanDeviceFragment extends ParentListFragment implements ScanListener, DeviceStateListener {
 
-    //CLASS TAG
+    // Class TAG
+    @NonNull
     private static final String TAG = ScanDeviceFragment.class.getSimpleName();
 
-    //TIMEOUT ATTRIBUTES
+    // Timeout attributes
     private static final byte DEVICE_SYNCHRONIZATION_TIMEOUT_SECONDS = 3;
-    private static final int DEVICE_SYNCHRONIZATION_TIMEOUT_MILLISECONDS = DEVICE_SYNCHRONIZATION_TIMEOUT_SECONDS * Interval.ONE_SECOND.getNumberMilliseconds();
+    private static final int DEVICE_SYNCHRONIZATION_TIMEOUT_MILLISECONDS =
+            DEVICE_SYNCHRONIZATION_TIMEOUT_SECONDS * Interval.ONE_SECOND.getNumberMilliseconds();
     private static final byte DEVICE_SYNCHRONIZATION_MAX_NUMBER_SYNCHRONIZATION_TRIES = 10;
-
     private static final byte DEVICE_TIMEOUT_SECONDS = 8; // Libble timeout -> 7.5 seconds.
-    private static final int DEVICE_TIMEOUT_MILLISECONDS = DEVICE_TIMEOUT_SECONDS * Interval.ONE_SECOND.getNumberMilliseconds();
+    private static final int DEVICE_TIMEOUT_MILLISECONDS =
+            DEVICE_TIMEOUT_SECONDS * Interval.ONE_SECOND.getNumberMilliseconds();
 
-    //UPDATE LIST UPDATE ATTRIBUTES
+    // Update list attributes
     private static final int MINIMUM_TIME_UPDATE_LIST_DEVICES = Interval.ONE_SECOND.getNumberMilliseconds();
-    private long mTimestampLastListUpdate = 0;
-    private boolean mNeedUpdateList = true;
 
-    //BLOCK DIALOGS
+    // Resources extracted from the resources folder
+    @BindString(R.string.label_connected)
+    String CONNECTED_STRING;
+    @BindString(R.string.label_discovered)
+    String DISCOVERED_STRING;
+    @BindString(R.string.typeface_condensed)
+    String TYPEFACE_CONDENSED_LOCATION;
+    @BindString(R.string.typeface_bold)
+    String TYPEFACE_BOLD_LOCATION;
+    @BindString(R.string.device_not_ready_dialog_title)
+    String DEVICE_NOT_READY_DIALOG_TITLE;
+    @BindString(R.string.device_not_ready_dialog_message_prefix)
+    String DEVICE_NOT_READY_DIALOG_MESSAGE_PREFIX;
+    @BindString(R.string.asking_for_unknown_device_characteristics_prefix)
+    String ASKING_FOR_UNKNOWN_CHARACTERISTICS_PREFIX;
+    @BindString(R.string.please_wait)
+    String PLEASE_WAIT_STRING;
+    @BindString(R.string.connecting_to_device_prefix)
+    String CONNECTING_TO_DEVICE_PREFIX;
+    @BindString(R.string.ok)
+    String OK_STRING;
+    @BindString(R.string.connection_timeout_dialog_title)
+    String CONNECTION_TIMEOUT_DIALOG_TITLE;
+    @BindString(R.string.connection_timeout_dialog_message)
+    String CONNECTION_TIMEOUT_DIALOG_MESSAGE;
+    @BindString(R.string.trying_connect_device_prefix)
+    String TRYING_CONNECT_DEVICE_PREFIX;
+    @BindBool(R.bool.is_tablet)
+    boolean IS_TABLET;
+    @BindColor(R.color.sensirion_grey_dark)
+    int SENSIRION_GREY_DARK;
+    @BindColor(R.color.sensirion_green)
+    int SENSIRION_GREEN;
+
+    // Injected views
+    @Bind(R.id.scan_background)
+    FrameLayout mBackground;
+    @Bind(R.id.togglebutton_scan)
+    ToggleButton mScanToggleButton;
+
+    // Block Dialogs
     @Nullable
     private IndeterminateProgressDialog mIndeterminateProgressDialog;
-    private String mConnectionDialogDeviceAddress;
 
-    //SECTION MANAGERS
+    // Section Managers
     @Nullable
     private SectionAdapter mSectionAdapter;
+    @Nullable
     private HumigadgetListItemAdapter mConnectedDevicesAdapter;
+    @Nullable
     private HumigadgetListItemAdapter mDiscoveredDevicesAdapter;
 
-    //STATE ATTRIBUTES
+    // Fragment state attributes
+    @Nullable
     private Menu mOptionsMenu;
     private volatile boolean mIsRequestingCharacteristicsFromPeripheral = false;
+    private long mTimestampLastListUpdate = 0;
+    private boolean mNeedUpdateList = true;
+    @Nullable
+    private String mConnectionDialogDeviceAddress;
 
     @Override
     public View onCreateView(@NonNull final LayoutInflater inflater,
                              @Nullable final ViewGroup container,
                              @Nullable final Bundle savedInstanceState) {
         Log.i(TAG, "onCreateView()");
+
         final View rootView = inflater.inflate(R.layout.fragment_device_scan, container, false);
-        initListAdapter();
-        initToggleButton(rootView);
+
+        ButterKnife.bind(this, rootView);
+
+        final AssetManager assets = getContext().getAssets();
+        final Typeface typefaceNormal = Typeface.createFromAsset(assets, TYPEFACE_CONDENSED_LOCATION);
+        final Typeface typefaceBold = Typeface.createFromAsset(assets, TYPEFACE_BOLD_LOCATION);
+
+        initListAdapter(typefaceNormal, typefaceBold);
+        initToggleButton(typefaceBold);
+
         setHasOptionsMenu(true);
-        initBackgroundListenerTablet(rootView);
+
+        initBackgroundListenerTablet();
         return rootView;
     }
 
-    private void initBackgroundListenerTablet(@NonNull final View rootView) {
-        if (getResources().getBoolean(R.bool.is_tablet)) {
-            rootView.findViewById(R.id.scan_background).setOnTouchListener(
+    private void initBackgroundListenerTablet() {
+        if (IS_TABLET) {
+            mBackground.setOnTouchListener(
                     new View.OnTouchListener() {
                         @Override
-                        public boolean onTouch(View view, MotionEvent motionEvent) {
-                            if (getResources().getBoolean(R.bool.is_tablet)) {
-                                final MainActivity parent = (MainActivity) getParent();
-                                if (parent != null && isVisible()) {
-                                    parent.toggleTabletMenu();
-                                }
+                        public boolean onTouch(@NonNull final View view,
+                                               @NonNull final MotionEvent motionEvent) {
+                            final MainActivity parent = (MainActivity) getParent();
+                            if (parent != null && isVisible()) {
+                                parent.toggleTabletMenu();
+                                return true;
                             }
-                            return true;
+                            return false;
                         }
                     }
             );
         }
     }
 
-    private void initListAdapter() {
+    private void initListAdapter(@NonNull final Typeface typefaceNormal,
+                                 @NonNull final Typeface typefaceBold) {
         mSectionAdapter = new SectionAdapter() {
             @Nullable
             @Override
@@ -115,7 +181,6 @@ public class ScanDeviceFragment extends ParentListFragment implements ScanListen
                                          final ViewGroup parent) {
                 TextView headerTextView = (TextView) convertView;
                 if (convertView == null) {
-                    final Typeface typefaceBold = Typeface.createFromAsset(getContext().getAssets(), "HelveticaNeueLTStd-Bd.otf");
                     headerTextView = (TextView) View.inflate(getParent(), R.layout.listitem_scan_header, null);
                     headerTextView.setTypeface(typefaceBold);
                 }
@@ -123,32 +188,31 @@ public class ScanDeviceFragment extends ParentListFragment implements ScanListen
                 return headerTextView;
             }
         };
-        mConnectedDevicesAdapter = new HumigadgetListItemAdapter(getContext());
-        mDiscoveredDevicesAdapter = new HumigadgetListItemAdapter(getContext());
 
-        mSectionAdapter.addSectionToAdapter(getContext().getString(R.string.label_connected), mConnectedDevicesAdapter);
-        mSectionAdapter.addSectionToAdapter(getContext().getString(R.string.label_discovered), mDiscoveredDevicesAdapter);
+        mConnectedDevicesAdapter = new HumigadgetListItemAdapter(typefaceNormal, typefaceBold);
+        mDiscoveredDevicesAdapter = new HumigadgetListItemAdapter(typefaceNormal, typefaceBold);
+
+        mSectionAdapter.addSectionToAdapter(CONNECTED_STRING, mConnectedDevicesAdapter);
+        mSectionAdapter.addSectionToAdapter(DISCOVERED_STRING, mDiscoveredDevicesAdapter);
 
         setListAdapter(mSectionAdapter);
     }
 
-    private void initToggleButton(@NonNull final View rootView) {
-        final ToggleButton toggleButton = (ToggleButton) rootView.findViewById(R.id.togglebutton_scan);
+    private void initToggleButton(@NonNull final Typeface typefaceBold) {
 
-        toggleButton.setTypeface(Typeface.createFromAsset(getContext().getAssets(), "HelveticaNeueLTStd-Bd.otf"));
+        mScanToggleButton.setTypeface(typefaceBold);
 
-        toggleButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        mScanToggleButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (BleManager.getInstance().isBluetoothEnabled()) {
-                    final ToggleButton toggleButton = (ToggleButton) rootView.findViewById(R.id.togglebutton_scan);
                     if (isChecked) {
                         BleManager.getInstance().registerNotificationListener(ScanDeviceFragment.this);
                         BleManager.getInstance().startScanning();
-                        toggleButton.setBackgroundColor(getResources().getColor(R.color.sensirion_grey_dark));
+                        mScanToggleButton.setBackgroundColor(SENSIRION_GREY_DARK);
                         setRefreshActionButtonState(true);
                     } else {
                         BleManager.getInstance().stopScanning();
-                        toggleButton.setBackgroundColor(getResources().getColor(R.color.sensirion_green));
+                        mScanToggleButton.setBackgroundColor(SENSIRION_GREEN);
                         setRefreshActionButtonState(false);
                     }
                 } else {
@@ -157,7 +221,7 @@ public class ScanDeviceFragment extends ParentListFragment implements ScanListen
             }
         });
         // start scanning immediately when fragment is active
-        toggleButton.performClick();
+        mScanToggleButton.performClick();
     }
 
     @Override
@@ -171,9 +235,15 @@ public class ScanDeviceFragment extends ParentListFragment implements ScanListen
             return;
         }
         bleManager.stopScanning();
-        final Object device = mSectionAdapter.getItem(position);
-        if (device instanceof BleDevice) {
-            onDeviceClick((BleDevice) device);
+
+        if (mSectionAdapter == null) {
+            Log.e(TAG, "onListItemClick -> Section adapter can't be null.");
+            return;
+        }
+
+        final BleDevice device = (BleDevice) mSectionAdapter.getItem(position);
+        if (device != null) {
+            onDeviceClick(device);
         } else {
             Log.w(TAG, "onListItemClick -> The selected device is not a BleDevice.");
             updateList();
@@ -188,7 +258,12 @@ public class ScanDeviceFragment extends ParentListFragment implements ScanListen
             Log.d(TAG, "onDeviceClick -> Opening manage device fragment.");
             openManageDeviceFragment(device);
         } else {
-            Log.d(TAG, String.format("onDeviceClick -> Connecting to device with address %s.", device.getAddress()));
+            Log.d(TAG,
+                    String.format(
+                            "onDeviceClick -> Connecting to device with address %s.",
+                            device.getAddress()
+                    )
+            );
             connectDevice(device);
         }
     }
@@ -197,7 +272,12 @@ public class ScanDeviceFragment extends ParentListFragment implements ScanListen
         if (RHTHumigadgetSensorManager.getInstance().isDeviceReady(device)) {
             final ManageDeviceFragment fragment = new ManageDeviceFragment();
             fragment.init(device.getAddress());
-            ((MainActivity) getParent()).changeFragment(fragment);
+            final MainActivity mainActivity = (MainActivity) getParent();
+            if (mainActivity == null) {
+                Log.e(TAG, "openManageDeviceFragment -> Cannot obtain main activity");
+            } else {
+                mainActivity.changeFragment(fragment);
+            }
         } else {
             showRetrievingCharacteristicsFromDeviceProgressDialog(device);
         }
@@ -205,37 +285,20 @@ public class ScanDeviceFragment extends ParentListFragment implements ScanListen
 
     private void connectDevice(@NonNull final BleDevice device) {
         mConnectionDialogDeviceAddress = device.getAddress();
-        Log.i(TAG, String.format(getString(R.string.trying_connect_device), mConnectionDialogDeviceAddress));
+        Log.i(TAG, String.format(TRYING_CONNECT_DEVICE_PREFIX, mConnectionDialogDeviceAddress));
         showConnectionInProgressDialog(device.getAddress());
         RHTHumigadgetSensorManager.getInstance().connectPeripheral(mConnectionDialogDeviceAddress);
-    }
-
-    private void showDeviceNotReadyAlert(@NonNull final BleDevice device) {
-        getParent().runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                final AlertDialog.Builder builder = new AlertDialog.Builder(getParent());
-                builder.setTitle(getResources().getString(R.string.device_not_ready));
-                builder
-                        .setMessage(String.format(getResources().getString(R.string.device_not_ready_message), DeviceNameDatabaseManager.getInstance().readDeviceName(device.getAddress())))
-                        .setCancelable(false)
-                        .setPositiveButton(getResources().getString(R.string.ok), new DialogInterface.OnClickListener() {
-                                    public void onClick(@NonNull DialogInterface dialog, int id) {
-                                        dialog.dismiss();
-                                        dialog.cancel();
-                                    }
-                                }
-                        );
-                final AlertDialog timeoutDialog = builder.create();
-                timeoutDialog.show();
-            }
-        });
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        RHTHumigadgetSensorManager.getInstance().requestEnableBluetooth(getParent());
+        final Activity parent = getParent();
+        if (parent == null) {
+            Log.e(TAG, "onResume -> Received null parent, can't enable Bluetooth");
+        } else {
+            RHTHumigadgetSensorManager.getInstance().requestEnableBluetooth(parent);
+        }
         BleManager.getInstance().registerNotificationListener(this);
         updateList();
         BleManager.getInstance().startScanning();
@@ -266,9 +329,10 @@ public class ScanDeviceFragment extends ParentListFragment implements ScanListen
                     try {
                         RHTHumigadgetSensorManager.getInstance().synchronizeDeviceServices(device);
                         Thread.sleep(DEVICE_SYNCHRONIZATION_TIMEOUT_MILLISECONDS);
-                        break;
-                    } catch (@NonNull final InterruptedException e) {
-                        Log.e(TAG, "showConnectionInProgressDialog -> An interrupted exception was produced when connecting to peripheral -> ", e);
+                        if (RHTHumigadgetSensorManager.getInstance().isDeviceReady(device)) {
+                            break;
+                        }
+                    } catch (final InterruptedException ignored) {
                     }
                 }
                 if (mIndeterminateProgressDialog != null && mIndeterminateProgressDialog.isShowing()) {
@@ -284,10 +348,49 @@ public class ScanDeviceFragment extends ParentListFragment implements ScanListen
         });
     }
 
+    private void showDeviceNotReadyAlert(@NonNull final BleDevice device) {
+        final Activity parent = getParent();
+        if (parent == null) {
+            Log.e(TAG, "showDeviceNotReadyAlert -> Cannot show alert because parent is null");
+            return;
+        }
+
+        parent.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                final AlertDialog.Builder builder = new AlertDialog.Builder(getParent());
+                builder.setTitle(DEVICE_NOT_READY_DIALOG_TITLE);
+                final String deviceName =
+                        DeviceNameDatabaseManager.getInstance().readDeviceName(device.getAddress());
+                builder.setMessage(
+                        String.format(
+                                DEVICE_NOT_READY_DIALOG_MESSAGE_PREFIX,
+                                deviceName
+                        )
+                )
+                        .setCancelable(false)
+                        .setPositiveButton(OK_STRING, new DialogInterface.OnClickListener() {
+                                    public void onClick(@NonNull DialogInterface dialog, int id) {
+                                        dialog.dismiss();
+                                        dialog.cancel();
+                                    }
+                                }
+                        );
+                final AlertDialog timeoutDialog = builder.create();
+                timeoutDialog.show();
+            }
+        });
+    }
+
     private void showRetrievingCharacteristicsProgressDialog(@NonNull final BleDevice device) {
-        final String title = getString(R.string.please_wait);
+        final Activity parent = getParent();
+        if (parent == null) {
+            Log.e(TAG, "showRetrievingCharacteristicsProgressDialog -> Not showing dialog with null parent.");
+            return;
+        }
+        final String title = PLEASE_WAIT_STRING;
         final String deviceName = DeviceNameDatabaseManager.getInstance().readDeviceName(device.getAddress());
-        final String message = String.format(getString(R.string.asking_for_unknown_device_characteristics), deviceName);
+        final String message = String.format(ASKING_FOR_UNKNOWN_CHARACTERISTICS_PREFIX, deviceName);
         final boolean isCancelable = false;
         mIndeterminateProgressDialog = new IndeterminateProgressDialog(getParent(), title, message, isCancelable);
         mIndeterminateProgressDialog.show(getParent());
@@ -300,12 +403,24 @@ public class ScanDeviceFragment extends ParentListFragment implements ScanListen
      * @param deviceAddress of the device.
      */
     private void showConnectionInProgressDialog(@NonNull final String deviceAddress) {
-        final String title = getString(R.string.please_wait);
+        final Context parent = getParent();
+        if (parent == null) {
+            Log.e(TAG, "showConnectionInProgressDialog -> Received a null parent.");
+            return;
+        }
+
         final String deviceName = DeviceNameDatabaseManager.getInstance().readDeviceName(deviceAddress);
-        final String message = String.format(getString(R.string.connecting_to_device), deviceName);
+
+        final String title = PLEASE_WAIT_STRING;
+        final String message = String.format(CONNECTING_TO_DEVICE_PREFIX, deviceName);
         final boolean isCancelable = false;
 
-        mIndeterminateProgressDialog = new IndeterminateProgressDialog(getParent(), title, message, isCancelable);
+        mIndeterminateProgressDialog = new IndeterminateProgressDialog(
+                getParent(),
+                title,
+                message,
+                isCancelable
+        );
         mIndeterminateProgressDialog.show(getParent());
 
         Executors.newSingleThreadExecutor().execute(new Runnable() {
@@ -317,14 +432,14 @@ public class ScanDeviceFragment extends ParentListFragment implements ScanListen
                     try {
                         Thread.sleep(timePerCheck);
                         timeWaited += timePerCheck;
-                    } catch (@NonNull final InterruptedException e) {
+                    } catch (final InterruptedException e) {
                         Log.e(TAG, "showConnectionInProgressDialog -> An interrupted exception was produced when connecting to peripheral -> ", e);
                     }
                     if (mIsRequestingCharacteristicsFromPeripheral) {
                         if (mIndeterminateProgressDialog == null) {
                             Log.e(TAG, "showConnectionInProgressDialog -> Progress dialog is already canceled.");
                         } else {
-                            final String message = String.format(getString(R.string.asking_for_unknown_device_characteristics), deviceName);
+                            final String message = String.format(ASKING_FOR_UNKNOWN_CHARACTERISTICS_PREFIX, deviceName);
                             mIndeterminateProgressDialog.setMessage(message, getParent());
                         }
                     }
@@ -335,6 +450,9 @@ public class ScanDeviceFragment extends ParentListFragment implements ScanListen
     }
 
     private boolean isStillConnecting(final int timeWaited) {
+        if (mConnectionDialogDeviceAddress == null) {
+            return false;
+        }
         if (mIndeterminateProgressDialog != null && mIndeterminateProgressDialog.isShowing()) {
             if (timeWaited < DEVICE_TIMEOUT_MILLISECONDS) {
                 return true;
@@ -349,7 +467,9 @@ public class ScanDeviceFragment extends ParentListFragment implements ScanListen
 
     private void dismissConnectingProgressDialog(@NonNull final String deviceAddress) {
         if (mIndeterminateProgressDialog != null) {
-            if (mIndeterminateProgressDialog.isShowing() && BleManager.getInstance().getConnectedDevice(deviceAddress) == null) {
+            if (mIndeterminateProgressDialog.isShowing()
+                    && BleManager.getInstance().getConnectedDevice(deviceAddress) == null) {
+
                 onConnectionTimeout(deviceAddress);
             } else {
                 mIndeterminateProgressDialog.dismiss();
@@ -371,19 +491,26 @@ public class ScanDeviceFragment extends ParentListFragment implements ScanListen
             Log.w(TAG, "onConnectionTimeout -> mIndeterminateProgressDialog is null. Not showing the connection timeout dialog.");
             return;
         }
-        mIndeterminateProgressDialog.dismiss();
-        mIndeterminateProgressDialog = null;
 
-        mActivity.runOnUiThread(new Runnable() {
+        final Activity parent = getParent();
+        if (parent == null) {
+            Log.e(TAG, "onConnectionTimeout -> Cannot obtain the parent, not showing a timeout dialog.");
+            return;
+        }
+
+        parent.runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                mIndeterminateProgressDialog.dismiss();
+                mIndeterminateProgressDialog = null;
+
                 final AlertDialog.Builder builder = new AlertDialog.Builder(getParent());
-                builder.setTitle(getResources().getString(R.string.connection_timeout));
+                builder.setTitle(CONNECTION_TIMEOUT_DIALOG_TITLE);
                 final String deviceName = DeviceNameDatabaseManager.getInstance().readDeviceName(deviceAddress);
                 builder
-                        .setMessage(String.format("%s %s", getResources().getString(R.string.timeout_produced), deviceName))
+                        .setMessage(String.format("%s %s", CONNECTION_TIMEOUT_DIALOG_MESSAGE, deviceName))
                         .setCancelable(false)
-                        .setPositiveButton(getResources().getString(R.string.ok), new DialogInterface.OnClickListener() {
+                        .setPositiveButton(OK_STRING, new DialogInterface.OnClickListener() {
                                     public void onClick(@NonNull DialogInterface dialog, int id) {
                                         dialog.dismiss();
                                         dialog.cancel();
@@ -449,7 +576,12 @@ public class ScanDeviceFragment extends ParentListFragment implements ScanListen
      */
     @Override
     public void onDeviceConnected(@NonNull final BleDevice device) {
-        Log.i(TAG, String.format("onDeviceConnected -> Received connected device with address: %s.", device.getAddress()));
+        Log.i(TAG,
+                String.format(
+                        "onDeviceConnected -> Received connected device with address: %s.",
+                        device.getAddress()
+                )
+        );
         onDeviceConnectionStateChange(device.getAddress());
     }
 
@@ -459,17 +591,32 @@ public class ScanDeviceFragment extends ParentListFragment implements ScanListen
     @Override
     public void onDeviceDisconnected(@NonNull final BleDevice device) {
         final String deviceAddress = device.getAddress();
-        Log.i(TAG, String.format("onDeviceConnected -> %s has lost the connected with the device: %s ", TAG, deviceAddress));
+        Log.i(TAG,
+                String.format(
+                        "onDeviceConnected -> %s has lost the connected with the device: %s ",
+                        TAG,
+                        deviceAddress
+                )
+        );
         onDeviceConnectionStateChange(deviceAddress);
-        if (mConnectionDialogDeviceAddress != null && mConnectionDialogDeviceAddress.equals(deviceAddress)) {
+
+        if (mConnectionDialogDeviceAddress != null
+                && mConnectionDialogDeviceAddress.equals(deviceAddress)) {
+
             dismissConnectingProgressDialog(deviceAddress);
         }
     }
 
     private void onDeviceConnectionStateChange(@NonNull final String deviceAddress) {
-        Log.i(TAG, "mDeviceConnectionReceiver.onDeviceConnectionStateChange() -> refreshing discovered and connected list!");
+        Log.d(TAG,
+                String.format(
+                        "onDeviceConnectionStateChange -> Device with address %s changed its connection state",
+                        deviceAddress
+                )
+        );
+        if (mConnectionDialogDeviceAddress != null
+                && mConnectionDialogDeviceAddress.equals(deviceAddress)) {
 
-        if (mConnectionDialogDeviceAddress != null && mConnectionDialogDeviceAddress.equals(deviceAddress)) {
             if (BleManager.getInstance().isDeviceConnected(deviceAddress)) {
                 mIsRequestingCharacteristicsFromPeripheral = true;
             } else if (mIsRequestingCharacteristicsFromPeripheral) {
@@ -486,7 +633,13 @@ public class ScanDeviceFragment extends ParentListFragment implements ScanListen
      */
     @Override
     public void onDeviceDiscovered(@NonNull final BleDevice device) {
-        Log.i(TAG, String.format("onDeviceDiscovered -> Received discovered device with address %s and advertise name %s.", device.getAddress(), device.getAdvertisedName()));
+        Log.i(TAG,
+                String.format(
+                        "onDeviceDiscovered -> Received discovered device with address %s and advertise name %s.",
+                        device.getAddress(),
+                        device.getAdvertisedName()
+                )
+        );
         updateList();
     }
 
@@ -495,7 +648,12 @@ public class ScanDeviceFragment extends ParentListFragment implements ScanListen
      */
     @Override
     public void onDeviceAllServicesDiscovered(@NonNull final BleDevice device) {
-        Log.i(TAG, String.format("onDeviceAllServiceDiscovered -> Device %s has discovered all its services.", device.getAddress()));
+        Log.i(TAG,
+                String.format(
+                        "onDeviceAllServiceDiscovered -> Device %s has discovered all its services.",
+                        device.getAddress()
+                )
+        );
         if (mIndeterminateProgressDialog != null && mIndeterminateProgressDialog.isShowing()) {
             if (device.isConnected()) {
                 Executors.newSingleThreadExecutor().execute(
@@ -512,64 +670,92 @@ public class ScanDeviceFragment extends ParentListFragment implements ScanListen
     }
 
     private void waitForServiceSynchronization(@NonNull final BleDevice device) {
-        int tryNumber = 0;
-        while (!RHTHumigadgetSensorManager.getInstance().isDeviceReady(device) && tryNumber++ < DEVICE_SYNCHRONIZATION_MAX_NUMBER_SYNCHRONIZATION_TRIES) {
+        byte tryNumber = 0;
+        while (!RHTHumigadgetSensorManager.getInstance().isDeviceReady(device)
+                && ++tryNumber < DEVICE_SYNCHRONIZATION_MAX_NUMBER_SYNCHRONIZATION_TRIES) {
+
             RHTHumigadgetSensorManager.getInstance().synchronizeDeviceServices(device);
             try {
                 Thread.sleep(DEVICE_SYNCHRONIZATION_TIMEOUT_MILLISECONDS);
             } catch (@NonNull final InterruptedException ignored) {
             }
+
             if (RHTHumigadgetSensorManager.getInstance().isDeviceReady(device)) {
-                Log.i(TAG, String.format("onDeviceAllServiceDiscovered -> Device %s is synchronized.", device.getAddress()));
+                Log.i(TAG,
+                        String.format(
+                                "onDeviceAllServiceDiscovered -> Device %s is synchronized.",
+                                device.getAddress()
+                        )
+                );
             } else {
-                Log.w(TAG, String.format("onDeviceAllServiceDiscovered -> Device %s is not synchronized yet.", device.getAddress()));
+                Log.w(TAG,
+                        String.format(
+                                "onDeviceAllServiceDiscovered -> Device %s is not synchronized yet.",
+                                device.getAddress()
+                        )
+                );
             }
         }
     }
 
-    private synchronized void updateList() {
-        if (mNeedUpdateList || mTimestampLastListUpdate + MINIMUM_TIME_UPDATE_LIST_DEVICES > System.currentTimeMillis()) {
-            Log.d(TAG, "updateList -> Updating device list.");
-            mNeedUpdateList = false;
-            mTimestampLastListUpdate = System.currentTimeMillis();
-            final Iterable<? extends BleDevice> connectedDevices = BleManager.getInstance().getConnectedBleDevices();
-            final Iterable<? extends BleDevice> discoveredDevices = BleManager.getInstance().getDiscoveredBleDevices(KnownDevices.RHT_GADGETS.getAdvertisedNames());
-
-            getParent().runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    mConnectedDevicesAdapter.clear();
-                    mConnectedDevicesAdapter.addAll(connectedDevices);
-                    mDiscoveredDevicesAdapter.clear();
-                    mDiscoveredDevicesAdapter.addAll(discoveredDevices);
-                    setListAdapter(mSectionAdapter);
+    private void updateList() {
+        if (mNeedUpdateList
+                || mTimestampLastListUpdate + MINIMUM_TIME_UPDATE_LIST_DEVICES > System.currentTimeMillis()) {
+            synchronized (this) {
+                final Activity parent = getParent();
+                if (parent == null) {
+                    Log.e(TAG, "updateList -> Parent is null, cannot update the device list.");
+                    return;
                 }
-            });
+                mNeedUpdateList = false;
+                mTimestampLastListUpdate = System.currentTimeMillis();
+
+                final Iterable<? extends BleDevice> connectedDevices =
+                        BleManager.getInstance().getConnectedBleDevices();
+
+                final Iterable<? extends BleDevice> discoveredDevices =
+                        BleManager.getInstance().getDiscoveredBleDevices(
+                                KnownDevices.RHT_GADGETS.getAdvertisedNames()
+                        );
+
+                if (mConnectedDevicesAdapter == null) {
+                    Log.e(TAG, "updateList -> Connected device adapter is null.");
+                    return;
+                }
+                if (mDiscoveredDevicesAdapter == null) {
+                    Log.e(TAG, "updateList -> Discovered device adapter is null");
+                    return;
+                }
+
+                getParent().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        synchronized (ScanDeviceFragment.this) {
+                            mConnectedDevicesAdapter.clear();
+                            mConnectedDevicesAdapter.addAll(connectedDevices);
+                            mDiscoveredDevicesAdapter.clear();
+                            mDiscoveredDevicesAdapter.addAll(discoveredDevices);
+                            setListAdapter(mSectionAdapter);
+                        }
+                    }
+                });
+            }
         }
     }
+
 
     /**
      * {@inheritDoc}
      */
     @Override
     public void onScanStateChanged(final boolean isScanEnabled) {
-        if (getView() == null) {
-            Log.w(TAG, "mScanStateReceiver.onReceive -> getView() produced a null value.");
-            return;
-        } else if (getView().findViewById(R.id.togglebutton_scan) == null) {
-            Log.w(TAG, "mScanStateReceiver.onReceive -> getView().findViewById(R.id.toggleButton_scan) produced a null value.");
-            return;
-        }
-
-        final ToggleButton scanButton = (ToggleButton) getView().findViewById(R.id.togglebutton_scan);
-
         if (isScanEnabled) {
             Log.i(TAG, "mScanStateReceiver.onReceive() -> scanning STARTED.");
-            scanButton.setChecked(true);
+            mScanToggleButton.setChecked(true);
             setRefreshActionButtonState(true);
         } else {
             Log.i(TAG, "mScanStateReceiver.onReceive() -> scanning STOPPED.");
-            scanButton.setChecked(false);
+            mScanToggleButton.setChecked(false);
             setRefreshActionButtonState(false);
         }
         mNeedUpdateList = true;
