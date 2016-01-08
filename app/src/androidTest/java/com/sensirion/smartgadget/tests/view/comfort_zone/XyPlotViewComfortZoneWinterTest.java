@@ -1,4 +1,4 @@
-package com.sensirion.smartgadget.tests.ui.view;
+package com.sensirion.smartgadget.tests.view.comfort_zone;
 
 import android.graphics.PointF;
 
