@@ -14,6 +14,7 @@ import com.sensirion.smartgadget.R;
 
 import butterknife.BindColor;
 import butterknife.BindInt;
+import butterknife.ButterKnife;
 
 public class XyPlotView extends GraphView {
 
@@ -67,12 +68,14 @@ public class XyPlotView extends GraphView {
 
     public XyPlotView(@NonNull final Context context) {
         super(context);
+        ButterKnife.bind(this, getRootView());
         init();
     }
 
     public XyPlotView(@NonNull final Context context,
                       @NonNull final AttributeSet attrs) {
         super(context, attrs);
+        ButterKnife.bind(this, getRootView());
         init();
     }
 
@@ -80,6 +83,7 @@ public class XyPlotView extends GraphView {
                       @NonNull final AttributeSet attrs,
                       final int defStyle) {
         super(context, attrs, defStyle);
+        ButterKnife.bind(this, getRootView());
         init();
     }
 
