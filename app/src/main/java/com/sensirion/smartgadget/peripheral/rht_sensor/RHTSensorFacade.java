@@ -5,26 +5,33 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
+import com.sensirion.libble.utils.RHTDataPoint;
 import com.sensirion.smartgadget.peripheral.rht_sensor.external.RHTHumigadgetSensorManager;
 import com.sensirion.smartgadget.peripheral.rht_sensor.internal.RHTInternalSensorManager;
 import com.sensirion.smartgadget.utils.DeviceModel;
 import com.sensirion.smartgadget.utils.Settings;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
 public class RHTSensorFacade implements RHTSensorManager {
 
     private static final String TAG = RHTSensorFacade.class.getSimpleName();
+
     @Nullable
     private static RHTSensorFacade mInstance;
     private final List<DeviceModel> mConnectedDeviceListModels = Collections.synchronizedList(new LinkedList<DeviceModel>());
     private final Set<RHTSensorListener> mListeners = Collections.synchronizedSet(new HashSet<RHTSensorListener>());
+
+    @NonNull
+    private final Map<String, RHTDataPoint> mLastDataPoint = Collections.synchronizedMap(new HashMap<String, RHTDataPoint>());
 
     private RHTSensorFacade() {
     }
@@ -125,6 +132,7 @@ public class RHTSensorFacade implements RHTSensorManager {
         mListeners.add(listener);
         RHTInternalSensorManager.getInstance().registerInternalSensorListener(this);
         RHTHumigadgetSensorManager.getInstance().registerHumigadgetListener(this);
+        notifyCachedSensorData(listener);
     }
 
     /**
@@ -165,6 +173,7 @@ public class RHTSensorFacade implements RHTSensorManager {
         final Iterator<DeviceModel> iterator = mConnectedDeviceListModels.iterator();
         while (iterator.hasNext()) {
             if (iterator.next().getAddress().equals(deviceAddress)) {
+                this.mLastDataPoint.remove(deviceAddress);
                 iterator.remove();
                 Log.d(TAG, String.format("onGadgetDisconnected -> Device with address %s was removed from the list", deviceAddress));
                 return;
@@ -199,8 +208,16 @@ public class RHTSensorFacade implements RHTSensorManager {
         return mConnectedDeviceListModels.get(mConnectedDeviceListModels.size() - 1).getAddress();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public void onNewRHTData(final float temperature, final float humidity, @Nullable final String deviceAddress) {
+    public void onNewRHTData(final float temperature,
+                             final float humidity,
+                             @Nullable final String deviceAddress) {
+        this.mLastDataPoint.put(deviceAddress,
+                new RHTDataPoint(temperature, humidity, System.currentTimeMillis())
+        );
         notifySensorData(temperature, humidity, deviceAddress);
     }
 
@@ -223,9 +240,26 @@ public class RHTSensorFacade implements RHTSensorManager {
      * @param relativeHumidity of the sample.
      * @param deviceAddress    of the device.
      */
-    public void notifySensorData(final float temperature, final float relativeHumidity, @Nullable final String deviceAddress) {
+    public void notifySensorData(final float temperature,
+                                 final float relativeHumidity, @Nullable final String deviceAddress) {
         for (final RHTSensorListener listener : mListeners) {
             listener.onNewRHTSensorData(temperature, relativeHumidity, deviceAddress);
+        }
+    }
+
+    /**
+     * Notifies a new listener of the last value for each device
+     *
+     * @param listener that will be notified
+     */
+    private void notifyCachedSensorData(@NonNull final RHTSensorListener listener) {
+        for (final String humigadgetsWithDatapoints : mLastDataPoint.keySet()) {
+            final RHTDataPoint dataPoint = mLastDataPoint.get(humigadgetsWithDatapoints);
+            listener.onNewRHTSensorData(
+                    dataPoint.getTemperatureCelsius(),
+                    dataPoint.getRelativeHumidity(),
+                    humigadgetsWithDatapoints
+            );
         }
     }
 }
