@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.sensirion.smartgadget"
     android:versionCode="82"
-    android:versionName="1.6.1-SNAPSHOT">
+    android:versionName="1.6.1">
 
     <uses-permission android:name="android.permission.INTERACT_ACROSS_USERS_FULL" />
 
