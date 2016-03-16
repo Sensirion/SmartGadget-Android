@@ -11,6 +11,7 @@ import com.sensirion.libble.devices.BleDevice;
 import com.sensirion.libble.listeners.devices.DeviceStateListener;
 import com.sensirion.libble.listeners.services.RHTListener;
 import com.sensirion.libble.services.AbstractHistoryService;
+import com.sensirion.libble.services.AbstractRHTService;
 import com.sensirion.libble.services.generic.BatteryService;
 import com.sensirion.libble.utils.RHTDataPoint;
 import com.sensirion.smartgadget.peripheral.rht_sensor.RHTSensorManager;
@@ -22,6 +23,7 @@ import com.sensirion.smartgadget.utils.view.ColorManager;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.Executors;
 
 public class RHTHumigadgetSensorManager implements RHTListener, DeviceStateListener {
 
@@ -247,17 +249,71 @@ public class RHTHumigadgetSensorManager implements RHTListener, DeviceStateListe
     }
 
     /**
+     * Obtains the {@link AbstractRHTService} from a device.
+     *
+     * @param device from the requested RHT service.
+     * @return the {@link AbstractRHTService} if available - <code>null</code> otherwise.
+     */
+    @Nullable
+    private AbstractRHTService getRHTService(@NonNull final BleDevice device) {
+        return device.getDeviceService(AbstractRHTService.class);
+    }
+
+    /**
+     * Checks if a incoming device has its elements synchronized.
+     *
+     * @param device to check.
+     * @return <code>true</code> if the device RHT notifications are ready - <code>false</code> otherwise.
+     */
+    public boolean isDeviceRHTNotificationsServicesReady(@NonNull final BleDevice device) {
+        final AbstractRHTService service = getRHTService(device);
+        if (service == null) {
+            Log.w(TAG, String.format(
+                    "isDeviceRHTNotificationsServicesReady -> Device %s RHT service is not available yet",
+                    device.getAddress())
+            );
+            return false;
+        }
+        if (service.isServiceReady()) {
+            Log.i(TAG, String.format(
+                    "isDeviceRHTNotificationsServicesReady -> Device %s RHT notifications are ready.",
+                    device.getAddress())
+            );
+            return true;
+        }
+        Log.w(TAG, String.format(
+                "isDeviceSettingsServicesReady -> Device %s in not ready yet.", device.getAddress())
+        );
+        return false;
+    }
+
+
+    /**
+     * Tries to synchronize the needed device RHT notifications services.
+     *
+     * @param device that we attempt to synchronize.
+     */
+    public void synchronizeDeviceRHTNotificationsService(@NonNull final BleDevice device) {
+        final AbstractRHTService service = getRHTService(device);
+        if (service == null) {
+            Log.e(TAG, "synchronizeDeviceRHTNotificationsService -> RHT notifications service is not ready yet.");
+        } else {
+            service.synchronizeService();
+        }
+    }
+
+    /**
      * Checks if a incoming device has its elements synchronized.
      *
      * @param device to check.
      * @return <code>true</code> if the device is ready - <code>false</code> otherwise.
      */
-    public boolean isDeviceReady(@NonNull final BleDevice device) {
+    public boolean isDeviceSettingsServicesReady(@NonNull final BleDevice device) {
         final boolean isSynchronized = isBatteryServiceReady(device) && isHistoryServiceReady(device);
         if (isSynchronized) {
-            Log.i(TAG, String.format("isDeviceReady -> Device %s is ready.", device.getAddress()));
+            Log.i(TAG, String.format("isDeviceSettingsServicesReady -> Device %s is ready.", device.getAddress()));
         } else {
-            Log.w(TAG, String.format("isDeviceReady -> Device %s in not ready yet.", device.getAddress()));
+            Log.w(TAG, String.format("isDeviceSettingsServicesReady -> Device %s in not ready yet.", device.getAddress()));
         }
         return isSynchronized;
     }
@@ -287,11 +343,11 @@ public class RHTHumigadgetSensorManager implements RHTListener, DeviceStateListe
     }
 
     /**
-     * Tries to synchronize the needed device services.
+     * Tries to synchronize the needed device settings services.
      *
-     * @param device that needs to be synchronized.
+     * @param device that we attempt to synchronize.
      */
-    public void synchronizeDeviceServices(@NonNull final BleDevice device) {
+    public void synchronizeDeviceSettingsServices(@NonNull final BleDevice device) {
         device.registerDeviceListener(this);
         final BatteryService batteryService = device.getDeviceService(BatteryService.class);
         if (batteryService != null) {
@@ -301,5 +357,45 @@ public class RHTHumigadgetSensorManager implements RHTListener, DeviceStateListe
         if (historyService != null) {
             historyService.synchronizeService();
         }
+    }
+
+    /**
+     * Tries to synchronize the services from all the devices.
+     */
+    public void synchronizeServicesFromAllDevices() {
+        Executors.newSingleThreadExecutor().execute(
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        synchronized (RHTHumigadgetSensorManager.this) {
+                            for (final BleDevice device : BleManager.getInstance().getConnectedBleDevices()) {
+                                if (isDeviceRHTNotificationsServicesReady(device)) {
+                                    Log.v(TAG, String.format(
+                                            "synchronizeServicesFromAllDevices -> RHT Service from device %s is synchronized.",
+                                            device.getAddress())
+                                    );
+                                    if (isDeviceSettingsServicesReady(device)) {
+                                        Log.v(TAG, String.format(
+                                                "synchronizeServicesFromAllDevices -> Device settings service from device %s is synchronized",
+                                                device.getAddress())
+                                        );
+                                    } else {
+                                        Log.w(TAG, String.format(
+                                                        "synchronizeServicesFromAllDevices -> RHT Service from device %s is not synchronized yet.",
+                                                        device.getAddress())
+                                        );                                        synchronizeDeviceSettingsServices(device);
+                                    }
+                                } else {
+                                    synchronizeDeviceRHTNotificationsService(device);
+                                    Log.w(TAG, String.format(
+                                                    "synchronizeServicesFromAllDevices -> Device settings service from device %s is not synchronized yet.",
+                                                    device.getAddress())
+                                    );
+                                }
+                            }
+                        }
+                    }
+                }
+        );
     }
 }

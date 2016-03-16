@@ -350,6 +350,7 @@ public class MainActivity extends FragmentActivity implements View.OnTouchListen
         RHTSensorFacade.getInstance().registerListener(this);
         RHTHumigadgetSensorManager bleManager = RHTHumigadgetSensorManager.getInstance();
         bleManager.updateConnectedDeviceList();
+        bleManager.synchronizeServicesFromAllDevices();
         BleManager.getInstance().setAllNotificationsEnabled(true);
     }
 

@@ -269,7 +269,7 @@ public class ScanDeviceFragment extends ParentListFragment implements ScanListen
     }
 
     private void openManageDeviceFragment(@NonNull final BleDevice device) {
-        if (RHTHumigadgetSensorManager.getInstance().isDeviceReady(device)) {
+        if (RHTHumigadgetSensorManager.getInstance().isDeviceSettingsServicesReady(device)) {
             final ManageDeviceFragment fragment = new ManageDeviceFragment();
             fragment.init(device.getAddress());
             final MainActivity mainActivity = (MainActivity) getParent();
@@ -327,9 +327,9 @@ public class ScanDeviceFragment extends ParentListFragment implements ScanListen
                 byte numberTries = 0;
                 while (++numberTries < DEVICE_SYNCHRONIZATION_MAX_NUMBER_SYNCHRONIZATION_TRIES) {
                     try {
-                        RHTHumigadgetSensorManager.getInstance().synchronizeDeviceServices(device);
+                        RHTHumigadgetSensorManager.getInstance().synchronizeDeviceSettingsServices(device);
                         Thread.sleep(DEVICE_SYNCHRONIZATION_TIMEOUT_MILLISECONDS);
-                        if (RHTHumigadgetSensorManager.getInstance().isDeviceReady(device)) {
+                        if (RHTHumigadgetSensorManager.getInstance().isDeviceSettingsServicesReady(device)) {
                             break;
                         }
                     } catch (final InterruptedException ignored) {
@@ -339,7 +339,7 @@ public class ScanDeviceFragment extends ParentListFragment implements ScanListen
                     mIndeterminateProgressDialog.dismiss();
                     mIndeterminateProgressDialog = null;
                 }
-                if (RHTHumigadgetSensorManager.getInstance().isDeviceReady(device)) {
+                if (RHTHumigadgetSensorManager.getInstance().isDeviceSettingsServicesReady(device)) {
                     openManageDeviceFragment(device);
                 } else {
                     showDeviceNotReadyAlert(device);
@@ -660,7 +660,7 @@ public class ScanDeviceFragment extends ParentListFragment implements ScanListen
                         new Runnable() {
                             @Override
                             public void run() {
-                                waitForServiceSynchronization(device);
+                                waitForRHTServiceSynchronization(device);
                                 mIsRequestingCharacteristicsFromPeripheral = false;
                             }
                         }
@@ -669,31 +669,29 @@ public class ScanDeviceFragment extends ParentListFragment implements ScanListen
         }
     }
 
-    private void waitForServiceSynchronization(@NonNull final BleDevice device) {
-        byte tryNumber = 0;
-        while (!RHTHumigadgetSensorManager.getInstance().isDeviceReady(device)
-                && ++tryNumber < DEVICE_SYNCHRONIZATION_MAX_NUMBER_SYNCHRONIZATION_TRIES) {
-
-            RHTHumigadgetSensorManager.getInstance().synchronizeDeviceServices(device);
-            try {
-                Thread.sleep(DEVICE_SYNCHRONIZATION_TIMEOUT_MILLISECONDS);
-            } catch (@NonNull final InterruptedException ignored) {
-            }
-
-            if (RHTHumigadgetSensorManager.getInstance().isDeviceReady(device)) {
+    private void waitForRHTServiceSynchronization(@NonNull final BleDevice device) {
+        final RHTHumigadgetSensorManager sensorManager = RHTHumigadgetSensorManager.getInstance();
+        for (byte tryNumber = 0; tryNumber < DEVICE_SYNCHRONIZATION_MAX_NUMBER_SYNCHRONIZATION_TRIES; tryNumber += 1) {
+            final boolean isServiceSynchronized = sensorManager.isDeviceRHTNotificationsServicesReady(device);
+            if (isServiceSynchronized) {
                 Log.i(TAG,
                         String.format(
-                                "onDeviceAllServiceDiscovered -> Device %s is synchronized.",
+                                "waitForServiceSynchronization -> Device %s is synchronized.",
                                 device.getAddress()
                         )
                 );
-            } else {
-                Log.w(TAG,
-                        String.format(
-                                "onDeviceAllServiceDiscovered -> Device %s is not synchronized yet.",
-                                device.getAddress()
-                        )
-                );
+                break;
+            }
+            Log.w(TAG,
+                    String.format(
+                            "waitForServiceSynchronization -> Device %s is not synchronized yet.",
+                            device.getAddress()
+                    )
+            );
+            sensorManager.synchronizeDeviceRHTNotificationsService(device);
+            try {
+                Thread.sleep(DEVICE_SYNCHRONIZATION_TIMEOUT_MILLISECONDS);
+            } catch (final InterruptedException ignored) {
             }
         }
     }
