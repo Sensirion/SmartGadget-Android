@@ -5,6 +5,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.sensirion.libble.devices.BleDevice;
+import com.sensirion.libble.devices.DeviceBluetoothType;
 import com.sensirion.libble.listeners.NotificationListener;
 import com.sensirion.libble.services.AbstractBleService;
 import com.sensirion.libble.services.AbstractHistoryService;
@@ -50,6 +51,12 @@ class MockBleDevice implements BleDevice {
     @Override
     public String getAdvertisedName() {
         return null;
+    }
+
+    @NonNull
+    @Override
+    public DeviceBluetoothType getBluetoothType() {
+        return DeviceBluetoothType.DEVICE_TYPE_UNKNOWN;
     }
 
     @Override
