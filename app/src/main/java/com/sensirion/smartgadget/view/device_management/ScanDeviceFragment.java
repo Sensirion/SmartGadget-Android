@@ -501,6 +501,10 @@ public class ScanDeviceFragment extends ParentListFragment implements ScanListen
         parent.runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                if (mIndeterminateProgressDialog == null) {
+                    Log.e(TAG, "onConnectionTimeout.runOnUiThread -> mIndeterminateProgressDialog is null.");
+                    return;
+                }
                 mIndeterminateProgressDialog.dismiss();
                 mIndeterminateProgressDialog = null;
 
