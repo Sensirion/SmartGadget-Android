@@ -228,13 +228,14 @@ public class ComfortZoneFragment extends ParentFragment implements OnTouchListen
         getParent().runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                for (final String key : mActiveSensorViews.keySet()) {
-                    mParentFrame.removeView(mActiveSensorViews.get(key));
+                synchronized (mActiveSensorViews) {
+                    for (final String key : mActiveSensorViews.keySet()) {
+                        mParentFrame.removeView(mActiveSensorViews.get(key));
+                    }
+                    mActiveSensorViews.clear();
                 }
             }
         });
-
-        mActiveSensorViews.clear();
 
         final Iterable<DeviceModel> connectedModels = RHTSensorFacade.getInstance().getConnectedSensors();
 
@@ -268,7 +269,9 @@ public class ComfortZoneFragment extends ParentFragment implements OnTouchListen
             );
             sensorPoint.setInnerColor(model.getColor());
             sensorPoint.setOnTouchListener(this);
-            mActiveSensorViews.put(address, sensorPoint);
+            synchronized (mActiveSensorViews) {
+                mActiveSensorViews.put(address, sensorPoint);
+            }
             parent.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -402,15 +405,11 @@ public class ComfortZoneFragment extends ParentFragment implements OnTouchListen
                 }
             });
         }
-        if (mActiveSensorViews.containsKey(selectedAddress)) {
+        XyPoint selectedPoint = mActiveSensorViews.get(selectedAddress);
+        if (selectedPoint != null) {
             Settings.getInstance().setSelectedAddress(selectedAddress);
-            mActiveSensorViews.get(selectedAddress).setOutlineColor(Color.WHITE);
-            getParent().runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    mActiveSensorViews.get(selectedAddress).invalidate();
-                }
-            });
+            selectedPoint.setOutlineColor(Color.WHITE);
+            selectedPoint.postInvalidate();
             updateTextViewName();
         } else {
             Log.e(TAG, "selectSensor(): no selected address found: " + selectedAddress);
@@ -427,7 +426,9 @@ public class ComfortZoneFragment extends ParentFragment implements OnTouchListen
                 model = RHTSensorFacade.getInstance().getDeviceModel(selectedAddress);
             }
             if (model == null) {
-                mActiveSensorViews.remove(selectedAddress);
+                synchronized (mActiveSensorViews) {
+                    mActiveSensorViews.remove(selectedAddress);
+                }
                 return;
             }
             final Activity parent = getParent();
@@ -438,8 +439,9 @@ public class ComfortZoneFragment extends ParentFragment implements OnTouchListen
             parent.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    if (mActiveSensorViews.containsKey(selectedAddress)) {
-                        mSensorNameTextView.setTextColor(mActiveSensorViews.get(selectedAddress).getInnerColor());
+                    XyPoint selectedPoint = mActiveSensorViews.get(selectedAddress);
+                    if (selectedPoint != null) {
+                        mSensorNameTextView.setTextColor(selectedPoint.getInnerColor());
                     } else {
                         Log.e(TAG,
                                 String.format(
@@ -527,34 +529,37 @@ public class ComfortZoneFragment extends ParentFragment implements OnTouchListen
     }
 
     private void removeSensorView(final String deviceAddress) {
-        if (mActiveSensorViews.containsKey(deviceAddress)) {
-            if (getView() == null) {
-                throw new NullPointerException(
+        synchronized (mActiveSensorViews) {
+            if (mActiveSensorViews.containsKey(deviceAddress)) {
+                if (getView() == null) {
+                    throw new NullPointerException(
+                            String.format(
+                                    "%s: removeSensorView -> It was impossible to obtain the view.",
+                                    TAG
+                            )
+                    );
+                }
+                Log.i(TAG,
                         String.format(
-                                "%s: removeSensorView -> It was impossible to obtain the view.",
-                                TAG
+                                "removeSensorView() -> The view from address %s was removed.",
+                                deviceAddress
                         )
                 );
-            }
-            Log.i(TAG,
-                    String.format(
-                            "removeSensorView() -> The view from address %s was removed.",
-                            deviceAddress
-                    )
-            );
 
-            final Activity parent = getParent();
-            if (parent == null) {
-                Log.e(TAG, "removeSensorView() -> Obtained null when calling the activity.");
-                return;
-            }
-            parent.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    mParentFrame.removeView(mActiveSensorViews.get(deviceAddress));
+                final Activity parent = getParent();
+                if (parent == null) {
+                    Log.e(TAG, "removeSensorView() -> Obtained null when calling the activity.");
+                    return;
                 }
-            });
-            mActiveSensorViews.remove(deviceAddress);
+                final XyPoint stalePoint = mActiveSensorViews.get(deviceAddress);
+                parent.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        mParentFrame.removeView(stalePoint);
+                    }
+                });
+                mActiveSensorViews.remove(deviceAddress);
+            }
         }
     }
 
@@ -597,7 +602,10 @@ public class ComfortZoneFragment extends ParentFragment implements OnTouchListen
                             isClipped = true;
                         }
                     }
-                    updateViewPositionFor(address, newPos, isClipped);
+                    final XyPoint selectedPoint = mActiveSensorViews.get(address);
+                    if (selectedPoint != null) {
+                        updateViewPositionFor(selectedPoint, newPos, isClipped);
+                    }
                 }
             });
         }
@@ -623,7 +631,7 @@ public class ComfortZoneFragment extends ParentFragment implements OnTouchListen
         }
     }
 
-    private void updateViewPositionFor(@NonNull final String address,
+    private void updateViewPositionFor(@NonNull final XyPoint selectedPoint,
                                        @NonNull final PointF p,
                                        final boolean isClipped) {
         final PointF canvasPosition;
@@ -638,32 +646,28 @@ public class ComfortZoneFragment extends ParentFragment implements OnTouchListen
         } else {
             canvasPosition = mPlotView.mapCanvasCoordinatesFor(p);
         }
-        animateSensorViewPointTo(address, canvasPosition.x, canvasPosition.y);
+        animateSensorViewPointTo(selectedPoint, canvasPosition.x, canvasPosition.y);
     }
 
-    private void animateSensorViewPointTo(@NonNull final String address, final float x, final float y) {
-        if (mActiveSensorViews.containsKey(address)) {
-            final Activity parent = getParent();
-            if (parent == null) {
-                Log.e(TAG, "animateSensorViewPointTo() -> Obtained null when calling the activity.");
-                return;
-            }
-            final float relativeX =
-                    x - (getDipFor(getFloatValueFromId(parent, R.dimen.comfort_zone_radius_sensor_point) +
-                            getFloatValueFromId(parent, R.dimen.comfort_zone_outline_radius_offset)));
-            final float relativeY =
-                    y - (getDipFor(getFloatValueFromId(parent, R.dimen.comfort_zone_radius_sensor_point) +
-                            getFloatValueFromId(parent, R.dimen.comfort_zone_outline_radius_offset)));
-            parent.runOnUiThread(new Runnable() {
-                @Override
-                @UiThread
-                public void run() {
-                    mActiveSensorViews.get(address).animateMove(relativeX, relativeY);
-                }
-            });
-        } else {
-            Log.w(TAG, "animateSensorViewPointTo() -> mActiveSensorViews does not contain key: ".concat(address));
+    private void animateSensorViewPointTo(@NonNull final XyPoint selectedPoint, final float x, final float y) {
+        final Activity parent = getParent();
+        if (parent == null) {
+            Log.e(TAG, "animateSensorViewPointTo() -> Obtained null when calling the activity.");
+            return;
         }
+        final float relativeX =
+                x - (getDipFor(getFloatValueFromId(parent, R.dimen.comfort_zone_radius_sensor_point) +
+                        getFloatValueFromId(parent, R.dimen.comfort_zone_outline_radius_offset)));
+        final float relativeY =
+                y - (getDipFor(getFloatValueFromId(parent, R.dimen.comfort_zone_radius_sensor_point) +
+                        getFloatValueFromId(parent, R.dimen.comfort_zone_outline_radius_offset)));
+        parent.runOnUiThread(new Runnable() {
+            @Override
+            @UiThread
+            public void run() {
+                selectedPoint.animateMove(relativeX, relativeY);
+            }
+        });
     }
 
     private float getDipFor(final float px) {
