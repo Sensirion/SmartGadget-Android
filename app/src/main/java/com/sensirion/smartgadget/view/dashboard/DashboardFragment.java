@@ -274,25 +274,40 @@ public class DashboardFragment extends ParentFragment implements RHTSensorListen
         }
     }
 
-    @UiThread
     private void resetViewValues() {
-        mTemperatureValueTextView.setText(EMPTY_TEMPERATURE_LABEL);
-        mHumidityValueTextView.setText(EMPTY_HUMIDITY_LABEL);
-        mDewPointValueTextView.setText(EMPTY_TEMPERATURE_LABEL);
-        mHeatIndexValueTextView.setText(EMPTY_TEMPERATURE_LABEL);
+        final Activity parent = getParent();
+        if (parent == null) {
+            Log.e(TAG, "updateViewValues -> Received null parent.");
+            return;
+        }
+        parent.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mTemperatureValueTextView.setText(EMPTY_TEMPERATURE_LABEL);
+                mHumidityValueTextView.setText(EMPTY_HUMIDITY_LABEL);
+                mDewPointValueTextView.setText(EMPTY_TEMPERATURE_LABEL);
+                mHeatIndexValueTextView.setText(EMPTY_TEMPERATURE_LABEL);
+            }
+        });
     }
 
-    @UiThread
     private void updateViewValues(final float temperature,
                                   final float humidity,
                                   @NonNull final String deviceAddress) {
         if (isAdded()) {
+            final String selectedAddress = Settings.getInstance().getSelectedAddress();
+            if (!deviceAddress.equals(selectedAddress)) {
+                return;
+            }
             final Activity parent = getParent();
             if (parent == null) {
                 Log.e(TAG, "updateViewValues -> Received null parent.");
                 return;
             }
             parent.runOnUiThread(new Runnable() {
+                private final SharedPreferences mPreferences =
+                        PreferenceManager.getDefaultSharedPreferences(getParent().getApplicationContext());
+
                 @Override
                 public void run() {
                     final String selectedAddress = Settings.getInstance().getSelectedAddress();
@@ -312,11 +327,8 @@ public class DashboardFragment extends ParentFragment implements RHTSensorListen
                     } else {
                         unit = CELSIUS_UNIT;
                     }
-                    final Context appContext = getParent().getApplicationContext();
                     final String buttonId = String.valueOf(button.getId());
-                    final SharedPreferences preferences =
-                            PreferenceManager.getDefaultSharedPreferences(appContext);
-                    final int buttonState = preferences.getInt(buttonId, DEFAULT_STATE_BUTTON);
+                    final int buttonState = mPreferences.getInt(buttonId, DEFAULT_STATE_BUTTON);
 
                     final NumberFormat nf = NumberFormat.getNumberInstance(Locale.ENGLISH);
                     nf.setMaximumFractionDigits(1);

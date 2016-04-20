@@ -106,11 +106,7 @@ abstract public class SectionAdapter extends BaseAdapter {
 
     @Override
     public boolean isEnabled(final int itemPosition) {
-        if (getItemViewType(itemPosition) == HEADER_POSITION) {
-            Log.i(TAG, "isEnabled -> Position %d is disabled.");
-            return false;
-        }
-        return true;
+        return (getItemViewType(itemPosition) != HEADER_POSITION);
     }
 
     @Override

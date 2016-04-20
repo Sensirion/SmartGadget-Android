@@ -100,7 +100,7 @@ public class RHTHumigadgetSensorManager implements RHTListener, DeviceStateListe
      * @param listener that doesn't want to hear more notifications.
      */
     @SuppressWarnings("unused")
-    public void unregisterHumigadgetListener(@NonNull final RHTSensorManager listener) {
+    public synchronized void unregisterHumigadgetListener(@NonNull final RHTSensorManager listener) {
         mSensorManagers.remove(listener);
     }
 
@@ -131,7 +131,7 @@ public class RHTHumigadgetSensorManager implements RHTListener, DeviceStateListe
     /**
      * Disconnects all the connected devices.
      */
-    public void disconnectAllPeripherals() {
+    public synchronized void disconnectAllPeripherals() {
         final Iterable<? extends BleDevice> connectedBleDevices = mBleManager.getConnectedBleDevices();
         for (final BleDevice connectedBleDevice : connectedBleDevices) {
             mBleManager.disconnectDevice((connectedBleDevice).getAddress());

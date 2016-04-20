@@ -344,6 +344,9 @@ public class ComfortZoneFragment extends ParentFragment implements OnTouchListen
     private void touchSelectedSensorView() {
         if (isAdded()) {
             final String selectedAddress = Settings.getInstance().getSelectedAddress();
+            if (selectedAddress == Settings.SELECTED_NONE) {
+                return;
+            }
             final XyPoint point = mActiveSensorViews.get(selectedAddress);
             if (point == null) {
                 Log.e(TAG,
@@ -393,17 +396,7 @@ public class ComfortZoneFragment extends ParentFragment implements OnTouchListen
     private void selectSensor(final String selectedAddress) {
         for (final XyPoint point : mActiveSensorViews.values()) {
             point.setOutlineColor(Color.TRANSPARENT);
-            final Activity parent = getParent();
-            if (parent == null) {
-                Log.e(TAG, "updateTextViewName -> obtained null activity when calling parent.");
-                return;
-            }
-            parent.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    point.invalidate();
-                }
-            });
+            point.postInvalidate();
         }
         XyPoint selectedPoint = mActiveSensorViews.get(selectedAddress);
         if (selectedPoint != null) {
@@ -445,7 +438,7 @@ public class ComfortZoneFragment extends ParentFragment implements OnTouchListen
                     } else {
                         Log.e(TAG,
                                 String.format(
-                                        "updateTextViewName() -> mActiveSensorViews does not selected address: %s",
+                                        "updateTextViewName() -> mActiveSensorViews does not contain selected address: %s",
                                         selectedAddress
                                 )
                         );

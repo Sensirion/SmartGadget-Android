@@ -11,14 +11,12 @@ import android.util.Log;
 import com.sensirion.smartgadget.R;
 
 public class Settings {
-
-    public static final String UNKNOWN_VALUE = "";
-
     private static final String TAG = Settings.class.getSimpleName();
     private static final String PREFIX = Settings.class.getName();
-
     private static final String KEY_SELECTED_SENSOR = PREFIX + ".KEY_SELECTED_SENSOR";
-    private static final String SELECTED_NONE = PREFIX + ".SELECTED_NONE";
+
+    public static final String UNKNOWN_VALUE = "";
+    public static final String SELECTED_NONE = PREFIX + ".SELECTED_NONE";
 
     private static Settings mInstance;
     private final SharedPreferences mPreferences;
@@ -52,7 +50,6 @@ public class Settings {
                 .commit();
         Log.i(TAG, String.format("setSelectedAddress -> Address %s was selected.", deviceAddress));
     }
-
 
     public void unselectCurrentAddress() {
         setSelectedAddress(SELECTED_NONE);

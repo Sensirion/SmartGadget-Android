@@ -19,7 +19,11 @@ public class IndeterminateProgressDialog extends ProgressDialog {
     public IndeterminateProgressDialog(@NonNull final Context context, @NonNull final String title, @NonNull final String message, final boolean isCancelable) {
         this(context);
         setTitle(title);
-        setMessage(message);
+        if (context instanceof Activity) {
+            setMessage(message, (Activity) context);
+        } else {
+            setMessage(message);
+        }
         setCancelable(isCancelable);
     }
 
