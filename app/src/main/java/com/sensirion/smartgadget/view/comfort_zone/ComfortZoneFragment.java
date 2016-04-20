@@ -572,6 +572,16 @@ public class ComfortZoneFragment extends ParentFragment implements OnTouchListen
                 Log.e(TAG, "updateViewValues() -> Obtained null when calling the activity.");
                 return;
             }
+
+            if (address != RHTInternalSensorManager.INTERNAL_SENSOR_ADDRESS &&
+                !mActiveSensorViews.containsKey(address)) {
+                Log.w(TAG, String.format(
+                                "updateViewValues() -> Received value from inactive device %s. Updating views.",
+                                address
+                        )
+                );
+                updateSensorViews();
+            }
             parent.runOnUiThread(new Runnable() {
                 float newTemperature = temperature;
                 String unit;
