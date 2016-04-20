@@ -99,6 +99,7 @@ public class DeviceNameDatabaseManager {
         final String sqlQuery = DeviceNameTable.getInstance().readUserDeviceNameSql(deviceAddress);
         final QueryResult queryResult = mDatabase.rawDatabaseQuery(sqlQuery);
         if (queryResult == null) {
+            mKnownDeviceNames.put(deviceAddress, deviceAddress);
             return deviceAddress;
         }
         final String deviceName = queryResult.getFirstQueryResult().getString(DeviceNameTable.COLUMN_USER_DEVICE_NAME);
