@@ -7,6 +7,7 @@ import android.support.annotation.UiThread;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.sensirion.libble.devices.BleDevice;
@@ -91,6 +92,9 @@ public class HumigadgetListItemAdapter extends BaseAdapter {
 
         holder.rssiValueTextView.setText(String.format("%d", bleDevice.getRSSI()));
         holder.rssiValueTextView.setTypeface(mTypefaceNormal);
+
+        holder.settingsIcon.setVisibility((bleDevice.isConnected()) ? View.VISIBLE : View.INVISIBLE);
+
         return view;
     }
 
@@ -129,6 +133,8 @@ public class HumigadgetListItemAdapter extends BaseAdapter {
         TextView rssiLabelTextView;
         @Bind(R.id.listitem_value_rssi)
         TextView rssiValueTextView;
+        @Bind(R.id.listitem_icon)
+        ImageView settingsIcon;
 
         public HumigadgetViewHolder(@NonNull final View view) {
             ButterKnife.bind(this, view);
