@@ -72,16 +72,16 @@
     <!-- Reusable Strings -->
 
     <!-- '-.-' -->
-    <string name="label_empty_t">\u002d\u002d\u002E\u002d\u00B0</string>
-    <!-- '-.-' -->
-    <string name="label_empty_rh">\u002d\u002d\u002E\u002d\u0025RH</string>
+    <string name="label_empty_t">\u002d\u002d\u002E\u002d \u00B0</string>
+    <!-- '-.-%' -->
+    <string name="label_empty_rh">\u002d\u002d\u002E\u002d \u0025</string>
     <string name="label_empty_heat_index">N.A.</string>
     <!-- °C -->
     <string name="unit_celsius">\u00B0C</string>
     <!-- ºF -->
     <string name="unit_fahrenheit">\u00B0F</string>
-    <!-- %RH -->
-    <string name="unit_humidity">\u0025RH</string>
+    <!-- % -->
+    <string name="unit_humidity">\u0025</string>
     <!-- % -->
     <string name="char_percent">\u0025</string>
     <string name="label_t">Temperature</string>
@@ -90,9 +90,9 @@
     <string name="label_hi">Heat index</string>
     <string name="text_sensor_name_default">no sensor</string>
     <!-- '-.-º'-->
-    <string name="text_amb_temp_default">\u002D\u002D.\u002D\u00B0</string>
+    <string name="text_amb_temp_default">\u002D\u002D.\u002D \u00B0</string>
     <!-- '-.-%' -->
-    <string name="text_rh_default">\u002D\u002D.\u002DRH</string>
+    <string name="text_rh_default">\u002D\u002D.\u002D \u0025</string>
     <string name="label_on">ON</string>
     <string name="label_off">OFF</string>
     <string name="ok">OK</string>
@@ -125,10 +125,10 @@
     <string name="graph_label_temperature_celsius">TEMPERATURE\u0020\u0028\u2103\u0029</string>
     <!-- TEMPERATURE (℉) -->
     <string name="graph_label_temperature_fahrenheit">TEMPERATURE\u0020\u0028\u2109\u0029</string>
-    <!-- HUMIDITY (%RH)-->
-    <string name="graph_label_humidity">HUMIDITY\u0020\u0028\u0025RH\u0029\u0020</string>
-    <!-- RELATIVE HUMIDITY (%RH) -->
-    <string name="graph_label_relative_humidity">RELATIVE HUMIDITY\u0020\u0028\u0025RH\u0029\u0020</string>
+    <!-- HUMIDITY (%)-->
+    <string name="graph_label_humidity">HUMIDITY\u0020\u0028\u0025\u0029\u0020</string>
+    <!-- RELATIVE HUMIDITY (%) -->
+    <string name="graph_label_relative_humidity">RELATIVE HUMIDITY\u0020\u0028\u0025\u0029\u0020</string>
 
     <!-- ManageDeviceFragment -->
     <string name="label_details">Details</string>

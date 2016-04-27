@@ -10,7 +10,7 @@
     <!-- BUTTON MARGINS -->
     <dimen name="dashboard_button_padding_left">2dp</dimen>
     <dimen name="dashboard_button_margin_top">10dp</dimen>
-    <dimen name="dashboard_button_text_margin_left">203dp</dimen>
+    <dimen name="dashboard_button_text_margin_right">8dp</dimen>
     <dimen name="dashboard_button_text_margin_bottom">17dp</dimen>
 
     <!-- BUTTON TEXT SIZE -->

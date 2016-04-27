@@ -52,6 +52,9 @@ public class DashboardFragment extends ParentFragment implements RHTSensorListen
     private static final int BUTTON_STATE_DEW_POINT = 2;
     private static final int BUTTON_STATE_HEAT_INDEX = 3;
 
+    //BUTTON VALUE FORMAT
+    private static final String BUTTON_VALUE_FORMAT = "%s%s %s";
+
     //VIEWS
     @Bind(R.id.dashboard_connected_device_nested_list_view)
     ListView mConnectedDeviceView;
@@ -339,18 +342,18 @@ public class DashboardFragment extends ParentFragment implements RHTSensorListen
                     switch (buttonState) {
                         case BUTTON_STATE_HUMIDITY:
                             signGap = " ";
-                            textView.setText(String.format("%s%s%s", signGap, nf.format(humidity), HUMIDITY_UNIT));
+                            textView.setText(String.format(BUTTON_VALUE_FORMAT, signGap, nf.format(humidity), HUMIDITY_UNIT));
                             break;
                         case BUTTON_STATE_TEMPERATURE:
                             signGap = temperature < 0 ? "" : " ";
                             final String fixedTemperature = nf.format(mIsFahrenheit ? Converter.convertToF(temperature) : temperature);
-                            textView.setText(String.format("%s%s%s", signGap, fixedTemperature, unit));
+                            textView.setText(String.format(BUTTON_VALUE_FORMAT, signGap, fixedTemperature, unit));
                             break;
                         case BUTTON_STATE_DEW_POINT:
                             final float dewPoint = Converter.calcDewPoint(humidity, temperature);
                             final float fixedDewPoint = mIsFahrenheit ? Converter.convertToF(dewPoint) : dewPoint;
                             signGap = fixedDewPoint < 0 ? "" : " ";
-                            textView.setText(String.format("%s%s%s", signGap, nf.format(fixedDewPoint), unit));
+                            textView.setText(String.format(BUTTON_VALUE_FORMAT, signGap, nf.format(fixedDewPoint), unit));
                             break;
                         case BUTTON_STATE_HEAT_INDEX:
                             final float heatIndex;
@@ -363,7 +366,7 @@ public class DashboardFragment extends ParentFragment implements RHTSensorListen
                                 textView.setText(String.format(" %s", EMPTY_HEAT_INDEX_LABEL));
                             } else {
                                 signGap = heatIndex < 0 ? "" : " ";
-                                textView.setText(String.format("%s%s%s", signGap, nf.format(heatIndex), unit));
+                                textView.setText(String.format(BUTTON_VALUE_FORMAT, signGap, nf.format(heatIndex), unit));
                             }
                             break;
                         default:

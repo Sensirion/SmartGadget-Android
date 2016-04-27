@@ -630,7 +630,7 @@ public class ComfortZoneFragment extends ParentFragment implements OnTouchListen
             nf.setMaximumFractionDigits(1);
             nf.setMinimumFractionDigits(1);
             mSensorAmbientTemperatureTextView.setText(nf.format(temperature) + unit);
-            mSensorRelativeHumidity.setText(String.format("%s%sRH", nf.format(humidity), PERCENTAGE_CHARACTER));
+            mSensorRelativeHumidity.setText(String.format("%s %s", nf.format(humidity), getString(R.string.unit_humidity)));
         }
     }
 
