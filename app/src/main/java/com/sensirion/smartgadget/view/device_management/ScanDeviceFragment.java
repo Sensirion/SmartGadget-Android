@@ -7,6 +7,7 @@ import android.content.DialogInterface;
 import android.content.res.AssetManager;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -63,6 +64,7 @@ public class ScanDeviceFragment extends ParentListFragment implements ScanListen
     private static final byte DEVICE_TIMEOUT_SECONDS = 8; // Libble timeout -> 7.5 seconds.
     private static final int DEVICE_TIMEOUT_MILLISECONDS =
             DEVICE_TIMEOUT_SECONDS * Interval.ONE_SECOND.getNumberMilliseconds();
+    private static final int CONNECTING_DIALOG_DISSMISS_TIME_MS = 2000;
 
     // Update list attributes
     private static final int MINIMUM_TIME_UPDATE_LIST_DEVICES = Interval.ONE_SECOND.getNumberMilliseconds();
@@ -423,30 +425,14 @@ public class ScanDeviceFragment extends ParentListFragment implements ScanListen
         );
         mIndeterminateProgressDialog.show(getParent());
 
-        Executors.newSingleThreadExecutor().execute(new Runnable() {
+        new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-                int timeWaited = 0;
-                final int timePerCheck = 40;
-                while (isStillConnecting(timeWaited)) {
-                    try {
-                        Thread.sleep(timePerCheck);
-                        timeWaited += timePerCheck;
-                    } catch (final InterruptedException e) {
-                        Log.e(TAG, "showConnectionInProgressDialog -> An interrupted exception was produced when connecting to peripheral -> ", e);
-                    }
-                    if (mIsRequestingCharacteristicsFromPeripheral) {
-                        if (mIndeterminateProgressDialog == null) {
-                            Log.e(TAG, "showConnectionInProgressDialog -> Progress dialog is already canceled.");
-                        } else {
-                            final String message = String.format(ASKING_FOR_UNKNOWN_CHARACTERISTICS_PREFIX, deviceName);
-                            mIndeterminateProgressDialog.setMessage(message, getParent());
-                        }
-                    }
+                if (mIndeterminateProgressDialog != null) {
+                    mIndeterminateProgressDialog.dismiss();
                 }
-                dismissConnectingProgressDialog(deviceAddress);
             }
-        });
+        }, CONNECTING_DIALOG_DISSMISS_TIME_MS);
     }
 
     private boolean isStillConnecting(final int timeWaited) {
