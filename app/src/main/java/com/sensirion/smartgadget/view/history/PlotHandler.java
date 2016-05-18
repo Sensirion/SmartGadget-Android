@@ -11,6 +11,7 @@ import com.androidplot.xy.BoundaryMode;
 import com.androidplot.xy.LineAndPointFormatter;
 import com.androidplot.xy.SimpleXYSeries;
 import com.androidplot.xy.XYPlot;
+import com.androidplot.xy.XYSeries;
 import com.androidplot.xy.XYStepMode;
 import com.sensirion.smartgadget.R;
 import com.sensirion.smartgadget.utils.Converter;
@@ -23,6 +24,7 @@ import com.sensirion.smartgadget.view.history.type.HistoryIntervalType;
 import com.sensirion.smartgadget.view.history.type.HistoryUnitType;
 
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -111,9 +113,10 @@ public class PlotHandler {
                                           @NonNull final List<SimpleXYSeries> series,
                                           @NonNull final HistoryIntervalType interval,
                                           @NonNull final HistoryUnitType type) {
+
         mShouldResetRangeBoundaries = true;
-        mDeviceSeries = series;
         cleanSeries();
+        mDeviceSeries = series;
         updatePlotRangeFormat(context, type);
         updatePlotDomainFormat(context, interval);
         updatePlot(context);
@@ -160,7 +163,6 @@ public class PlotHandler {
     }
 
     private void updatePlot(@NonNull final Context context) {
-        cleanSeries();
         boolean validSeriesFound = false;
         long biggestTimestampSeries = 0;
         for (final SimpleXYSeries deviceSeries : mDeviceSeries) {
@@ -170,9 +172,12 @@ public class PlotHandler {
                 biggestTimestampSeries = biggestSeriesTimestamp;
             }
             final LineAndPointFormatter deviceFormatter = getDeviceFormatterFromSeries(deviceSeries);
-            for (final SimpleXYSeries series : handleGapsForSeries(deviceSeries)) {
+
+            List<SimpleXYSeries> deviceSeriesNoGaps = handleGapsForSeries(deviceSeries);
+            for (final SimpleXYSeries series : deviceSeriesNoGaps) {
                 mViewPlot.addSeries(prepareSeriesToShow(series), deviceFormatter);
             }
+
             validSeriesFound = true;
         }
         adjustGraphFormat(context, biggestTimestampSeries, validSeriesFound);
@@ -305,10 +310,47 @@ public class PlotHandler {
      * Deletes all the graph data displayed in the plot.
      */
     public void cleanSeries() {
-        for (final SimpleXYSeries oldSeries : mDeviceSeries) {
-            mViewPlot.removeSeries(oldSeries);
+        mDeviceSeries.clear();
+
+        /** FIXME Change plot update approach.
+         *
+         * Memory leak in the XYPlot element is caused by incorrect SimpleXYSeries handling.
+         * The solution below is a workaround, not a fix, since it solves the OOM problem, but
+         * generates performance issues.
+         *
+         * In the current solution, every time the plot is updated, all data
+         * is removed from the plot, the series are updated and re-added to the plot.
+         *
+         * A much better (in terms of performance) solution should be to remove old elements
+         * only (if at all) and add new elements (if needed).
+         *
+         * From android tutorial (http://androidplot.com/docs/dynamically-plotting-sensor-data/):
+         * SimpleXYPlot was meant for use in plots that are static or comprised of a small number
+         * of samples that change infrequently. This is a convenience class and should only be used
+         * for static data models; it is not suitable for representing dynamically changing data.
+         *
+         * What caused OOM fault were some remaining references to series data in the XYPlot, even
+         * though mViewPlot.removeSeries(setElement) was called. This prohibits GC from removing
+         * old data series. Therefore, the code below (workaround) removes elements from series
+         * explicitely one by one.
+         *
+         * For plotting dynamic sensor data in real time, please see:
+         * http://androidplot.com/docs/dynamically-plotting-sensor-data/
+         * http://androidplot.com/docs/a-dynamic-xy-plot/
+         */
+        Iterator<XYSeries> seriesIterator = mViewPlot.getSeriesSet().iterator();
+        while (seriesIterator.hasNext()) {
+            SimpleXYSeries setElement = (SimpleXYSeries) seriesIterator.next();
+            while (setElement.size() > 0) {
+                setElement.removeLast();
+            }
+            mViewPlot.removeSeries(setElement);
         }
+
         mViewPlot.clear();
+        mViewPlot.setDomainValueFormat(null);
+        mViewPlot.setRangeValueFormat(null);
+        mViewPlot.getRendererList().clear();
     }
 
     /**
