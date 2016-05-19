@@ -417,6 +417,10 @@ public class ScanDeviceFragment extends ParentListFragment implements ScanListen
         final String message = String.format(CONNECTING_TO_DEVICE_PREFIX, deviceName);
         final boolean isCancelable = false;
 
+        if (mIndeterminateProgressDialog != null) {
+            Log.w(TAG, "IndeterminateProgressDialog already in use... will not create a new one");
+            return;
+        }
         mIndeterminateProgressDialog = new IndeterminateProgressDialog(
                 getParent(),
                 title,
