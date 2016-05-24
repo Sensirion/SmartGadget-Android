@@ -33,7 +33,7 @@ import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
 
-import butterknife.Bind;
+import butterknife.BindView;
 import butterknife.BindColor;
 import butterknife.BindInt;
 import butterknife.BindString;
@@ -87,19 +87,19 @@ public class ComfortZoneFragment extends ParentFragment implements OnTouchListen
     @BindColor(R.color.sensirion_grey_dark)
     int SENSIRION_GREY_DARK;
 
-    @Bind(R.id.plotview)
+    @BindView(R.id.plotview)
     XyPlotView mPlotView;
 
-    @Bind(R.id.textview_left)
+    @BindView(R.id.textview_left)
     TextView mTextViewLeft;
 
-    @Bind(R.id.textview_top)
+    @BindView(R.id.textview_top)
     TextView mTextViewTop;
 
-    @Bind(R.id.textview_right)
+    @BindView(R.id.textview_right)
     TextView mTextViewRight;
 
-    @Bind(R.id.textview_bottom)
+    @BindView(R.id.textview_bottom)
     TextView mTextViewBottom;
 
     @BindInt(R.integer.comfort_zone_temperature_humidity_value_text_size_graph)
@@ -111,13 +111,13 @@ public class ComfortZoneFragment extends ParentFragment implements OnTouchListen
     @BindInt(R.integer.comfort_zone_values_text_size)
     int GRAPH_LABEL_TEXT_SIZE;
 
-    @Bind(R.id.tv_sensor_name)
+    @BindView(R.id.tv_sensor_name)
     TextView mSensorNameTextView;
 
-    @Bind(R.id.text_amb_temp)
+    @BindView(R.id.text_amb_temp)
     TextView mSensorAmbientTemperatureTextView;
 
-    @Bind(R.id.text_rh)
+    @BindView(R.id.text_rh)
     TextView mSensorRelativeHumidity;
 
     @BindString(R.string.text_sensor_name_default)
@@ -129,7 +129,7 @@ public class ComfortZoneFragment extends ParentFragment implements OnTouchListen
     @BindString(R.string.label_empty_rh)
     String EMPTY_RELATIVE_HUMIDITY_STRING;
 
-    @Bind(R.id.parentframe)
+    @BindView(R.id.parentframe)
     ViewGroup mParentFrame;
 
     @BindString(R.string.char_percent)

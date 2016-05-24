@@ -28,7 +28,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-import butterknife.Bind;
+import butterknife.BindView;
 import butterknife.BindInt;
 import butterknife.BindString;
 import butterknife.ButterKnife;
@@ -40,7 +40,7 @@ public class PlotHandler {
     private static final String TAG = PlotHandler.class.getSimpleName();
 
     // Injected XML views
-    @Bind(R.id.history_fragment_plot)
+    @BindView(R.id.history_fragment_plot)
     XYPlot mViewPlot;
 
     // Extracted constants from the XML resources

@@ -16,7 +16,7 @@ import com.sensirion.smartgadget.utils.Settings;
 
 import java.util.List;
 
-import butterknife.Bind;
+import butterknife.BindView;
 import butterknife.ButterKnife;
 
 public class ConnectedDeviceAdapter extends ArrayAdapter<DeviceModel> {
@@ -59,11 +59,11 @@ public class ConnectedDeviceAdapter extends ArrayAdapter<DeviceModel> {
     }
 
     static class DashboardViewHolder {
-        @Bind(R.id.item_gadget_displayname)
+        @BindView(R.id.item_gadget_displayname)
         TextView titleView;
-        @Bind(R.id.item_gadget_color)
+        @BindView(R.id.item_gadget_color)
         ImageView colorView;
-        @Bind(R.id.item_icon)
+        @BindView(R.id.item_icon)
         ImageView itemIcon;
 
         DashboardViewHolder(@NonNull final View view) {

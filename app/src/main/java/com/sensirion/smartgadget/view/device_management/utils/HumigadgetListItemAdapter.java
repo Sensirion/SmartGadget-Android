@@ -19,7 +19,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import butterknife.Bind;
+import butterknife.BindView;
 import butterknife.ButterKnife;
 
 /**
@@ -125,15 +125,15 @@ public class HumigadgetListItemAdapter extends BaseAdapter {
     }
 
     static class HumigadgetViewHolder {
-        @Bind(R.id.listitem_advertised_name)
+        @BindView(R.id.listitem_advertised_name)
         TextView advertisedName;
-        @Bind(R.id.device_address)
+        @BindView(R.id.device_address)
         TextView deviceAddress;
-        @Bind(R.id.listitem_label_rssi)
+        @BindView(R.id.listitem_label_rssi)
         TextView rssiLabelTextView;
-        @Bind(R.id.listitem_value_rssi)
+        @BindView(R.id.listitem_value_rssi)
         TextView rssiValueTextView;
-        @Bind(R.id.listitem_icon)
+        @BindView(R.id.listitem_icon)
         ImageView settingsIcon;
 
         public HumigadgetViewHolder(@NonNull final View view) {

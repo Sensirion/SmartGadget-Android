@@ -41,10 +41,10 @@ import com.sensirion.smartgadget.view.device_management.utils.HumigadgetListItem
 
 import java.util.concurrent.Executors;
 
-import butterknife.Bind;
 import butterknife.BindBool;
 import butterknife.BindColor;
 import butterknife.BindString;
+import butterknife.BindView;
 import butterknife.ButterKnife;
 
 /**
@@ -104,9 +104,9 @@ public class ScanDeviceFragment extends ParentListFragment implements ScanListen
     int SENSIRION_GREEN;
 
     // Injected views
-    @Bind(R.id.scan_background)
+    @BindView(R.id.scan_background)
     FrameLayout mBackground;
-    @Bind(R.id.togglebutton_scan)
+    @BindView(R.id.togglebutton_scan)
     ToggleButton mScanToggleButton;
 
     // Block Dialogs

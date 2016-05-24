@@ -18,7 +18,7 @@ import com.sensirion.smartgadget.utils.view.ColorManager;
 import java.util.LinkedList;
 import java.util.List;
 
-import butterknife.Bind;
+import butterknife.BindView;
 import butterknife.ButterKnife;
 
 public class HistoryDeviceAdapter extends ArrayAdapter<DeviceModel> {
@@ -159,13 +159,13 @@ public class HistoryDeviceAdapter extends ArrayAdapter<DeviceModel> {
 
     static class DeviceViewHolder {
 
-        @Bind(R.id.item_gadget_displayname)
+        @BindView(R.id.item_gadget_displayname)
         TextView title;
 
-        @Bind(R.id.item_icon)
+        @BindView(R.id.item_icon)
         ImageView icon;
 
-        @Bind(R.id.item_gadget_color)
+        @BindView(R.id.item_gadget_color)
         ImageView color;
 
         public DeviceViewHolder(@NonNull final View view) {

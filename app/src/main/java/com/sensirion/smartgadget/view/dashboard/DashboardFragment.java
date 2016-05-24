@@ -36,7 +36,7 @@ import java.text.NumberFormat;
 import java.util.List;
 import java.util.Locale;
 
-import butterknife.Bind;
+import butterknife.BindView;
 import butterknife.BindBool;
 import butterknife.BindString;
 import butterknife.ButterKnife;
@@ -56,23 +56,23 @@ public class DashboardFragment extends ParentFragment implements RHTSensorListen
     private static final String BUTTON_VALUE_FORMAT = "%s%s %s";
 
     //VIEWS
-    @Bind(R.id.dashboard_connected_device_nested_list_view)
+    @BindView(R.id.dashboard_connected_device_nested_list_view)
     ListView mConnectedDeviceView;
-    @Bind(R.id.dashboard_temperature_button)
+    @BindView(R.id.dashboard_temperature_button)
     Button mTemperatureButton;
-    @Bind(R.id.dashboard_humidity_button)
+    @BindView(R.id.dashboard_humidity_button)
     Button mHumidityButton;
-    @Bind(R.id.dashboard_dew_point_button)
+    @BindView(R.id.dashboard_dew_point_button)
     Button mDewPointButton;
-    @Bind(R.id.dashboard_heat_index_button)
+    @BindView(R.id.dashboard_heat_index_button)
     Button mHeatIndexButton;
-    @Bind(R.id.dashboard_temperature_value)
+    @BindView(R.id.dashboard_temperature_value)
     TextView mTemperatureValueTextView;
-    @Bind(R.id.dashboard_humidity_value)
+    @BindView(R.id.dashboard_humidity_value)
     TextView mHumidityValueTextView;
-    @Bind(R.id.dashboard_dew_point_value)
+    @BindView(R.id.dashboard_dew_point_value)
     TextView mDewPointValueTextView;
-    @Bind(R.id.dashboard_heat_index_value)
+    @BindView(R.id.dashboard_heat_index_value)
     TextView mHeatIndexValueTextView;
 
     //Extracted attributes from the XML

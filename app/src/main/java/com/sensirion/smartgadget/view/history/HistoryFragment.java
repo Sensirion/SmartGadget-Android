@@ -40,9 +40,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import butterknife.Bind;
 import butterknife.BindInt;
 import butterknife.BindString;
+import butterknife.BindView;
 import butterknife.ButterKnife;
 
 public class HistoryFragment extends ParentFragment implements RHTSensorListener {
@@ -63,13 +63,13 @@ public class HistoryFragment extends ParentFragment implements RHTSensorListener
             Collections.synchronizedMap(new HashMap<String, DeviceModel>());
 
     // Injected application Views
-    @Bind(R.id.history_device_nested_list_view)
+    @BindView(R.id.history_device_nested_list_view)
     ListView mDeviceListView;
-    @Bind(R.id.history_interval_tabs)
+    @BindView(R.id.history_interval_tabs)
     LinearLayout mIntervalTabs;
-    @Bind(R.id.history_type_of_value_tabs)
+    @BindView(R.id.history_type_of_value_tabs)
     LinearLayout mValueTabs;
-    @Bind(R.id.history_fragment_plot)
+    @BindView(R.id.history_fragment_plot)
     XYPlot mPlot;
 
     // Extracted constants from the XML resources

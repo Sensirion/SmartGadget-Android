@@ -51,9 +51,9 @@ import com.sensirion.smartgadget.utils.download.LoggerInterval;
 import com.sensirion.smartgadget.utils.view.ParentFragment;
 import com.sensirion.smartgadget.view.MainActivity;
 
-import butterknife.Bind;
 import butterknife.BindBool;
 import butterknife.BindString;
+import butterknife.BindView;
 import butterknife.ButterKnife;
 
 public class ManageDeviceFragment extends ParentFragment implements HistoryListener {
@@ -87,29 +87,29 @@ public class ManageDeviceFragment extends ParentFragment implements HistoryListe
     String TYPEFACE_BOLD_LOCATION;
 
     // XML Views
-    @Bind(R.id.manage_device_gadget_name_label)
+    @BindView(R.id.manage_device_gadget_name_label)
     TextView mGadgetNameLabel;
-    @Bind(R.id.manage_device_label_logging_interval)
+    @BindView(R.id.manage_device_label_logging_interval)
     TextView mLoggingIntervalLabel;
-    @Bind(R.id.manage_device_label_gadget_logging)
+    @BindView(R.id.manage_device_label_gadget_logging)
     TextView mGadgetLoggingLabel;
-    @Bind(R.id.manage_device_gadget_name_edit_field)
+    @BindView(R.id.manage_device_gadget_name_edit_field)
     EditText mGadgetNameEditText;
-    @Bind(R.id.manage_device_button_disconnect)
+    @BindView(R.id.manage_device_button_disconnect)
     Button mDisconnectButton;
-    @Bind(R.id.manage_device_button_download_log)
+    @BindView(R.id.manage_device_button_download_log)
     Button mDownloadLogButton;
-    @Bind(R.id.manage_device_button_logging_interval)
+    @BindView(R.id.manage_device_button_logging_interval)
     Button mLoggingIntervalButton;
-    @Bind(R.id.manage_device_layout_gadgetlogging_switch_layout)
+    @BindView(R.id.manage_device_layout_gadgetlogging_switch_layout)
     LinearLayout mGadgetLoggingSwitch;
-    @Bind(R.id.manage_device_battery_level_layout)
+    @BindView(R.id.manage_device_battery_level_layout)
     RelativeLayout mBatteryLevelLayout;
-    @Bind(R.id.manage_device_battery_level_value)
+    @BindView(R.id.manage_device_battery_level_value)
     TextView mBatteryLevelValue;
-    @Bind(R.id.manage_device_battery_seek_bar)
+    @BindView(R.id.manage_device_battery_seek_bar)
     SeekBar mBatterySeekBar;
-    @Bind(R.id.manage_device_switch_toggle_logger)
+    @BindView(R.id.manage_device_switch_toggle_logger)
     Switch mLoggingToggle;
     // BleDevice connectors
     @Nullable

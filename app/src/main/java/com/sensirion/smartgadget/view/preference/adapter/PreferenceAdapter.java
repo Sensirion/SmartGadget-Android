@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import butterknife.Bind;
+import butterknife.BindView;
 import butterknife.ButterKnife;
 
 public class PreferenceAdapter extends BaseAdapter {
@@ -112,9 +112,9 @@ public class PreferenceAdapter extends BaseAdapter {
     }
 
     static class PreferenceViewHolder {
-        @Bind(R.id.preference_summary)
+        @BindView(R.id.preference_summary)
         TextView summaryTextView;
-        @Bind(R.id.preference_title)
+        @BindView(R.id.preference_title)
         TextView titleTextView;
 
         PreferenceViewHolder(@NonNull final View view) {
