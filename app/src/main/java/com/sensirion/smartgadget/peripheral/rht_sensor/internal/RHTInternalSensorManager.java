@@ -168,7 +168,7 @@ public class RHTInternalSensorManager {
     }
 
     private void notifyListenerNewSensor(@NonNull final RHTSensorManager listener) {
-        listener.onConnectedRHTDevice(getSensorModel());
+        listener.onGadgetConnectionChanged(getSensorModel(), true);
     }
 
     private void notifyAllListenersNewSensor() {

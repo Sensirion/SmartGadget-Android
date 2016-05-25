@@ -116,16 +116,6 @@ public class RHTHumigadgetSensorManager implements RHTListener, DeviceStateListe
             return;
         }
         mBleManager.connectDevice(deviceAddress);
-
-        final int color = ColorManager.getInstance().getDeviceColor(deviceAddress);
-        Log.i(TAG, String.format("connectDevice -> ADDING device: %s with color %d ", deviceAddress, color));
-
-        final String deviceName = DeviceNameDatabaseManager.getInstance().readDeviceName(deviceAddress);
-        final DeviceModel model = new DeviceModel(deviceAddress, color, deviceName, false);
-
-        for (final RHTSensorManager listener : mSensorManagers) {
-            listener.onConnectedRHTDevice(model);
-        }
     }
 
     /**
@@ -193,7 +183,9 @@ public class RHTHumigadgetSensorManager implements RHTListener, DeviceStateListe
     @Override
     public void onDeviceConnected(@NonNull final BleDevice device) {
         Log.i(TAG, String.format("onDeviceConnected -> Received connected device with address: %s.", device.getAddress()));
-        updateConnectedDeviceList();
+        for (RHTSensorManager listener : mSensorManagers) {
+            listener.onGadgetConnectionChanged(createDeviceModel(device.getAddress()), true);
+        }
     }
 
     /**
@@ -204,7 +196,9 @@ public class RHTHumigadgetSensorManager implements RHTListener, DeviceStateListe
     @Override
     public void onDeviceDisconnected(@NonNull final BleDevice device) {
         Log.i(TAG, String.format("onDeviceConnected -> %s has lost the connected with the device: %s ", TAG, device.getAddress()));
-        updateConnectedDeviceList();
+        for (RHTSensorManager listener : mSensorManagers) {
+            listener.onGadgetConnectionChanged(createDeviceModel(device.getAddress()), false);
+        }
     }
 
     /**
@@ -214,8 +208,14 @@ public class RHTHumigadgetSensorManager implements RHTListener, DeviceStateListe
      */
     @Override
     public void onDeviceDiscovered(@NonNull final BleDevice device) {
-        Log.i(TAG, String.format("onDeviceDiscovered -> Received discovered device with address: %s.", device.getAddress()));
-        updateConnectedDeviceList();
+        // Do nothing - we only care about connected devices
+    }
+
+    private DeviceModel createDeviceModel(final String deviceAddress) {
+        final int color = ColorManager.getInstance().getDeviceColor(deviceAddress);
+        final String deviceName = DeviceNameDatabaseManager.getInstance().readDeviceName(deviceAddress);
+
+        return new DeviceModel(deviceAddress, color, deviceName, false);
     }
 
     /**
@@ -225,25 +225,6 @@ public class RHTHumigadgetSensorManager implements RHTListener, DeviceStateListe
     public void onDeviceAllServicesDiscovered(@NonNull final BleDevice device) {
         Log.i(TAG, String.format("onDeviceAllServiceDiscovered -> Device %s has discovered all its services.", device.getAddress()));
         mBleManager.registerNotificationListener(this);
-    }
-
-    /**
-     * Checks that the device list doesn't have disconnected devices.
-     */
-    public void updateConnectedDeviceList() {
-        Log.d(TAG, "updateConnectedDeviceList -> Updating connected device list.");
-        for (final RHTSensorManager listener : mSensorManagers) {
-            for (DeviceModel deviceModel : listener.getConnectedSensors()) {
-                if (deviceModel.isInternal()) {
-                    continue;
-                }
-                final String deviceAddress = deviceModel.getAddress();
-                if (mBleManager.getConnectedDevice(deviceAddress) == null) {
-                    listener.onGadgetConnectionChanged(deviceAddress, false);
-                    Log.i(TAG, String.format("updateConnectedDeviceList -> Device %s was disconnected.", deviceAddress));
-                }
-            }
-        }
     }
 
     /**

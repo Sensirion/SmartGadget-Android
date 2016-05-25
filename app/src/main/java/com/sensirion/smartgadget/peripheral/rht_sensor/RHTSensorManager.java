@@ -7,11 +7,8 @@ import com.sensirion.smartgadget.utils.DeviceModel;
 
 import java.util.List;
 
-public interface RHTSensorManager extends PeripheralConnectionStateListener {
+public interface RHTSensorManager {
     void onNewRHTData(float temperature, float humidity, String deviceAddress);
 
-    void onConnectedRHTDevice(DeviceModel model);
-
-    @NonNull
-    List<DeviceModel> getConnectedSensors();
+    void onGadgetConnectionChanged(DeviceModel model, boolean isConnected);
 }

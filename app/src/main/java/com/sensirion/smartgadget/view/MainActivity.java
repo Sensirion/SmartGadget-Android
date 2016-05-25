@@ -132,7 +132,6 @@ public class MainActivity extends FragmentActivity implements View.OnTouchListen
     }
 
     private void changeTabletSection(final int position, final boolean withTransition) {
-        RHTHumigadgetSensorManager.getInstance().updateConnectedDeviceList();
         if (position != mPositionSelected || mIsChildScreen || !withTransition) {
             cleanScreen();
             final Fragment fragment = mSectionsPagerAdapter.getItem(position);
@@ -264,7 +263,6 @@ public class MainActivity extends FragmentActivity implements View.OnTouchListen
         mMobileViewPager.setCurrentItem(position);
         mLastFragment = mSectionsPagerAdapter.getItem(position);
         updateMobileTabState(position);
-        RHTHumigadgetSensorManager.getInstance().updateConnectedDeviceList();
     }
 
     private void onMobileTabReselected(final int position) {
@@ -348,8 +346,6 @@ public class MainActivity extends FragmentActivity implements View.OnTouchListen
         super.onResume();
         Log.i(TAG, "onResume()");
         RHTSensorFacade.getInstance().registerListener(this);
-        RHTHumigadgetSensorManager bleManager = RHTHumigadgetSensorManager.getInstance();
-        bleManager.updateConnectedDeviceList();
         BleManager.getInstance().setAllNotificationsEnabled(true);
     }
 

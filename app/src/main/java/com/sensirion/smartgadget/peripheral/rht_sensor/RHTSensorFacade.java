@@ -84,7 +84,6 @@ public class RHTSensorFacade implements RHTSensorManager {
      * @return {@link java.util.List} with  {@link com.sensirion.smartgadget.utils.DeviceModel} with the connected devices.
      */
     @NonNull
-    @Override
     public List<DeviceModel> getConnectedSensors() {
         return new LinkedList<>(mConnectedDeviceListModels);
     }
@@ -149,39 +148,6 @@ public class RHTSensorFacade implements RHTSensorManager {
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void onGadgetConnectionChanged(@NonNull final String deviceAddress, final boolean deviceIsConnected) {
-        Log.d(TAG, String.format("onGadgetConnectionChanged -> Device %s has been %s.", deviceAddress, (deviceIsConnected) ? "connected" : "disconnected"));
-        if (!deviceIsConnected) {
-            onGadgetDisconnected(deviceAddress);
-            selectFallback(deviceAddress);
-        }
-        for (RHTSensorListener listener : mListeners) {
-            listener.onGadgetConnectionChanged(deviceAddress, deviceIsConnected);
-        }
-    }
-
-    /**
-     * Removes a device from the connected device list.
-     *
-     * @param deviceAddress of the device that wants to be removed from the list.
-     */
-    private void onGadgetDisconnected(@NonNull final String deviceAddress) {
-        final Iterator<DeviceModel> iterator = mConnectedDeviceListModels.iterator();
-        while (iterator.hasNext()) {
-            if (iterator.next().getAddress().equals(deviceAddress)) {
-                this.mLastDataPoint.remove(deviceAddress);
-                iterator.remove();
-                Log.d(TAG, String.format("onGadgetDisconnected -> Device with address %s was removed from the list", deviceAddress));
-                return;
-            }
-        }
-        Log.w(TAG, String.format("onGadgetDisconnected -> Device with address %s was not in the list.", deviceAddress));
-    }
-
     private void selectFallback(@NonNull final String deviceAddress) {
         if (deviceAddress.equals(Settings.getInstance().getSelectedAddress())) {
             try {
@@ -222,15 +188,27 @@ public class RHTSensorFacade implements RHTSensorManager {
     }
 
     @Override
-    public void onConnectedRHTDevice(@NonNull final DeviceModel model) {
+    public void onGadgetConnectionChanged(@NonNull final DeviceModel model, final boolean isConnected) {
         final String deviceAddress = model.getAddress();
-        if (isDeviceConnected(deviceAddress)) {
-            Log.w(TAG, String.format("onConnectedRHTDevice -> Device with address %s was already in the connected device list.", deviceAddress));
-            return;
+        Log.d(TAG, String.format("onGadgetConnectionChanged -> Device %s has been %s.", deviceAddress, (isConnected) ? "connected" : "disconnected"));
+
+        if (isConnected) {
+            if (isDeviceConnected(deviceAddress)) {
+                Log.w(TAG, String.format("onGadgetConnectionChanged -> Device with address %s was already in the connected device list.", deviceAddress));
+                return;
+            }
+            mConnectedDeviceListModels.add(model);
+            Log.i(TAG, String.format("onGadgetConnectionChanged() -> Device with address %s has been added.", deviceAddress));
+            Settings.getInstance().setSelectedAddress(model.getAddress());
+        } else {
+            mConnectedDeviceListModels.remove(model);
+            Log.i(TAG, String.format("onGadgetConnectionChanged() -> Device with address %s has been removed.", deviceAddress));
+            selectFallback(deviceAddress);
         }
-        mConnectedDeviceListModels.add(model);
-        Log.i(TAG, String.format("onConnectedRHTDevice() -> Device with address %s has been added.", deviceAddress));
-        Settings.getInstance().setSelectedAddress(model.getAddress());
+
+        for (RHTSensorListener listener : mListeners) {
+            listener.onGadgetConnectionChanged(deviceAddress, isConnected);
+        }
     }
 
     /**

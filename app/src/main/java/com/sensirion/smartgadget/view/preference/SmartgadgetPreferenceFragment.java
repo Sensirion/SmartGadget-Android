@@ -21,6 +21,8 @@ import android.widget.Toast;
 
 import com.sensirion.libble.BleManager;
 import com.sensirion.smartgadget.R;
+import com.sensirion.smartgadget.peripheral.rht_sensor.RHTSensorFacade;
+import com.sensirion.smartgadget.peripheral.rht_sensor.RHTSensorListener;
 import com.sensirion.smartgadget.peripheral.rht_sensor.external.RHTHumigadgetSensorManager;
 import com.sensirion.smartgadget.utils.Settings;
 import com.sensirion.smartgadget.utils.view.ParentListFragment;
@@ -37,7 +39,7 @@ import butterknife.ButterKnife;
 
 import static android.content.pm.PackageManager.NameNotFoundException;
 
-public class SmartgadgetPreferenceFragment extends ParentListFragment {
+public class SmartgadgetPreferenceFragment extends ParentListFragment implements RHTSensorListener {
 
     // Class name
     @NonNull
@@ -102,6 +104,13 @@ public class SmartgadgetPreferenceFragment extends ParentListFragment {
         refreshPreferenceAdapter();
         refreshUserPreferenceAdapter();
         setListAdapter(mSectionAdapter);
+        RHTSensorFacade.getInstance().registerListener(this);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        RHTSensorFacade.getInstance().unregisterListener(this);
     }
 
     @Override
@@ -380,5 +389,15 @@ public class SmartgadgetPreferenceFragment extends ParentListFragment {
             mLastAboutToast = Toast.makeText(getParent(), aboutText.toString(), Toast.LENGTH_LONG);
             mLastAboutToast.show();
         }
+    }
+
+    @Override
+    public void onNewRHTSensorData(float temperature, float relativeHumidity, @Nullable String deviceAddress) {
+        // do nothing
+    }
+
+    @Override
+    public void onGadgetConnectionChanged(@NonNull String deviceAddress, boolean deviceIsConnected) {
+        refreshPreferenceAdapter();
     }
 }

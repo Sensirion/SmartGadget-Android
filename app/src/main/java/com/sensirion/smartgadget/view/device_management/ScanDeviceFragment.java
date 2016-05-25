@@ -434,6 +434,7 @@ public class ScanDeviceFragment extends ParentListFragment implements ScanListen
             public void run() {
                 if (mIndeterminateProgressDialog != null) {
                     mIndeterminateProgressDialog.dismiss();
+                    mIndeterminateProgressDialog = null;
                 }
             }
         }, CONNECTING_DIALOG_DISSMISS_TIME_MS);
