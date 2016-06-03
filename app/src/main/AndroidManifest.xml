@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.sensirion.smartgadget"
-    android:versionCode="84"
-    android:versionName="1.6.3">
+    android:versionCode="85"
+    android:versionName="1.6.4-SNAPSHOT">
 
     <uses-permission android:name="android.permission.INTERACT_ACROSS_USERS_FULL" />
 
