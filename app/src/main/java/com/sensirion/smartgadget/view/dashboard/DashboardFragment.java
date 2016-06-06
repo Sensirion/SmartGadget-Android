@@ -217,6 +217,7 @@ public class DashboardFragment extends ParentFragment implements RHTSensorListen
                 Settings.getInstance().setSelectedAddress(clickedAddress);
                 mConnectedDeviceAdapter.notifyDataSetChanged();
                 resetViewValues();
+                RHTSensorFacade.getInstance().notifyCachedSensorData(DashboardFragment.this);
             }
         });
         updateListView();

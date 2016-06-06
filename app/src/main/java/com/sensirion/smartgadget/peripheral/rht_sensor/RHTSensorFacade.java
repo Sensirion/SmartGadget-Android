@@ -230,7 +230,7 @@ public class RHTSensorFacade implements RHTSensorManager {
      *
      * @param listener that will be notified
      */
-    private void notifyCachedSensorData(@NonNull final RHTSensorListener listener) {
+    public void notifyCachedSensorData(@NonNull final RHTSensorListener listener) {
         for (final String humigadgetsWithDatapoints : mLastDataPoint.keySet()) {
             final RHTDataPoint dataPoint = mLastDataPoint.get(humigadgetsWithDatapoints);
             listener.onNewRHTSensorData(
