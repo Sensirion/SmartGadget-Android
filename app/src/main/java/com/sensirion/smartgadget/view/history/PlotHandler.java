@@ -137,22 +137,17 @@ public class PlotHandler {
         mViewPlot.setRangeStep(XYStepMode.SUBDIVIDE, DEFAULT_NUMBER_RANGE_LABELS);
         if (type == HistoryUnitType.TEMPERATURE) {
             updateRangeFormatToTemperature(context);
-            Log.i(TAG, "updatePlotRangeFormat -> Updated graph for temperature.");
         } else {
             updateRangeFormatToHumidity();
-            Log.i(TAG, "updatePlotRangeFormat -> Updated graph for humidity.");
         }
     }
 
     private void updateRangeFormatToTemperature(@NonNull final Context context) {
-        if (Settings.getInstance().isTemperatureUnitFahrenheit(context)) {
+        mIsFahrenheit = Settings.getInstance().isTemperatureUnitFahrenheit(context);
+        if (mIsFahrenheit) {
             mViewPlot.setRangeLabel(TEMPERATURE_LABEL_IN_FAHRENHEIT);
-            mIsFahrenheit = true;
-            Log.i(TAG, "updateRangeFormatToTemperature(): Updated range format to Fahrenheit.");
         } else {
             mViewPlot.setRangeLabel(TEMPERATURE_LABEL_IN_CELSIUS);
-            mIsFahrenheit = false;
-            Log.i(TAG, "updateRangeFormatToTemperature(): Updated range format to Celsius.");
         }
     }
 

@@ -103,11 +103,6 @@ public class DashboardFragment extends ParentFragment implements RHTSensorListen
 
     private void updateViewForSelectedTemperatureUnit() {
         mIsFahrenheit = Settings.getInstance().isTemperatureUnitFahrenheit(getContext());
-        Log.i(TAG, String.format(
-                        "updateViewForSelectedTemperatureUnit(): The temperature unit it's %s.",
-                        (mIsFahrenheit) ? "Fahrenheit" : "Celsius"
-                )
-        );
     }
 
     private void updateListView() {
@@ -154,7 +149,6 @@ public class DashboardFragment extends ParentFragment implements RHTSensorListen
     @Override
     public void onResume() {
         super.onResume();
-        Log.i(TAG, "onResume()");
         RHTSensorFacade.getInstance().registerListener(this);
         updateViewForSelectedTemperatureUnit();
         updateListView();
@@ -163,7 +157,6 @@ public class DashboardFragment extends ParentFragment implements RHTSensorListen
     @Override
     public void onPause() {
         super.onPause();
-        Log.i(TAG, "onPause()");
         RHTSensorFacade.getInstance().unregisterListener(this);
         resetViewValues();
     }
