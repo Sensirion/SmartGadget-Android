@@ -149,6 +149,7 @@ public class DashboardFragment extends ParentFragment implements RHTSensorListen
     @Override
     public void onResume() {
         super.onResume();
+        resetViewValues();
         RHTSensorFacade.getInstance().registerListener(this);
         updateViewForSelectedTemperatureUnit();
         updateListView();
@@ -158,7 +159,6 @@ public class DashboardFragment extends ParentFragment implements RHTSensorListen
     public void onPause() {
         super.onPause();
         RHTSensorFacade.getInstance().unregisterListener(this);
-        resetViewValues();
     }
 
     @UiThread
@@ -248,6 +248,7 @@ public class DashboardFragment extends ParentFragment implements RHTSensorListen
                 );
             } else {
                 resetViewValues();
+                RHTSensorFacade.getInstance().notifyCachedSensorData(DashboardFragment.this);
                 Log.i(TAG, String.format(
                                 "onGadgetConnectionChanged() -> Sensor with address %s was disconnected.",
                                 deviceAddress
