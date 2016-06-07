@@ -1,5 +1,6 @@
 package com.sensirion.smartgadget.view.history;
 
+import android.content.Context;
 import android.content.res.AssetManager;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
@@ -119,6 +120,12 @@ public class HistoryFragment extends ParentFragment implements RHTSensorListener
             }
         });
         return historyView;
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        RHTSensorFacade.getInstance().unregisterListener(this);
     }
 
     public void init(@NonNull final View historyView) {
@@ -332,13 +339,17 @@ public class HistoryFragment extends ParentFragment implements RHTSensorListener
                     Log.e(TAG, "onNewRHTSensorData -> mPlotHandler can't be null.");
                     return;
                 }
-                mPlotHandler.updateSeries(
-                        getContext(),
-                        obtainPlotSeries(mHistoryDeviceAdapter.getListOfSelectedItems()),
-                        mIntervalSelected,
-                        mUnitTypeSelected
-                );
-                Log.i(TAG, "onNewRHTSensorData -> plot view has been updated.");
+                final Context context = getContext();
+                if (context != null) {
+                    mPlotHandler.updateSeries(
+                            context,
+                            obtainPlotSeries(mHistoryDeviceAdapter.getListOfSelectedItems()),
+                            mIntervalSelected,
+                            mUnitTypeSelected
+                    );
+                } else {
+                    Log.e(TAG, "onNewRHTSensorData -> plot view not updated.");
+                }
             }
             mLastDatabaseQuery = System.currentTimeMillis();
         }
