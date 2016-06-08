@@ -73,7 +73,7 @@ public class DownloadLogHelper implements HistoryListener {
         mProgressDialogAddress = loggingService.getDeviceAddress();
 
         //Initializes the progress dialog.
-        prepareProgressDialog(activity, loggingService, numberElementsToLog);
+        prepareProgressDialog(activity, mProgressDialogAddress, numberElementsToLog);
 
         //Registers the listener.
         loggingService.registerNotificationListener(DownloadLogHelper.this);
@@ -87,8 +87,8 @@ public class DownloadLogHelper implements HistoryListener {
         });
     }
 
-    private void prepareProgressDialog(@NonNull final Activity context, @NonNull final AbstractHistoryService loggingService, final int numberElementsLog) {
-        final String deviceName = DeviceNameDatabaseManager.getInstance().readDeviceName(loggingService.getDeviceAddress());
+    private void prepareProgressDialog(@NonNull final Activity context, @NonNull final String deviceAddress, final int numberElementsLog) {
+        final String deviceName = DeviceNameDatabaseManager.getInstance().readDeviceName(deviceAddress);
 
         mProgressLogDownloadDialog = new ProgressDialog(context);
         mProgressLogDownloadDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
@@ -103,8 +103,8 @@ public class DownloadLogHelper implements HistoryListener {
             public void onClick(@NonNull DialogInterface dialog, int which) {
                 dialog.dismiss();
                 dialog.cancel();
-                final DownloadNotificationCenter center = new DownloadNotificationCenter(context, context.getString(R.string.log_download_notification_title), loggingService.getDeviceAddress(), numberElementsLog);
-                mDownloadCenters.put(loggingService.getDeviceAddress(), center);
+                final DownloadNotificationCenter center = new DownloadNotificationCenter(context, context.getString(R.string.log_download_notification_title), deviceAddress, numberElementsLog);
+                mDownloadCenters.put(deviceAddress, center);
             }
         });
         mFirstProgressDialogNotification = true;
