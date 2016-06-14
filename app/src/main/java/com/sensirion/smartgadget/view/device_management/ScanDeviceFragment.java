@@ -40,6 +40,8 @@ import com.sensirion.smartgadget.view.MainActivity;
 import com.sensirion.smartgadget.view.device_management.utils.HumigadgetListItemAdapter;
 
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 import butterknife.BindBool;
 import butterknife.BindColor;
@@ -67,7 +69,7 @@ public class ScanDeviceFragment extends ParentListFragment implements ScanListen
     private static final int CONNECTING_DIALOG_DISSMISS_TIME_MS = 2000;
 
     // Update list attributes
-    private static final int MINIMUM_TIME_UPDATE_LIST_DEVICES = Interval.ONE_SECOND.getNumberMilliseconds();
+    private static final int MINIMUM_UPDATE_LIST_DEVICES_TIME_MS = 500;
 
     // Resources extracted from the resources folder
     @BindString(R.string.label_connected)
@@ -126,9 +128,10 @@ public class ScanDeviceFragment extends ParentListFragment implements ScanListen
     private Menu mOptionsMenu;
     private volatile boolean mIsRequestingCharacteristicsFromPeripheral = false;
     private long mTimestampLastListUpdate = 0;
-    private boolean mNeedUpdateList = true;
     @Nullable
     private String mConnectionDialogDeviceAddress;
+    @Nullable
+    private ScheduledFuture mScheduledListUpdater;
 
     @Override
     public View onCreateView(@NonNull final LayoutInflater inflater,
@@ -248,25 +251,18 @@ public class ScanDeviceFragment extends ParentListFragment implements ScanListen
             onDeviceClick(device);
         } else {
             Log.w(TAG, "onListItemClick -> The selected device is not a BleDevice.");
-            updateList();
+            updateList(getParent(), true);
         }
     }
 
-    private synchronized void onDeviceClick(@Nullable final BleDevice device) {
-        if (device == null) {
-            Log.e(TAG, "onDeviceClick -> Device clicked on an empty BleDevice.");
-            updateList();
-        } else if (device.isConnected()) {
-            Log.d(TAG, "onDeviceClick -> Opening manage device fragment.");
+    private void onDeviceClick(@NonNull final BleDevice device) {
+        if (device.isConnected()) {
             openManageDeviceFragment(device);
         } else {
-            Log.d(TAG,
-                    String.format(
-                            "onDeviceClick -> Connecting to device with address %s.",
-                            device.getAddress()
-                    )
-            );
-            connectDevice(device);
+            mConnectionDialogDeviceAddress = device.getAddress();
+            Log.i(TAG, String.format(TRYING_CONNECT_DEVICE_PREFIX, mConnectionDialogDeviceAddress));
+            showConnectionInProgressDialog(mConnectionDialogDeviceAddress);
+            RHTHumigadgetSensorManager.getInstance().connectPeripheral(mConnectionDialogDeviceAddress);
         }
     }
 
@@ -285,13 +281,6 @@ public class ScanDeviceFragment extends ParentListFragment implements ScanListen
         }
     }
 
-    private void connectDevice(@NonNull final BleDevice device) {
-        mConnectionDialogDeviceAddress = device.getAddress();
-        Log.i(TAG, String.format(TRYING_CONNECT_DEVICE_PREFIX, mConnectionDialogDeviceAddress));
-        showConnectionInProgressDialog(device.getAddress());
-        RHTHumigadgetSensorManager.getInstance().connectPeripheral(mConnectionDialogDeviceAddress);
-    }
-
     @Override
     public void onResume() {
         super.onResume();
@@ -302,7 +291,7 @@ public class ScanDeviceFragment extends ParentListFragment implements ScanListen
             RHTHumigadgetSensorManager.getInstance().requestEnableBluetooth(parent);
         }
         BleManager.getInstance().registerNotificationListener(this);
-        updateList();
+        updateList(parent, true);
         BleManager.getInstance().startScanning();
     }
 
@@ -514,9 +503,9 @@ public class ScanDeviceFragment extends ParentListFragment implements ScanListen
                         );
                 final AlertDialog timeoutDialog = builder.create();
                 timeoutDialog.show();
-                updateList();
             }
         });
+        updateList(parent, true);
     }
 
     @Override
@@ -619,8 +608,7 @@ public class ScanDeviceFragment extends ParentListFragment implements ScanListen
                 mIsRequestingCharacteristicsFromPeripheral = false;
             }
         }
-        mNeedUpdateList = true;
-        updateList();
+        updateList(getParent(), true);
     }
 
     /**
@@ -635,7 +623,7 @@ public class ScanDeviceFragment extends ParentListFragment implements ScanListen
                         device.getAdvertisedName()
                 )
         );
-        updateList();
+        updateList(getParent(), false);
     }
 
     /**
@@ -693,18 +681,46 @@ public class ScanDeviceFragment extends ParentListFragment implements ScanListen
         }
     }
 
-    private void updateList() {
-        if (mNeedUpdateList
-                || mTimestampLastListUpdate + MINIMUM_TIME_UPDATE_LIST_DEVICES > System.currentTimeMillis()) {
-            synchronized (this) {
-                final Activity parent = getParent();
-                if (parent == null) {
-                    Log.e(TAG, "updateList -> Parent is null, cannot update the device list.");
-                    return;
+    private synchronized boolean checkUpdateListSchedule(final Context context, boolean forceUpdate) {
+        long remainingMs = MINIMUM_UPDATE_LIST_DEVICES_TIME_MS - (System.currentTimeMillis() - mTimestampLastListUpdate);
+        if (!forceUpdate) {
+            if (remainingMs > 0) {
+                if (mScheduledListUpdater == null) {
+                    mScheduledListUpdater = Executors.newSingleThreadScheduledExecutor().schedule(new Runnable() {
+                        @Override
+                        public void run() {
+                            updateList(context, false);
+                        }
+                    }, remainingMs, TimeUnit.MILLISECONDS);
                 }
-                mNeedUpdateList = false;
-                mTimestampLastListUpdate = System.currentTimeMillis();
+                return false;
+            }
+        }
+        if (mScheduledListUpdater != null) {
+            mScheduledListUpdater.cancel(true);
+            mScheduledListUpdater = null;
+        }
+        mTimestampLastListUpdate = System.currentTimeMillis();
+        return true;
+    }
 
+    private void updateList(final Context context, boolean forceUpdate) {
+        if (!checkUpdateListSchedule(context, forceUpdate)) {
+            return;
+        }
+
+        if (mConnectedDevicesAdapter == null) {
+            Log.e(TAG, "updateList -> Connected device adapter is null.");
+            return;
+        }
+        if (mDiscoveredDevicesAdapter == null) {
+            Log.e(TAG, "updateList -> Discovered device adapter is null");
+            return;
+        }
+
+        ((Activity) context).runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
                 final Iterable<? extends BleDevice> connectedDevices =
                         BleManager.getInstance().getConnectedBleDevices();
 
@@ -712,32 +728,16 @@ public class ScanDeviceFragment extends ParentListFragment implements ScanListen
                         BleManager.getInstance().getDiscoveredBleDevices(
                                 KnownDevices.RHT_GADGETS.getAdvertisedNames()
                         );
-
-                if (mConnectedDevicesAdapter == null) {
-                    Log.e(TAG, "updateList -> Connected device adapter is null.");
-                    return;
+                synchronized (ScanDeviceFragment.this) {
+                    mConnectedDevicesAdapter.clear();
+                    mConnectedDevicesAdapter.addAll(connectedDevices);
+                    mDiscoveredDevicesAdapter.clear();
+                    mDiscoveredDevicesAdapter.addAll(discoveredDevices);
+                    mSectionAdapter.notifyDataSetChanged();
                 }
-                if (mDiscoveredDevicesAdapter == null) {
-                    Log.e(TAG, "updateList -> Discovered device adapter is null");
-                    return;
-                }
-
-                getParent().runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        synchronized (ScanDeviceFragment.this) {
-                            mConnectedDevicesAdapter.clear();
-                            mConnectedDevicesAdapter.addAll(connectedDevices);
-                            mDiscoveredDevicesAdapter.clear();
-                            mDiscoveredDevicesAdapter.addAll(discoveredDevices);
-                            setListAdapter(mSectionAdapter);
-                        }
-                    }
-                });
             }
-        }
+        });
     }
-
 
     /**
      * {@inheritDoc}
@@ -753,6 +753,6 @@ public class ScanDeviceFragment extends ParentListFragment implements ScanListen
             mScanToggleButton.setChecked(false);
             setRefreshActionButtonState(false);
         }
-        mNeedUpdateList = true;
+        updateList(getParent(), true);
     }
 }
