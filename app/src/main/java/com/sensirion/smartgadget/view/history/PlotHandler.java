@@ -356,15 +356,12 @@ public class PlotHandler {
      */
     private boolean recalculateRangeBoundaries(final double rangeValue) {
         if (mShouldResetRangeBoundaries) {
-            Log.i(TAG, String.format("recalculateRangeBoundaries() -> Resetting graph using reference -> %s.", rangeValue));
             mRangeValueMax = rangeValue;
             mRangeValueMin = rangeValue;
             mShouldResetRangeBoundaries = false;
         } else if (mRangeValueMax < rangeValue) {
-            Log.i(TAG, String.format("recalculateRangeBoundaries() -> New Maximum Value: %f.", rangeValue));
             mRangeValueMax = rangeValue;
         } else if (mRangeValueMin > rangeValue) {
-            Log.i(TAG, String.format("recalculateRangeBoundaries() -> New Minimum Value: %f.", rangeValue));
             mRangeValueMin = rangeValue;
         } else {
             return false;

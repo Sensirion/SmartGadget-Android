@@ -218,10 +218,8 @@ public class MainActivity extends FragmentActivity implements View.OnTouchListen
             public void run() {
                 if (mTabletLeftMenuDrawer.isDrawerOpen(mTabletLeftMenuListView)) {
                     mTabletLeftMenuDrawer.closeDrawer(mTabletLeftMenuListView);
-                    Log.i(TAG, "toggleTabletMenu -> Closing tablet left menu.");
                 } else {
                     mTabletLeftMenuDrawer.openDrawer(mTabletLeftMenuListView);
-                    Log.i(TAG, "toggleTabletMenu -> Opening tablet left menu");
                 }
             }
         });
@@ -308,7 +306,7 @@ public class MainActivity extends FragmentActivity implements View.OnTouchListen
         cleanScreen();
         RHTHumigadgetSensorManager.getInstance().requestEnableBluetooth(MainActivity.this);
         final String pageTitle = mSectionsPagerAdapter.getPageTitle(getApplicationContext(), position).toUpperCase(Locale.getDefault());
-        Log.i(TAG, String.format("onMobileTabSelected -> The tab %s was selected.", pageTitle));
+        Log.d(TAG, String.format("onMobileTabSelected -> The tab %s was selected.", pageTitle));
         if (mIsChildScreen || mUserPreferencesModified) {
             runOnUiThread(new Runnable() {
                 @Override
@@ -357,7 +355,6 @@ public class MainActivity extends FragmentActivity implements View.OnTouchListen
      */
 
     public void changeFragment(@NonNull final Fragment destinationFragment) {
-        Log.i(TAG, String.format("changeFragment -> Trying to change fragment %s for %s", mLastFragment, destinationFragment));
         if (mIsTablet) {
             changeTabletFragment(destinationFragment);
         } else {
@@ -403,7 +400,7 @@ public class MainActivity extends FragmentActivity implements View.OnTouchListen
     @Override
     public void onResume() {
         super.onResume();
-        Log.i(TAG, "onResume()");
+        Log.d(TAG, "onResume()");
         RHTSensorFacade.getInstance().registerListener(this);
         BleManager.getInstance().setAllNotificationsEnabled(true);
     }
@@ -411,7 +408,7 @@ public class MainActivity extends FragmentActivity implements View.OnTouchListen
     @Override
     public void onPause() {
         super.onPause();
-        Log.i(TAG, "onPause()");
+        Log.d(TAG, "onPause()");
         RHTSensorFacade.getInstance().unregisterListener(this);
         if (mIsTablet && mTabletLeftMenuDrawer != null && mTabletLeftMenuListView != null) {
             if (mTabletLeftMenuDrawer.isDrawerOpen(mTabletLeftMenuListView)) {
@@ -422,9 +419,8 @@ public class MainActivity extends FragmentActivity implements View.OnTouchListen
 
     @Override
     public void onDestroy() {
-        Log.i(TAG, "onDestroy()");
+        Log.d(TAG, "onDestroy()");
         if (isFinishing()) {
-            Log.w(TAG, "onDestroy() --> isFinishing()");
             DeviceNameDatabaseManager.getInstance().closeDatabaseConnection();
             RHTSensorFacade.getInstance().release(getApplicationContext());
         }
@@ -546,7 +542,7 @@ public class MainActivity extends FragmentActivity implements View.OnTouchListen
     @Override
     public void onGadgetConnectionChanged(@Nullable final String deviceAddress, final boolean deviceIsConnected) {
         if (getIntent() == null) {
-            Log.w(TAG, "onGadgetConnectionChanged -> Can't found a valid intent.");
+            Log.e(TAG, "onGadgetConnectionChanged -> Can't found a valid intent.");
             return;
         }
         runOnUiThread(new Runnable() {

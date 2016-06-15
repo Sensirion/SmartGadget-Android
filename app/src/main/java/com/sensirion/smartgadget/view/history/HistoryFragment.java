@@ -147,7 +147,7 @@ public class HistoryFragment extends ParentFragment implements RHTSensorListener
         final List<String> selectedItems = mHistoryDeviceAdapter.getListOfSelectedItems();
 
         if (selectedItems.isEmpty()) {
-            Log.i(TAG, "updateGraph -> No values to display.");
+            Log.d(TAG, "updateGraph -> No values to display.");
             return;
         }
         if (mPlotHandler == null) {
@@ -208,7 +208,6 @@ public class HistoryFragment extends ParentFragment implements RHTSensorListener
             final Handler viewHandler = mDeviceListView.getHandler();
             if (viewHandler == null) {
                 adapter.update(new Handler(Looper.myLooper()), deviceModels);
-                Log.d(TAG, "updateDeviceView -> No devices in selected interval.");
             } else {
                 Log.d(TAG, String.format("updateDeviceView() -> Added %d devices.", deviceModels.size()));
                 adapter.update(viewHandler, deviceModels);
@@ -374,7 +373,6 @@ public class HistoryFragment extends ParentFragment implements RHTSensorListener
 
         mLastIntervalPosition = position;
 
-        Log.d(TAG, String.format("onIntervalTabSelected -> Position %d was selected.", position));
         mIntervalSelected = HistoryIntervalType.getInterval(position);
 
         updateDeviceView();
@@ -403,7 +401,6 @@ public class HistoryFragment extends ParentFragment implements RHTSensorListener
 
         mLastUnitPosition = position;
 
-        Log.d(TAG, String.format("onTypeOfValueTabSelected -> Position %d was selected.", position));
         mUnitTypeSelected = HistoryUnitType.getUnitType(position);
 
         final List<String> selectedItems = mHistoryDeviceAdapter.getListOfSelectedItems();
@@ -428,7 +425,6 @@ public class HistoryFragment extends ParentFragment implements RHTSensorListener
         final List<SimpleXYSeries> listOfDataPoints = new LinkedList<>();
 
         if (databaseResults == null) {
-            Log.w(TAG, "obtainPlotSeries -> No results where found when updating the plot.");
             return listOfDataPoints;
         }
         for (final String deviceAddress : databaseResults.getResults().keySet()) {
@@ -439,7 +435,6 @@ public class HistoryFragment extends ParentFragment implements RHTSensorListener
             final SimpleXYSeries newSeries = obtainGraphSeriesFromDataPointList(deviceAddress, deviceDataPoints);
             listOfDataPoints.add(newSeries);
         }
-        Log.i(TAG, String.format("obtainPlotSeries -> Prepared %d graph series.", listOfDataPoints.size()));
         return listOfDataPoints;
     }
 

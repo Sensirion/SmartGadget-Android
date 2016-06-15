@@ -142,7 +142,6 @@ public class RHTSensorFacade implements RHTSensorManager {
     public void unregisterListener(@NonNull final RHTSensorListener listener) {
         if (mListeners.contains(listener)) {
             mListeners.remove(listener);
-            Log.i(TAG, String.format("unregisterNotificationListener -> Has deleted from the listener list: %s", listener));
         } else {
             Log.w(TAG, String.format("unregisterNotificationListener -> Has not found: %s", listener));
         }
@@ -153,9 +152,8 @@ public class RHTSensorFacade implements RHTSensorManager {
             try {
                 final String nextAddress = getAddressLastConnectedGadget();
                 Settings.getInstance().setSelectedAddress(nextAddress);
-                Log.i(TAG, "removeDevice() -> selectFallback(): " + nextAddress);
             } catch (NoSuchElementException e) {
-                Log.w(TAG, "removeDevice() -> selectFallback(): no more devices connected, selecting NONE!");
+                Log.w(TAG, "removeDevice() -> selectFallback(): no more devices connected");
                 Settings.getInstance().unselectCurrentAddress();
             }
         }
@@ -198,11 +196,9 @@ public class RHTSensorFacade implements RHTSensorManager {
                 return;
             }
             mConnectedDeviceListModels.add(model);
-            Log.i(TAG, String.format("onGadgetConnectionChanged() -> Device with address %s has been added.", deviceAddress));
             Settings.getInstance().setSelectedAddress(model.getAddress());
         } else {
             mConnectedDeviceListModels.remove(model);
-            Log.i(TAG, String.format("onGadgetConnectionChanged() -> Device with address %s has been removed.", deviceAddress));
             selectFallback(deviceAddress);
         }
 

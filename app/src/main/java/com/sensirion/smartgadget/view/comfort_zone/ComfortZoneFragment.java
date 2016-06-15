@@ -253,7 +253,6 @@ public class ComfortZoneFragment extends ParentFragment implements OnTouchListen
         }
         final String address = model.getAddress();
         try {
-            Log.d(TAG, String.format("createNewSensorViewFor() -> TRY address %s", address));
             final XyPoint sensorPoint = new XyPoint(getContext().getApplicationContext());
             sensorPoint.setVisibility(View.INVISIBLE);
             sensorPoint.setTag(address);
@@ -324,11 +323,9 @@ public class ComfortZoneFragment extends ParentFragment implements OnTouchListen
             maxXAxisValue = Converter.convertToF(maxXAxisValue);
             gridSize = GRAPH_X_GRID_SIZE_FAHRENHEIT;
             mAxisLabel = GRAPH_X_LABEL_FAHRENHEIT;
-            Log.d(TAG, "updateViewForSelectedTemperatureUnit -> Updating temperature unit to Fahrenheit.");
         } else {
             gridSize = GRAPH_X_GRID_SIZE_CELSIUS;
             mAxisLabel = GRAPH_X_LABEL_CELSIUS;
-            Log.d(TAG, "updateViewForSelectedTemperatureUnit -> Updating temperature unit to Celsius.");
         }
 
         mPlotView.setXAxisLabel(mAxisLabel);

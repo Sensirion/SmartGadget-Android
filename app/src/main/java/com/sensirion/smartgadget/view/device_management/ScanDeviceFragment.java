@@ -137,8 +137,6 @@ public class ScanDeviceFragment extends ParentListFragment implements ScanListen
     public View onCreateView(@NonNull final LayoutInflater inflater,
                              @Nullable final ViewGroup container,
                              @Nullable final Bundle savedInstanceState) {
-        Log.i(TAG, "onCreateView()");
-
         final View rootView = inflater.inflate(R.layout.fragment_device_scan, container, false);
 
         unbinder = ButterKnife.bind(this, rootView);
@@ -234,9 +232,7 @@ public class ScanDeviceFragment extends ParentListFragment implements ScanListen
     public void onListItemClick(final ListView l, final View v, final int position, final long id) {
         super.onListItemClick(l, v, position, id);
         final BleManager bleManager = BleManager.getInstance();
-        if (bleManager.isBluetoothEnabled()) {
-            Log.d(TAG, String.format("onListItemClick -> Clicked on position %s.", position));
-        } else {
+        if (!bleManager.isBluetoothEnabled()) {
             bleManager.requestEnableBluetooth(getContext());
             return;
         }
@@ -429,22 +425,6 @@ public class ScanDeviceFragment extends ParentListFragment implements ScanListen
                 }
             }
         }, CONNECTING_DIALOG_DISMISS_TIME_MS);
-    }
-
-    private boolean isStillConnecting(final int timeWaited) {
-        if (mConnectionDialogDeviceAddress == null) {
-            return false;
-        }
-        if (mIndeterminateProgressDialog != null && mIndeterminateProgressDialog.isShowing()) {
-            if (timeWaited < DEVICE_TIMEOUT_MILLISECONDS) {
-                return true;
-            } else if (BleManager.getInstance().isDeviceConnected(mConnectionDialogDeviceAddress)) {
-                return mIsRequestingCharacteristicsFromPeripheral;
-            } else {
-                mIsRequestingCharacteristicsFromPeripheral = false;
-            }
-        }
-        return false;
     }
 
     private void dismissConnectingProgressDialog(@NonNull final String deviceAddress) {
@@ -747,11 +727,11 @@ public class ScanDeviceFragment extends ParentListFragment implements ScanListen
     @Override
     public void onScanStateChanged(final boolean isScanEnabled) {
         if (isScanEnabled) {
-            Log.i(TAG, "mScanStateReceiver.onReceive() -> scanning STARTED.");
+            Log.d(TAG, "mScanStateReceiver.onReceive() -> scanning STARTED.");
             mScanToggleButton.setChecked(true);
             setRefreshActionButtonState(true);
         } else {
-            Log.i(TAG, "mScanStateReceiver.onReceive() -> scanning STOPPED.");
+            Log.d(TAG, "mScanStateReceiver.onReceive() -> scanning STOPPED.");
             mScanToggleButton.setChecked(false);
             setRefreshActionButtonState(false);
         }
