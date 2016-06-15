@@ -2,9 +2,16 @@ package com.sensirion.smartgadget.utils.view;
 
 import android.app.Activity;
 import android.content.Context;
+import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ListFragment;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+
+import butterknife.ButterKnife;
+import butterknife.Unbinder;
 
 public abstract class ParentListFragment extends ListFragment {
 
@@ -12,6 +19,9 @@ public abstract class ParentListFragment extends ListFragment {
 
     @Nullable
     protected Activity mActivity = null;
+    @Nullable
+    protected Unbinder unbinder = null;
+    protected boolean viewInflated = false;
 
     @Override
     public void onAttach(final Context context) {
@@ -29,16 +39,11 @@ public abstract class ParentListFragment extends ListFragment {
     }
 
     @Override
-    public void setUserVisibleHint(final boolean isVisibleToUser) {
-        super.setUserVisibleHint(isVisibleToUser);
-        if (mActivity == null) {
-            Log.w(TAG, "setUserVisibleHint() -> was called before activity was set up!");
-        } else if (isVisibleToUser) {
-            Log.i(TAG, "setUserVisibleHint() -> Visible to user -> triggering onResume()");
-            onResume();
-        } else {
-            Log.i(TAG, "setUserVisibleHint() -> Invisible to user -> triggering onPause()");
-            onPause();
+    public void onDestroyView() {
+        super.onDestroyView();
+        if (unbinder != null) {
+            unbinder.unbind();
+            viewInflated = false;
         }
     }
 

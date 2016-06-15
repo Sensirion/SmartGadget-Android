@@ -105,7 +105,8 @@ public class HistoryFragment extends ParentFragment implements RHTSensorListener
                              @Nullable final ViewGroup container,
                              @Nullable final Bundle savedInstanceState) {
         final View historyView = inflater.inflate(R.layout.fragment_history, container, false);
-        ButterKnife.bind(this, historyView);
+        unbinder = ButterKnife.bind(this, historyView);
+        viewInflated = true;
         init(historyView);
         RHTSensorFacade.getInstance().registerListener(this);
         mPlot.setOnClickListener(new View.OnClickListener() {

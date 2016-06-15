@@ -150,7 +150,8 @@ public class ComfortZoneFragment extends ParentFragment implements OnTouchListen
                              @Nullable final ViewGroup container,
                              @Nullable final Bundle savedInstanceState) {
         final View view = inflater.inflate(R.layout.fragment_comfortzone, container, false);
-        ButterKnife.bind(this, view);
+        unbinder = ButterKnife.bind(this, view);
+        viewInflated = true;
         return view;
     }
 
@@ -201,7 +202,7 @@ public class ComfortZoneFragment extends ParentFragment implements OnTouchListen
     @Override
     public void onResume() {
         super.onResume();
-        Log.i(TAG, "onResume()");
+        Log.d(TAG, "onResume()");
         RHTSensorFacade.getInstance().registerListener(this);
 
         updateSensorViews();
@@ -215,7 +216,7 @@ public class ComfortZoneFragment extends ParentFragment implements OnTouchListen
     @Override
     public void onPause() {
         super.onPause();
-        Log.i(TAG, "onPause()");
+        Log.d(TAG, "onPause()");
         RHTSensorFacade.getInstance().unregisterListener(this);
     }
 

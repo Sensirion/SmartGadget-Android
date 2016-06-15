@@ -2,7 +2,6 @@ package com.sensirion.smartgadget.view.dashboard;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.AssetManager;
 import android.graphics.Typeface;
@@ -130,7 +129,8 @@ public class DashboardFragment extends ParentFragment implements RHTSensorListen
                              @Nullable final Bundle savedInstanceState) {
         Log.i(TAG, "OnCreateView()");
         final View view = inflater.inflate(R.layout.fragment_dashboard, container, false);
-        ButterKnife.bind(this, view);
+        unbinder = ButterKnife.bind(this, view);
+        viewInflated = true;
         return view;
     }
 
@@ -150,9 +150,9 @@ public class DashboardFragment extends ParentFragment implements RHTSensorListen
     public void onResume() {
         super.onResume();
         resetViewValues();
-        RHTSensorFacade.getInstance().registerListener(this);
         updateViewForSelectedTemperatureUnit();
         updateListView();
+        RHTSensorFacade.getInstance().registerListener(this);
     }
 
     @Override

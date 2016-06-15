@@ -66,7 +66,7 @@ public class ScanDeviceFragment extends ParentListFragment implements ScanListen
     private static final byte DEVICE_TIMEOUT_SECONDS = 8; // Libble timeout -> 7.5 seconds.
     private static final int DEVICE_TIMEOUT_MILLISECONDS =
             DEVICE_TIMEOUT_SECONDS * Interval.ONE_SECOND.getNumberMilliseconds();
-    private static final int CONNECTING_DIALOG_DISSMISS_TIME_MS = 2000;
+    private static final int CONNECTING_DIALOG_DISMISS_TIME_MS = 2000;
 
     // Update list attributes
     private static final int MINIMUM_UPDATE_LIST_DEVICES_TIME_MS = 500;
@@ -141,7 +141,8 @@ public class ScanDeviceFragment extends ParentListFragment implements ScanListen
 
         final View rootView = inflater.inflate(R.layout.fragment_device_scan, container, false);
 
-        ButterKnife.bind(this, rootView);
+        unbinder = ButterKnife.bind(this, rootView);
+        viewInflated = true;
 
         final AssetManager assets = getContext().getAssets();
         final Typeface typefaceNormal = Typeface.createFromAsset(assets, TYPEFACE_CONDENSED_LOCATION);
@@ -426,7 +427,7 @@ public class ScanDeviceFragment extends ParentListFragment implements ScanListen
                     mIndeterminateProgressDialog = null;
                 }
             }
-        }, CONNECTING_DIALOG_DISSMISS_TIME_MS);
+        }, CONNECTING_DIALOG_DISMISS_TIME_MS);
     }
 
     private boolean isStillConnecting(final int timeWaited) {
