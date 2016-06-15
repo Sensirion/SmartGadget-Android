@@ -247,11 +247,12 @@ public class ScanDeviceFragment extends ParentListFragment implements ScanListen
             return;
         }
 
-        final BleDevice device = (BleDevice) mSectionAdapter.getItem(position);
-        if (device != null) {
-            onDeviceClick(device);
+        final Object item = mSectionAdapter.getItem(position);
+        if (BleDevice.class.isInstance(item)) {
+            onDeviceClick((BleDevice) item);
         } else {
-            Log.w(TAG, "onListItemClick -> The selected device is not a BleDevice.");
+            Log.e(TAG, "onListItemClick -> FIXME: The selected device is not a BleDevice.");
+            Thread.dumpStack();
             updateList(getParent(), true);
         }
     }
