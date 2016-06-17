@@ -63,9 +63,6 @@ public class ScanDeviceFragment extends ParentListFragment implements ScanListen
     private static final int DEVICE_SYNCHRONIZATION_TIMEOUT_MILLISECONDS =
             DEVICE_SYNCHRONIZATION_TIMEOUT_SECONDS * Interval.ONE_SECOND.getNumberMilliseconds();
     private static final byte DEVICE_SYNCHRONIZATION_MAX_NUMBER_SYNCHRONIZATION_TRIES = 10;
-    private static final byte DEVICE_TIMEOUT_SECONDS = 8; // Libble timeout -> 7.5 seconds.
-    private static final int DEVICE_TIMEOUT_MILLISECONDS =
-            DEVICE_TIMEOUT_SECONDS * Interval.ONE_SECOND.getNumberMilliseconds();
     private static final int CONNECTING_DIALOG_DISMISS_TIME_MS = 2000;
 
     // Update list attributes
