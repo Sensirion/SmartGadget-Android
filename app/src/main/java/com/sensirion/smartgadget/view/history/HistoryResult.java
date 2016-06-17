@@ -51,8 +51,10 @@ public class HistoryResult {
      */
     public int size() {
         int size = 0;
-        for (List<RHTDataPoint> results : mResultValues.values()) {
-            size += results.size();
+        synchronized (mResultValues) {
+            for (List<RHTDataPoint> results : mResultValues.values()) {
+                size += results.size();
+            }
         }
         return size;
     }
@@ -61,14 +63,16 @@ public class HistoryResult {
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder();
-        for (final String deviceAddress : mResultValues.keySet()) {
-            for (final RHTDataPoint datapoint : mResultValues.get(deviceAddress)) {
-                sb.append(
-                        String.format(
-                                "\nDevice with address: %s - %s",
-                                deviceAddress,
-                                datapoint.toString())
-                );
+        synchronized (mResultValues) {
+            for (final String deviceAddress : mResultValues.keySet()) {
+                for (final RHTDataPoint datapoint : mResultValues.get(deviceAddress)) {
+                    sb.append(
+                            String.format(
+                                    "\nDevice with address: %s - %s",
+                                    deviceAddress,
+                                    datapoint.toString())
+                    );
+                }
             }
         }
         return sb.toString();

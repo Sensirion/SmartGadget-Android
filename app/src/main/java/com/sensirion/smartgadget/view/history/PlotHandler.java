@@ -71,7 +71,7 @@ public class PlotHandler {
 
     // Plot State
     @NonNull
-    private List<SimpleXYSeries> mDeviceSeries = Collections.synchronizedList(new LinkedList<SimpleXYSeries>());
+    private List<SimpleXYSeries> mDeviceSeries = new LinkedList<>();
     private boolean mShouldResetRangeBoundaries = true;
     private double mRangeValueMin;
     private double mRangeValueMax;
@@ -304,7 +304,7 @@ public class PlotHandler {
     /**
      * Deletes all the graph data displayed in the plot.
      */
-    public void cleanSeries() {
+    private void cleanSeries() {
         mDeviceSeries.clear();
 
         /** FIXME Change plot update approach.

@@ -95,9 +95,11 @@ public class RHTSensorFacade implements RHTSensorManager {
      * @return <code>true</code> if connected - <code>false</code> if it's disconnected.
      */
     public boolean isDeviceConnected(@NonNull final String deviceAddress) {
-        for (final DeviceModel model : mConnectedDeviceListModels) {
-            if (model.getAddress().equals(deviceAddress)) {
-                return true;
+        synchronized (mConnectedDeviceListModels) {
+            for (final DeviceModel model : mConnectedDeviceListModels) {
+                if (model.getAddress().equals(deviceAddress)) {
+                    return true;
+                }
             }
         }
         return false;
@@ -111,9 +113,11 @@ public class RHTSensorFacade implements RHTSensorManager {
      */
     @Nullable
     public DeviceModel getDeviceModel(@NonNull final String deviceAddress) {
-        for (final DeviceModel model : mConnectedDeviceListModels) {
-            if (model.getAddress().equals(deviceAddress)) {
-                return model;
+        synchronized (mConnectedDeviceListModels) {
+            for (final DeviceModel model : mConnectedDeviceListModels) {
+                if (model.getAddress().equals(deviceAddress)) {
+                    return model;
+                }
             }
         }
         return null;
@@ -166,10 +170,12 @@ public class RHTSensorFacade implements RHTSensorManager {
      */
     @Nullable
     public String getAddressLastConnectedGadget() {
-        if (mConnectedDeviceListModels.isEmpty()) {
-            return null;
+        synchronized (mConnectedDeviceListModels) {
+            if (mConnectedDeviceListModels.isEmpty()) {
+                return null;
+            }
+            return mConnectedDeviceListModels.get(mConnectedDeviceListModels.size() - 1).getAddress();
         }
-        return mConnectedDeviceListModels.get(mConnectedDeviceListModels.size() - 1).getAddress();
     }
 
     /**
@@ -202,8 +208,10 @@ public class RHTSensorFacade implements RHTSensorManager {
             selectFallback(deviceAddress);
         }
 
-        for (RHTSensorListener listener : mListeners) {
-            listener.onGadgetConnectionChanged(deviceAddress, isConnected);
+        synchronized (mListeners) {
+            for (RHTSensorListener listener : mListeners) {
+                listener.onGadgetConnectionChanged(deviceAddress, isConnected);
+            }
         }
     }
 
@@ -216,8 +224,10 @@ public class RHTSensorFacade implements RHTSensorManager {
      */
     public void notifySensorData(final float temperature,
                                  final float relativeHumidity, @Nullable final String deviceAddress) {
-        for (final RHTSensorListener listener : mListeners) {
-            listener.onNewRHTSensorData(temperature, relativeHumidity, deviceAddress);
+        synchronized (mListeners) {
+            for (final RHTSensorListener listener : mListeners) {
+                listener.onNewRHTSensorData(temperature, relativeHumidity, deviceAddress);
+            }
         }
     }
 
@@ -227,13 +237,15 @@ public class RHTSensorFacade implements RHTSensorManager {
      * @param listener that will be notified
      */
     public void notifyCachedSensorData(@NonNull final RHTSensorListener listener) {
-        for (final String humigadgetsWithDatapoints : mLastDataPoint.keySet()) {
-            final RHTDataPoint dataPoint = mLastDataPoint.get(humigadgetsWithDatapoints);
-            listener.onNewRHTSensorData(
-                    dataPoint.getTemperatureCelsius(),
-                    dataPoint.getRelativeHumidity(),
-                    humigadgetsWithDatapoints
-            );
+        synchronized (mLastDataPoint) {
+            for (final String humigadgetsWithDatapoints : mLastDataPoint.keySet()) {
+                final RHTDataPoint dataPoint = mLastDataPoint.get(humigadgetsWithDatapoints);
+                listener.onNewRHTSensorData(
+                        dataPoint.getTemperatureCelsius(),
+                        dataPoint.getRelativeHumidity(),
+                        humigadgetsWithDatapoints
+                );
+            }
         }
     }
 }

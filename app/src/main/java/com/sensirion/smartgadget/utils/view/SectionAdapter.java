@@ -33,27 +33,30 @@ abstract public class SectionAdapter extends BaseAdapter {
     public synchronized int getItemViewType(final int itemPosition) {
         int headerOffset = HEADER_POSITION + 1;
         int fixedItemPosition = itemPosition;
-        for (final SectionItem section : mSectionsList) {
-            if (fixedItemPosition == HEADER_POSITION) {
-                return HEADER_POSITION;
+        synchronized (mSectionsList) {
+            for (final SectionItem section : mSectionsList) {
+                if (fixedItemPosition == HEADER_POSITION) {
+                    return HEADER_POSITION;
+                }
+                final int itemCount = section.getAdapter().getCount() + 1;
+                if (fixedItemPosition < itemCount) {
+                    return (headerOffset + section.getAdapter().getItemViewType(fixedItemPosition - 1));
+                }
+                fixedItemPosition -= itemCount;
+                headerOffset += section.getAdapter().getViewTypeCount();
             }
-            final int itemCount = section.getAdapter().getCount() + 1;
-            if (fixedItemPosition < itemCount) {
-                return (headerOffset + section.getAdapter().getItemViewType(fixedItemPosition - 1));
-            }
-            fixedItemPosition -= itemCount;
-            headerOffset += section.getAdapter().getViewTypeCount();
         }
         return -1;
     }
 
     @Override
-    public synchronized int getViewTypeCount() {
-        Log.d(TAG, "getViewTypeCount()");
+    public int getViewTypeCount() {
         // one for the header, plus those from mSectionsList
         int totalItems = 1;
-        for (final SectionItem section : mSectionsList) {
-            totalItems += section.getAdapter().getViewTypeCount();
+        synchronized (mSectionsList) {
+            for (final SectionItem section : mSectionsList) {
+                totalItems += section.getAdapter().getViewTypeCount();
+            }
         }
         return totalItems;
     }
@@ -63,24 +66,28 @@ abstract public class SectionAdapter extends BaseAdapter {
     public synchronized Object getItem(final int itemPosition) {
         Log.d(TAG, String.format("getItem() -> Position %d was retrieved. ", itemPosition));
         int fixedItemPosition = itemPosition;
-        for (final SectionItem section : mSectionsList) {
-            if (fixedItemPosition == 0) {
-                return section;
+        synchronized (mSectionsList) {
+            for (final SectionItem section : mSectionsList) {
+                if (fixedItemPosition == 0) {
+                    return section;
+                }
+                final int size = section.getAdapter().getCount() + 1;
+                if (fixedItemPosition < size) {
+                    return section.getAdapter().getItem(fixedItemPosition - 1);
+                }
+                fixedItemPosition -= size;
             }
-            final int size = section.getAdapter().getCount() + 1;
-            if (fixedItemPosition < size) {
-                return section.getAdapter().getItem(fixedItemPosition - 1);
-            }
-            fixedItemPosition -= size;
         }
         return null;
     }
 
     @Override
-    public synchronized int getCount() {
+    public int getCount() {
         int numberItems = 0;
-        for (final SectionItem sectionItem : mSectionsList) {
-            numberItems += sectionItem.getAdapter().getCount() + 1;
+        synchronized (mSectionsList) {
+            for (final SectionItem sectionItem : mSectionsList) {
+                numberItems += sectionItem.getAdapter().getCount() + 1;
+            }
         }
         return numberItems;
     }
@@ -90,16 +97,18 @@ abstract public class SectionAdapter extends BaseAdapter {
     public synchronized View getView(final int itemPosition, final View convertView, final ViewGroup parent) {
         int sectionIndex = 0;
         int fixedPosition = itemPosition;
-        for (final SectionItem sectionItem : mSectionsList) {
-            if (fixedPosition == HEADER_POSITION) {
-                return getHeaderView(sectionItem.getCaption(), sectionIndex, convertView, parent);
+        synchronized (mSectionsList) {
+            for (final SectionItem sectionItem : mSectionsList) {
+                if (fixedPosition == HEADER_POSITION) {
+                    return getHeaderView(sectionItem.getCaption(), sectionIndex, convertView, parent);
+                }
+                final int sectionSize = sectionItem.getAdapter().getCount() + 1;
+                if (fixedPosition < sectionSize) {
+                    return sectionItem.getAdapter().getView(fixedPosition - 1, convertView, parent);
+                }
+                fixedPosition -= sectionSize;
+                sectionIndex++;
             }
-            final int sectionSize = sectionItem.getAdapter().getCount() + 1;
-            if (fixedPosition < sectionSize) {
-                return sectionItem.getAdapter().getView(fixedPosition - 1, convertView, parent);
-            }
-            fixedPosition -= sectionSize;
-            sectionIndex++;
         }
         throw new IndexOutOfBoundsException(String.format("%s: getView -> Position %d is outside the bounds of this adapter. (size: %d).", TAG, itemPosition, getCount()));
     }

@@ -58,11 +58,6 @@ public class HistoryFragment extends ParentFragment implements RHTSensorListener
     @NonNull
     private static final HistoryIntervalType DEFAULT_TIME_INTERVAL = HistoryIntervalType.INTERVAL_OF_10_MINUTES;
 
-    // Disconnected Device adapter
-    @NonNull
-    private final Map<String, DeviceModel> mDisconnectedDevicesModel =
-            Collections.synchronizedMap(new HashMap<String, DeviceModel>());
-
     // Injected application Views
     @BindView(R.id.history_device_nested_list_view)
     ListView mDeviceListView;
@@ -221,13 +216,9 @@ public class HistoryFragment extends ParentFragment implements RHTSensorListener
     }
 
     private DeviceModel obtainDeviceModelDisconnectedDevice(@NonNull final String deviceAddress) {
-        DeviceModel model = mDisconnectedDevicesModel.get(deviceAddress);
-        if (model == null) {
-            final String deviceName = DeviceNameDatabaseManager.getInstance().readDeviceName(deviceAddress);
-            final int color = ColorManager.getInstance().getDeviceColor(deviceAddress);
-            model = new DeviceModel(deviceAddress, color, deviceName, false);
-        }
-        return model;
+        final String deviceName = DeviceNameDatabaseManager.getInstance().readDeviceName(deviceAddress);
+        final int color = ColorManager.getInstance().getDeviceColor(deviceAddress);
+        return new DeviceModel(deviceAddress, color, deviceName, false);
     }
 
     private void refreshIntervalTabs() {

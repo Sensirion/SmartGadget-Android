@@ -155,8 +155,10 @@ public class RHTHumigadgetSensorManager implements RHTListener, DeviceStateListe
      */
     @Override
     public void onNewRHTValue(@NonNull final BleDevice device, @NonNull final RHTDataPoint dataPoint, @NonNull final String sensorName) {
-        for (final RHTSensorManager listener : mSensorManagers) {
-            listener.onNewRHTData(dataPoint.getTemperatureCelsius(), dataPoint.getRelativeHumidity(), device.getAddress());
+        synchronized (mSensorManagers) {
+            for (final RHTSensorManager listener : mSensorManagers) {
+                listener.onNewRHTData(dataPoint.getTemperatureCelsius(), dataPoint.getRelativeHumidity(), device.getAddress());
+            }
         }
         HistoryDatabaseManager.getInstance().addRHTData(device, dataPoint, false);
     }
@@ -183,8 +185,10 @@ public class RHTHumigadgetSensorManager implements RHTListener, DeviceStateListe
     @Override
     public void onDeviceConnected(@NonNull final BleDevice device) {
         Log.i(TAG, String.format("onDeviceConnected -> Received connected device with address: %s.", device.getAddress()));
-        for (RHTSensorManager listener : mSensorManagers) {
-            listener.onGadgetConnectionChanged(createDeviceModel(device.getAddress()), true);
+        synchronized (mSensorManagers) {
+            for (RHTSensorManager listener : mSensorManagers) {
+                listener.onGadgetConnectionChanged(createDeviceModel(device.getAddress()), true);
+            }
         }
     }
 
@@ -196,8 +200,10 @@ public class RHTHumigadgetSensorManager implements RHTListener, DeviceStateListe
     @Override
     public void onDeviceDisconnected(@NonNull final BleDevice device) {
         Log.i(TAG, String.format("onDeviceConnected -> %s has lost the connected with the device: %s ", TAG, device.getAddress()));
-        for (RHTSensorManager listener : mSensorManagers) {
-            listener.onGadgetConnectionChanged(createDeviceModel(device.getAddress()), false);
+        synchronized (mSensorManagers) {
+            for (RHTSensorManager listener : mSensorManagers) {
+                listener.onGadgetConnectionChanged(createDeviceModel(device.getAddress()), false);
+            }
         }
     }
 

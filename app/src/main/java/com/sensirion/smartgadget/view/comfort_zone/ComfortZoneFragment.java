@@ -269,9 +269,7 @@ public class ComfortZoneFragment extends ParentFragment implements OnTouchListen
             );
             sensorPoint.setInnerColor(model.getColor());
             sensorPoint.setOnTouchListener(this);
-            synchronized (mActiveSensorViews) {
-                mActiveSensorViews.put(address, sensorPoint);
-            }
+            mActiveSensorViews.put(address, sensorPoint);
             parent.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -392,18 +390,18 @@ public class ComfortZoneFragment extends ParentFragment implements OnTouchListen
     }
 
     private void selectSensor(final String selectedAddress) {
-        for (final XyPoint point : mActiveSensorViews.values()) {
-            point.setOutlineColor(Color.TRANSPARENT);
-            point.postInvalidate();
-        }
-        XyPoint selectedPoint = mActiveSensorViews.get(selectedAddress);
-        if (selectedPoint != null) {
-            Settings.getInstance().setSelectedAddress(selectedAddress);
-            selectedPoint.setOutlineColor(Color.WHITE);
-            selectedPoint.postInvalidate();
-            updateTextViewName();
-        } else {
-            Log.e(TAG, "selectSensor(): no selected address found: " + selectedAddress);
+        synchronized (mActiveSensorViews) {
+            for (final Map.Entry<String, XyPoint> activeSensorView : mActiveSensorViews.entrySet()) {
+                final XyPoint point = activeSensorView.getValue();
+                if (activeSensorView.getKey() == selectedAddress) {
+                    Settings.getInstance().setSelectedAddress(selectedAddress);
+                    point.setOutlineColor(Color.WHITE);
+                    updateTextViewName();
+                } else {
+                    point.setOutlineColor(Color.TRANSPARENT);
+                }
+                point.postInvalidate();
+            }
         }
     }
 
@@ -417,9 +415,7 @@ public class ComfortZoneFragment extends ParentFragment implements OnTouchListen
                 model = RHTSensorFacade.getInstance().getDeviceModel(selectedAddress);
             }
             if (model == null) {
-                synchronized (mActiveSensorViews) {
-                    mActiveSensorViews.remove(selectedAddress);
-                }
+                mActiveSensorViews.remove(selectedAddress);
                 return;
             }
             final Activity parent = getParent();
@@ -522,21 +518,6 @@ public class ComfortZoneFragment extends ParentFragment implements OnTouchListen
     private void removeSensorView(final String deviceAddress) {
         synchronized (mActiveSensorViews) {
             if (mActiveSensorViews.containsKey(deviceAddress)) {
-                if (getView() == null) {
-                    throw new NullPointerException(
-                            String.format(
-                                    "%s: removeSensorView -> It was impossible to obtain the view.",
-                                    TAG
-                            )
-                    );
-                }
-                Log.i(TAG,
-                        String.format(
-                                "removeSensorView() -> The view from address %s was removed.",
-                                deviceAddress
-                        )
-                );
-
                 final Activity parent = getParent();
                 if (parent == null) {
                     Log.e(TAG, "removeSensorView() -> Obtained null when calling the activity.");

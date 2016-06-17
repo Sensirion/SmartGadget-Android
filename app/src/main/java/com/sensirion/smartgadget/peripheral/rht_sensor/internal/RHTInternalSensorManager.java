@@ -75,8 +75,10 @@ public class RHTInternalSensorManager {
         }
 
         private void notifyListeners() {
-            for (final RHTSensorManager listener : mRHTInternalSensorListeners) {
-                listener.onNewRHTData(mLastTemperature, mLastHumidity, INTERNAL_SENSOR_ADDRESS);
+            synchronized (mRHTInternalSensorListeners) {
+                for (final RHTSensorManager listener : mRHTInternalSensorListeners) {
+                    listener.onNewRHTData(mLastTemperature, mLastHumidity, INTERNAL_SENSOR_ADDRESS);
+                }
             }
             final RHTDataPoint dataPoint = new RHTDataPoint(mLastTemperature, mLastHumidity, System.currentTimeMillis());
             HistoryDatabaseManager.getInstance().addRHTData(INTERNAL_SENSOR_ADDRESS, dataPoint, false);
@@ -172,8 +174,10 @@ public class RHTInternalSensorManager {
     }
 
     private void notifyAllListenersNewSensor() {
-        for (final RHTSensorManager listener : mRHTInternalSensorListeners) {
-            notifyListenerNewSensor(listener);
+        synchronized (mRHTInternalSensorListeners) {
+            for (final RHTSensorManager listener : mRHTInternalSensorListeners) {
+                notifyListenerNewSensor(listener);
+            }
         }
     }
 

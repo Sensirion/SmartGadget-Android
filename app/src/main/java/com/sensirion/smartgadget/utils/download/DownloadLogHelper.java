@@ -170,8 +170,9 @@ public class DownloadLogHelper implements HistoryListener {
             mProgressLogDownloadDialog.setMax(amount);
             mProgressLogDownloadDialog.setProgress(0);
         }
-        if (mDownloadCenters.get(device.getAddress()) != null) {
-            mDownloadCenters.get(device.getAddress()).setNumberValuesToDownload(amount);
+        final DownloadNotificationCenter center = mDownloadCenters.get(device.getAddress());
+        if (center != null) {
+            center.setNumberValuesToDownload(amount);
         }
     }
 
