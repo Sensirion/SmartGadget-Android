@@ -108,7 +108,6 @@ public class HistoryFragment extends ParentFragment implements RHTSensorListener
         unbinder = ButterKnife.bind(this, historyView);
         viewInflated = true;
         init(historyView);
-        RHTSensorFacade.getInstance().registerListener(this);
         mPlot.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(@NonNull final View v) {
@@ -124,8 +123,14 @@ public class HistoryFragment extends ParentFragment implements RHTSensorListener
     }
 
     @Override
-    public void onDestroyView() {
-        super.onDestroyView();
+    public void onResume() {
+        super.onResume();
+        RHTSensorFacade.getInstance().registerListener(this);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
         RHTSensorFacade.getInstance().unregisterListener(this);
     }
 
