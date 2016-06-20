@@ -374,6 +374,10 @@ public class ScanDeviceFragment extends ParentListFragment implements ScanListen
             Log.e(TAG, "showRetrievingCharacteristicsProgressDialog -> Not showing dialog with null parent.");
             return;
         }
+        if (mIndeterminateProgressDialog != null) {
+            Log.w(TAG, "IndeterminateProgressDialog already in use... will not create a new one");
+            return;
+        }
         final String title = PLEASE_WAIT_STRING;
         final String deviceName = DeviceNameDatabaseManager.getInstance().readDeviceName(device.getAddress());
         final String message = String.format(ASKING_FOR_UNKNOWN_CHARACTERISTICS_PREFIX, deviceName);
