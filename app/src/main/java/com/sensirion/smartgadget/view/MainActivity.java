@@ -1,19 +1,24 @@
 package com.sensirion.smartgadget.view;
 
+import android.Manifest;
 import android.app.ActionBar;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.text.Spannable;
@@ -59,6 +64,7 @@ import butterknife.Optional;
 public class MainActivity extends FragmentActivity implements View.OnTouchListener, RHTSensorListener {
 
     private static final String TAG = MainActivity.class.getSimpleName();
+    private static final int PERMISSION_REQUEST_CODE = 123;
 
     // Attributes only used in mobile devices.
     @Nullable
@@ -112,6 +118,7 @@ public class MainActivity extends FragmentActivity implements View.OnTouchListen
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
+        requestScanningPermission(this, PERMISSION_REQUEST_CODE);
         ManagerInitializer.initializeApplicationManagers(getApplicationContext());
         setScreenOrientation();
         initFragmentNavigator();
@@ -573,5 +580,26 @@ public class MainActivity extends FragmentActivity implements View.OnTouchListen
                                    final float relativeHumidity,
                                    final String deviceAddress) {
         // Do nothing
+    }
+
+    // TODO: Move into lib
+    // Temporarily added until further notice
+
+    /**
+     * Runtime request for ACCESS_FINE_LOCATION. This is required on Android 6.0 and higher in order
+     * to perform BLE scans.
+     *
+     * @param requestingActivity The activity requesting the permission.
+     * @param requestCode        The request code used to deliver the user feedback to the calling
+     *                           activity.
+     */
+    public static void requestScanningPermission(@NonNull final Activity requestingActivity,
+                                                 final int requestCode) {
+        final String permission = Manifest.permission.ACCESS_FINE_LOCATION;
+        if (ContextCompat.checkSelfPermission(requestingActivity, permission) != PackageManager.PERMISSION_GRANTED) {
+            if (!ActivityCompat.shouldShowRequestPermissionRationale(requestingActivity, permission)) {
+                ActivityCompat.requestPermissions(requestingActivity, new String[]{permission}, requestCode);
+            }
+        }
     }
 }
