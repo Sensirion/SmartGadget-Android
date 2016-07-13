@@ -111,6 +111,7 @@ public enum HistoryIntervalType {
 
     /**
      * Obtains the position of the interval in the screen
+     *
      * @return <code>int</code> with the position number
      */
     public int getPosition() {
@@ -119,6 +120,7 @@ public enum HistoryIntervalType {
 
     /**
      * Obtains the display name from the database.
+     *
      * @param context needed for extracting the label from the XML.
      * @return {@link String} with the display name
      */
@@ -129,6 +131,7 @@ public enum HistoryIntervalType {
 
     /**
      * Obtains the database {@link AbstractHistoryDataView} from the interval
+     *
      * @return {@link AbstractHistoryDataView}
      */
     @NonNull
@@ -138,6 +141,7 @@ public enum HistoryIntervalType {
 
     /**
      * Obtains the number of domain elements in the graph.
+     *
      * @return <code>int</code> with the number of domain elements.
      */
     public int getNumberDomainElements() {
@@ -146,6 +150,7 @@ public enum HistoryIntervalType {
 
     /**
      * Obtains the time format of the graph.
+     *
      * @return {@link Format}
      */
     @NonNull
@@ -155,6 +160,7 @@ public enum HistoryIntervalType {
 
     /**
      * Obtains the label of the graph related to a time interval.
+     *
      * @param context needed for extracting the graph label of the lime interval.
      * @return {@link String} with the interval.
      */

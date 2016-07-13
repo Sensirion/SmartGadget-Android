@@ -33,10 +33,10 @@ import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
 
-import butterknife.BindView;
 import butterknife.BindColor;
 import butterknife.BindInt;
 import butterknife.BindString;
+import butterknife.BindView;
 import butterknife.ButterKnife;
 
 import static com.sensirion.smartgadget.utils.XmlFloatExtractor.getFloatValueFromId;
@@ -546,10 +546,10 @@ public class ComfortZoneFragment extends ParentFragment implements OnTouchListen
             }
 
             if (address != RHTInternalSensorManager.INTERNAL_SENSOR_ADDRESS &&
-                !mActiveSensorViews.containsKey(address)) {
+                    !mActiveSensorViews.containsKey(address)) {
                 Log.w(TAG, String.format(
-                                "updateViewValues() -> Received value from inactive device %s. Updating views.",
-                                address
+                        "updateViewValues() -> Received value from inactive device %s. Updating views.",
+                        address
                         )
                 );
                 updateSensorViews();

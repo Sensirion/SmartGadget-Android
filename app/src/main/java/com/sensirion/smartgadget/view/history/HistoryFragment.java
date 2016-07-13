@@ -36,10 +36,8 @@ import com.sensirion.smartgadget.view.history.type.HistoryIntervalType;
 import com.sensirion.smartgadget.view.history.type.HistoryUnitType;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 import butterknife.BindInt;
 import butterknife.BindString;

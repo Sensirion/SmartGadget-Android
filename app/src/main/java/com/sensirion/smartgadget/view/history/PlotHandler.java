@@ -23,14 +23,13 @@ import com.sensirion.smartgadget.view.history.graph.value_formatter.ShowNothingF
 import com.sensirion.smartgadget.view.history.type.HistoryIntervalType;
 import com.sensirion.smartgadget.view.history.type.HistoryUnitType;
 
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-import butterknife.BindView;
 import butterknife.BindInt;
 import butterknife.BindString;
+import butterknife.BindView;
 import butterknife.ButterKnife;
 
 public class PlotHandler {

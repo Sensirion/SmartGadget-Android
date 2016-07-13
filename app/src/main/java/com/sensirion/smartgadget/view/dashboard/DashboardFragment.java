@@ -35,9 +35,9 @@ import java.text.NumberFormat;
 import java.util.List;
 import java.util.Locale;
 
-import butterknife.BindView;
 import butterknife.BindBool;
 import butterknife.BindString;
+import butterknife.BindView;
 import butterknife.ButterKnife;
 
 public class DashboardFragment extends ParentFragment implements RHTSensorListener {
@@ -242,16 +242,16 @@ public class DashboardFragment extends ParentFragment implements RHTSensorListen
             updateListView();
             if (deviceIsConnected) {
                 Log.i(TAG, String.format(
-                                "onGadgetConnectionChanged() -> Sensor with address %s was connected.",
-                                deviceAddress
+                        "onGadgetConnectionChanged() -> Sensor with address %s was connected.",
+                        deviceAddress
                         )
                 );
             } else {
                 resetViewValues();
                 RHTSensorFacade.getInstance().notifyCachedSensorData(DashboardFragment.this);
                 Log.i(TAG, String.format(
-                                "onGadgetConnectionChanged() -> Sensor with address %s was disconnected.",
-                                deviceAddress
+                        "onGadgetConnectionChanged() -> Sensor with address %s was disconnected.",
+                        deviceAddress
                         )
                 );
             }

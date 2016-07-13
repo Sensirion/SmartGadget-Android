@@ -7,10 +7,12 @@ import android.util.TypedValue;
 
 public final class XmlFloatExtractor {
 
-    private XmlFloatExtractor(){}
+    private XmlFloatExtractor() {
+    }
 
     /**
      * Extracts a dimension value from the XML resources into a float.
+     *
      * @param context needed to access the XML resources.
      * @param resourceId that will be extracted into a float.
      * @return {@link float} with the extracted float value.
