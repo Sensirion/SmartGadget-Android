@@ -20,10 +20,10 @@ import android.widget.ListView;
 
 import com.androidplot.xy.SimpleXYSeries;
 import com.androidplot.xy.XYPlot;
-import com.sensirion.libble.utils.RHTDataPoint;
 import com.sensirion.smartgadget.R;
 import com.sensirion.smartgadget.peripheral.rht_sensor.RHTSensorFacade;
 import com.sensirion.smartgadget.peripheral.rht_sensor.RHTSensorListener;
+import com.sensirion.smartgadget.peripheral.rht_utils.RHTDataPoint;
 import com.sensirion.smartgadget.persistence.device_name_database.DeviceNameDatabaseManager;
 import com.sensirion.smartgadget.persistence.history_database.HistoryDatabaseManager;
 import com.sensirion.smartgadget.utils.DeviceModel;
@@ -99,7 +99,6 @@ public class HistoryFragment extends ParentFragment implements RHTSensorListener
                              @Nullable final Bundle savedInstanceState) {
         final View historyView = inflater.inflate(R.layout.fragment_history, container, false);
         unbinder = ButterKnife.bind(this, historyView);
-        viewInflated = true;
         init(historyView);
         mPlot.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -461,7 +460,7 @@ public class HistoryFragment extends ParentFragment implements RHTSensorListener
 
     /**
      * Sorts the datapoint List by timestamps.
-     * Uses {@link com.sensirion.libble.utils.RHTDataPoint#compareTo} for sorting.
+     * Uses {@link RHTDataPoint#compareTo} for sorting.
      *
      * @param deviceDataPoints is to be sorted.
      */

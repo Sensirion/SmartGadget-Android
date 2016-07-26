@@ -2,7 +2,7 @@ package com.sensirion.smartgadget.view.history;
 
 import android.support.annotation.NonNull;
 
-import com.sensirion.libble.utils.RHTDataPoint;
+import com.sensirion.smartgadget.peripheral.rht_utils.RHTDataPoint;
 
 import java.util.Collections;
 import java.util.HashMap;

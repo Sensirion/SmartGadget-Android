@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Define the background properties like color etc -->
+    <item android:id="@android:id/background">
+        <color android:color="@color/sensirion_grey_light"/>
+    </item>
+
+    <!-- Define the progress properties like start color, end color etc -->
+    <item android:id="@android:id/progress">
+        <clip>
+            <shape>
+                <corners android:radius="6.5dp" />
+
+                <gradient
+                    android:angle="90"
+                    android:centerColor="@color/sensirion_green"
+                    android:centerY="0.4"
+                    android:endColor="@color/sensirion_green_darkened"
+                    android:startColor="@color/sensirion_green_darkened"/>
+            </shape>
+        </clip>
+    </item>
+</layer-list>

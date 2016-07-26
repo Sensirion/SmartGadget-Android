@@ -141,7 +141,7 @@ public class ComfortZoneFragment extends ParentFragment implements OnTouchListen
     @BindInt(R.integer.comfort_zone_plot_stroke_width)
     int GRAPH_STROKE_WIDTH;
 
-    private Map<String, XyPoint> mActiveSensorViews;
+    private final Map<String, XyPoint> mActiveSensorViews = Collections.synchronizedMap(new LinkedHashMap<String, XyPoint>());
 
     private boolean mIsFahrenheit;
 
@@ -151,14 +151,13 @@ public class ComfortZoneFragment extends ParentFragment implements OnTouchListen
                              @Nullable final Bundle savedInstanceState) {
         final View view = inflater.inflate(R.layout.fragment_comfortzone, container, false);
         unbinder = ButterKnife.bind(this, view);
-        viewInflated = true;
         return view;
     }
 
     @Override
     public void onViewCreated(@NonNull final View view, @Nullable final Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        mActiveSensorViews = Collections.synchronizedMap(new LinkedHashMap<String, XyPoint>());
+        mActiveSensorViews.clear();
         final Activity parent = getParent();
         if (parent == null) {
             Log.e(TAG, "onViewCreated -> Received null activity");

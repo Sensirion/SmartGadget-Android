@@ -9,7 +9,9 @@ import com.sensirion.smartgadget.persistence.device_name_database.DeviceNameData
 import com.sensirion.smartgadget.persistence.history_database.HistoryDatabaseManager;
 import com.sensirion.smartgadget.utils.view.ColorManager;
 
-public abstract class ManagerInitializer {
+public final class ManagerInitializer {
+    private ManagerInitializer() {
+    }
 
     private static final String TAG = ManagerInitializer.class.getSimpleName();
 

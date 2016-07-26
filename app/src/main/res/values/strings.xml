@@ -107,7 +107,7 @@
     <string name="desc_imgview_generic">dummy image description</string>
 
     <!-- HistoryFragment -->
-    <string name="label_download">Download latest data</string>
+    <string name="label_download">Download</string>
     <string name="label_10_minutes">10 min</string>
     <string name="label_1_hour">1 hour</string>
     <string name="label_6_hours">6 hours</string>
@@ -132,10 +132,10 @@
 
     <!-- ManageDeviceFragment -->
     <string name="label_details">Details</string>
-    <string name="label_batteryLevel">Battery level</string>
+    <string name="label_batteryLevel">Battery</string>
     <string name="label_gadgetName">Gadget name</string>
     <string name="label_loggingInterval">Logging Interval</string>
-    <string name="label_gadgetLogging">Gadget Logging</string>
+    <string name="label_gadgetLogging">Logging</string>
     <string name="label_disconnect">Disconnect</string>
     <string name="label_downloading">Downloading </string>
 
@@ -174,43 +174,23 @@
     <!-- 'Address: '-->
     <string name="label_address">Address\u003A\u0020</string>
 
-    <!-- DashboardFragment-->
-    <string name="label_peripheral_advertised_name">Advertised name\u003A\u0020</string>
-    <string name="label_peripheral_address">MAC-Address\u003A\u0020</string>
-    <string name="label_peripheral_battery_level">Battery level\u003A\u0020</string>
-    <string name="label_temperature">Temperature\u003A\u0020</string>
-    <string name="label_humidity">Humidity\u003A\u0020</string>
-    <string name="text_connected">Peripheral connected\u003A\u0020</string>
-    <string name="text_disconnected">Peripheral disconnected\u003A\u0020</string>
-
-    <string name="peripheral_service_not_available">service not available</string>
-
     <!-- Toast -->
     <string name="connected_device">Connected to device: %s</string>
     <string name="lost_connection_device">Lost connection to device: %s</string>
-    <string name="download_complete">The historical data has been successfully downloaded from the device: %s</string>
-    <string name="download_failure">It was impossible to download all the data from the device:</string>
-    <string name="download_complete_success">The data from device %s was downloaded successfully.</string>
-    <string name="download_complete_failure">An error was produced during %s device download.</string>
 
     <!-- Alert Views-->
-    <string name="connecting_to_the_device">Connecting to the device</string>
-    <string name="please_wait">Please Wait</string>
-    <string name="connection_timeout_dialog_title">Connection Timeout</string>
-    <string name="connection_timeout_dialog_message">A timeout was produced when connecting to:</string>
-    <string name="device_not_ready_dialog_title">Device not ready</string>
-    <string name="device_not_ready_dialog_message_prefix">Device %s is not ready. Try again later.</string>
+    <string name="connecting_title">Connecting …</string>
     <string name="confirmation_to_close_application">Do you want to close the application?</string>
-    <string name="trying_connect_device_prefix">Trying to connect to device: %s</string>
     <string name="connecting_to_device_prefix">Connecting to the device with name: %s</string>
-    <string name="asking_for_unknown_device_characteristics_prefix">Retrieving missing information from the device: %s</string>
 
     <!-- ManageDeviceFragment -->
     <string name="interval_modification">Interval Modification</string>
     <string name="interval_modification_message">Modifying the interval will delete the data from the device. Do you want to continue?</string>
-    <string name="downloading_data">Downloading logged data from the device</string>
     <string name="enable_logging">Enable Logging?</string>
 
     <!-- Default Sensor Names -->
     <string name="inphone_rht_sensor">In-phone Sensor</string>
+    <string name="manage_device_download_failed_retry">Failed… Retry</string>
+    <string name="label_gadgetdownload">Logged Data</string>
+    <string name="manage_device_string_download">downloading…</string>
 </resources>

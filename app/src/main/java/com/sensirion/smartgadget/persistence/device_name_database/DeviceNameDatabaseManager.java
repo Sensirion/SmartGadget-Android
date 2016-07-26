@@ -121,6 +121,8 @@ public class DeviceNameDatabaseManager {
         if (deviceName.trim().isEmpty() || deviceName.equals(deviceAddress)) {
             sqlQuery = deviceNameTable.deleteDeviceNameSql(deviceAddress);
             Log.i(TAG, String.format("updateDeviceName -> Device %s has been deleted from the user device name table.", deviceAddress));
+        } else if (readDeviceName(deviceAddress).equals(deviceName)) {
+            return;
         } else if (!readDeviceName(deviceAddress).equals(deviceName)) {
             // We already have a device name, so we update the database with a new value.
             sqlQuery = deviceNameTable.updateDeviceNameSql(deviceAddress, deviceName);

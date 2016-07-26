@@ -5,28 +5,27 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.sensirion.database_library.DatabaseFacade;
-import com.sensirion.libble.utils.RHTDataPoint;
+import com.sensirion.smartgadget.peripheral.rht_utils.RHTDataPoint;
 import com.sensirion.smartgadget.persistence.history_database.table.HistoryDataTable;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 class DatapointHandler {
-
     private static final String TAG = DatapointHandler.class.getSimpleName();
-
     private static final byte SECONDS_MINIMUM_HISTORY_RESOLUTION = 10;
 
-    @NonNull
     private final String mDeviceAddress;
-
-    @NonNull
     private final List<RHTDataPoint> mLastNotificationDataPoints = new LinkedList<>();
+    private final ExecutorService mBackgroundExecutor;
 
     private boolean mIsFirstReceivedValue = true;
 
     DatapointHandler(@NonNull final String deviceAddress) {
         mDeviceAddress = deviceAddress;
+        mBackgroundExecutor = Executors.newSingleThreadExecutor(Executors.defaultThreadFactory());
     }
 
     private static long obtainMeanTimestamp(@NonNull final List<RHTDataPoint> dataPointList) {
@@ -98,12 +97,17 @@ class DatapointHandler {
     }
 
     private void insertDatapointDatabase(final long timestamp, final float temperature, final float humidity, final boolean comesFromLog) {
-        final String sql = HistoryDataTable.getInstance().insertValueSql(mDeviceAddress, timestamp, temperature, humidity, comesFromLog);
-        final DatabaseFacade databaseFacade = HistoryDatabaseManager.getInstance().getDatabaseFacade();
-        databaseFacade.rawDatabaseQuery(sql);
-        databaseFacade.commit();
-        Log.d(TAG, String.format("insertDatapointDatabase: DeviceAddress: %s, Timestamp: %d, Temperature: %f, humidity: %f, comesFromLog: %b",
-                mDeviceAddress, timestamp, temperature, humidity, comesFromLog));
+        mBackgroundExecutor.submit(new Runnable() {
+            @Override
+            public void run() {
+                final String sql = HistoryDataTable.getInstance().insertValueSql(mDeviceAddress, timestamp, temperature, humidity, comesFromLog);
+                final DatabaseFacade databaseFacade = HistoryDatabaseManager.getInstance().getDatabaseFacade();
+                databaseFacade.rawDatabaseQuery(sql);
+                databaseFacade.commit();
+                Log.d(TAG, String.format("insertDatapointDatabase: DeviceAddress: %s, Timestamp: %d, Temperature: %f, humidity: %f, comesFromLog: %b",
+                        mDeviceAddress, timestamp, temperature, humidity, comesFromLog));
+            }
+        });
     }
 
     @Override

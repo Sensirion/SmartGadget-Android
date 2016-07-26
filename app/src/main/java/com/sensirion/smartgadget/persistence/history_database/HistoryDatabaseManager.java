@@ -10,10 +10,9 @@ import com.sensirion.database_library.attributes.DatabaseAttributes;
 import com.sensirion.database_library.database_object.AbstractDatabaseObject;
 import com.sensirion.database_library.parser.QueryResult;
 import com.sensirion.database_library.parser.QueryResultRow;
-import com.sensirion.libble.devices.BleDevice;
-import com.sensirion.libble.utils.RHTDataPoint;
 import com.sensirion.smartgadget.R;
 import com.sensirion.smartgadget.peripheral.rht_sensor.RHTSensorFacade;
+import com.sensirion.smartgadget.peripheral.rht_utils.RHTDataPoint;
 import com.sensirion.smartgadget.persistence.history_database.table.HistoryDataLast10MinutesView;
 import com.sensirion.smartgadget.persistence.history_database.table.HistoryDataLast1DayView;
 import com.sensirion.smartgadget.persistence.history_database.table.HistoryDataLast1HourView;
@@ -101,17 +100,6 @@ public class HistoryDatabaseManager {
         databaseObject.add(HistoryDataLast1DayView.getInstance());
         databaseObject.add(HistoryDataLast1WeekView.getInstance());
         return databaseObject;
-    }
-
-    /**
-     * Adds the introduced datapoint to the history, if it's necessary.
-     *
-     * @param device        that provided the data.
-     * @param datapoint     that wants to be added to the database.
-     * @param isFromHistory <code>true</code> if the datapoint comes from reading the device history - <code>false</code> if it comes from live data.
-     */
-    public void addRHTData(@NonNull final BleDevice device, @NonNull final RHTDataPoint datapoint, final boolean isFromHistory) {
-        addRHTData(device.getAddress(), datapoint, isFromHistory);
     }
 
     /**

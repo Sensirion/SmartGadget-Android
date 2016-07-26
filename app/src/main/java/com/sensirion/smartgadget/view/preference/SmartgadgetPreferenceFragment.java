@@ -19,7 +19,6 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.sensirion.libble.BleManager;
 import com.sensirion.smartgadget.R;
 import com.sensirion.smartgadget.peripheral.rht_sensor.RHTSensorFacade;
 import com.sensirion.smartgadget.peripheral.rht_sensor.RHTSensorListener;
@@ -180,7 +179,7 @@ public class SmartgadgetPreferenceFragment extends ParentListFragment implements
         final View.OnClickListener clickListener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (RHTHumigadgetSensorManager.getInstance().bluetoothIsEnabled()) {
+                if (RHTHumigadgetSensorManager.getInstance().bluetoothIsEnabled(getContext())) {
                     getListView().setVisibility(View.GONE);
                     final MainActivity mainActivity = (MainActivity) getParent();
                     if (mainActivity == null) {
@@ -199,7 +198,7 @@ public class SmartgadgetPreferenceFragment extends ParentListFragment implements
 
     @NonNull
     private String getConnectedDevicesTitle() {
-        final int numberConnectedGadgets = BleManager.getInstance().getConnectedBleDeviceCount();
+        final int numberConnectedGadgets = RHTHumigadgetSensorManager.getInstance().getConnectedDevicesCount();
         if (numberConnectedGadgets == 0) {
             return DEVICES_PREFERENCE_LABEL;
         }

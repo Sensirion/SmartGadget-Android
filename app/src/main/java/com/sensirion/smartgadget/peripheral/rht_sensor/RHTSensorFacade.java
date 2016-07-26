@@ -5,9 +5,9 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
-import com.sensirion.libble.utils.RHTDataPoint;
 import com.sensirion.smartgadget.peripheral.rht_sensor.external.RHTHumigadgetSensorManager;
 import com.sensirion.smartgadget.peripheral.rht_sensor.internal.RHTInternalSensorManager;
+import com.sensirion.smartgadget.peripheral.rht_utils.RHTDataPoint;
 import com.sensirion.smartgadget.utils.DeviceModel;
 import com.sensirion.smartgadget.utils.Settings;
 
@@ -20,7 +20,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
-public class RHTSensorFacade implements RHTSensorManager {
+public class RHTSensorFacade implements HumiSensorListener {
 
     private static final String TAG = RHTSensorFacade.class.getSimpleName();
 

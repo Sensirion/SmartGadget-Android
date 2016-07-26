@@ -9,9 +9,9 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
-import com.sensirion.libble.utils.RHTDataPoint;
 import com.sensirion.smartgadget.R;
-import com.sensirion.smartgadget.peripheral.rht_sensor.RHTSensorManager;
+import com.sensirion.smartgadget.peripheral.rht_sensor.HumiSensorListener;
+import com.sensirion.smartgadget.peripheral.rht_utils.RHTDataPoint;
 import com.sensirion.smartgadget.persistence.device_name_database.DeviceNameDatabaseManager;
 import com.sensirion.smartgadget.persistence.history_database.HistoryDatabaseManager;
 import com.sensirion.smartgadget.utils.DeviceModel;
@@ -32,13 +32,11 @@ public class RHTInternalSensorManager {
     private final String mInternalRHTSensorName;
     @NonNull
     private final SensorManager mSensorManager;
-    private final Set<RHTSensorManager> mRHTInternalSensorListeners = Collections.synchronizedSet(new HashSet<RHTSensorManager>());
+    private final Set<HumiSensorListener> mRHTInternalSensorListeners = Collections.synchronizedSet(new HashSet<HumiSensorListener>());
     @Nullable
     private final SensorEventListener mInternalSensorEventListener = new SensorEventListener() {
 
-        @Nullable
         private Float mLastTemperature = null;
-        @Nullable
         private Float mLastHumidity = null;
 
         @Override
@@ -75,11 +73,14 @@ public class RHTInternalSensorManager {
         }
 
         private void notifyListeners() {
+            if (mLastTemperature == null || mLastHumidity == null) return;
+
             synchronized (mRHTInternalSensorListeners) {
-                for (final RHTSensorManager listener : mRHTInternalSensorListeners) {
+                for (final HumiSensorListener listener : mRHTInternalSensorListeners) {
                     listener.onNewRHTData(mLastTemperature, mLastHumidity, INTERNAL_SENSOR_ADDRESS);
                 }
             }
+            // TODO make asynchronous
             final RHTDataPoint dataPoint = new RHTDataPoint(mLastTemperature, mLastHumidity, System.currentTimeMillis());
             HistoryDatabaseManager.getInstance().addRHTData(INTERNAL_SENSOR_ADDRESS, dataPoint, false);
             mLastTemperature = null;
@@ -116,7 +117,7 @@ public class RHTInternalSensorManager {
      *
      * @param listener that wants to be informed on the internal sensor news.
      */
-    public void registerInternalSensorListener(@NonNull final RHTSensorManager listener) {
+    public void registerInternalSensorListener(@NonNull final HumiSensorListener listener) {
         if (mRHTInternalSensorListeners.contains(listener)) {
             Log.w(TAG, String.format("registerInternalSensorListener -> Listener %s it's already in the listener list", listener));
         }
@@ -132,7 +133,7 @@ public class RHTInternalSensorManager {
      * @param listener that wants to be remove.
      */
     @SuppressWarnings("unused")
-    public void unregisterInternalSensorListener(@NonNull final RHTSensorManager listener) {
+    public void unregisterInternalSensorListener(@NonNull final HumiSensorListener listener) {
         mRHTInternalSensorListeners.remove(listener);
         if (mRHTInternalSensorListeners.isEmpty()) {
             stopInternalSensor();
@@ -169,13 +170,13 @@ public class RHTInternalSensorManager {
         Log.w(TAG, "startInternalSensor -> The device doesn't have a valid internal Sensor.");
     }
 
-    private void notifyListenerNewSensor(@NonNull final RHTSensorManager listener) {
+    private void notifyListenerNewSensor(@NonNull final HumiSensorListener listener) {
         listener.onGadgetConnectionChanged(getSensorModel(), true);
     }
 
     private void notifyAllListenersNewSensor() {
         synchronized (mRHTInternalSensorListeners) {
-            for (final RHTSensorManager listener : mRHTInternalSensorListeners) {
+            for (final HumiSensorListener listener : mRHTInternalSensorListeners) {
                 notifyListenerNewSensor(listener);
             }
         }

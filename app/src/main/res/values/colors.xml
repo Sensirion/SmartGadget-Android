@@ -4,6 +4,10 @@
     <color name="sensirion_green">#FF81C12D</color>
     <color name="sensirion_grey_light">#FFE9E4E0</color>
     <color name="sensirion_grey_dark">#FFBCB0A7</color>
+    <color name="sensirion_green_darkened">#6ba124</color>
+
+    <!--Manage Device-->
+    <color name="light_gray">#d2ccc7</color>
 
     <!-- Fonts -->
     <color name="font_light">#FFF0EFF0</color>
@@ -13,6 +17,7 @@
     <!-- Predefined colors mapped to sensors -->
     <color name="green">#FF48782A</color>
     <color name="red">#FFA33315</color>
+    <color name="red_darkened">#7b2710</color>
     <color name="cyan">#FF12A1BF</color>
     <color name="yellow">#FFE7CE1E</color>
     <color name="royalblue">#FF4D5D92</color>

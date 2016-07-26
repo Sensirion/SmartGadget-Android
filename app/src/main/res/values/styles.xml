@@ -18,8 +18,4 @@
     <style name="SensirionActionBarTitle" parent="android:TextAppearance.Holo.Widget.ActionBar.Title">
         <item name="android:textColor">@android:color/white</item>
     </style>
-
-    <style name="manage_device_seek_bar_style">
-        <item name="android:textSize">@dimen/manage_device_switch_text_size</item>
-    </style>
 </resources>

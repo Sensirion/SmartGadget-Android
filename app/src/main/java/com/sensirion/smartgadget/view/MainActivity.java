@@ -39,7 +39,6 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.sensirion.libble.BleManager;
 import com.sensirion.smartgadget.R;
 import com.sensirion.smartgadget.peripheral.rht_sensor.RHTSensorFacade;
 import com.sensirion.smartgadget.peripheral.rht_sensor.RHTSensorListener;
@@ -50,6 +49,8 @@ import com.sensirion.smartgadget.utils.section_manager.SectionManager;
 import com.sensirion.smartgadget.utils.section_manager.SectionManagerMobile;
 import com.sensirion.smartgadget.utils.section_manager.SectionManagerTablet;
 import com.sensirion.smartgadget.utils.view.ApplicationHeaderGenerator;
+import com.sensirion.smartgadget.view.device_management.ManageDeviceFragment;
+import com.sensirion.smartgadget.view.device_management.ScanDeviceFragment;
 
 import java.util.Locale;
 
@@ -346,7 +347,9 @@ public class MainActivity extends FragmentActivity implements View.OnTouchListen
     }
 
     private void onBackPressedMobile() {
-        if (mIsChildScreen) {
+        if (mLastFragment instanceof ManageDeviceFragment) {
+            changeFragment(new ScanDeviceFragment());
+        } else if (mIsChildScreen) {
             onMobileTabSelected(SectionManagerMobile.POSITION_SETTINGS);
         } else if (mPositionSelected > 0) {
             onMobileTabSelected(SectionManagerMobile.POSITION_DASHBOARD);
@@ -409,7 +412,6 @@ public class MainActivity extends FragmentActivity implements View.OnTouchListen
         super.onResume();
         Log.d(TAG, "onResume()");
         RHTSensorFacade.getInstance().registerListener(this);
-        BleManager.getInstance().setAllNotificationsEnabled(true);
     }
 
     @Override
@@ -532,12 +534,12 @@ public class MainActivity extends FragmentActivity implements View.OnTouchListen
     @Override
     public boolean onTouch(@NonNull final View view, @Nullable final MotionEvent motionEvent) {
         if (mIsTablet) {
-            final RHTHumigadgetSensorManager bleManager = RHTHumigadgetSensorManager.getInstance();
-            if (bleManager.bluetoothIsEnabled()) {
+            final RHTHumigadgetSensorManager rhtHumigadgetSensorManager = RHTHumigadgetSensorManager.getInstance();
+            if (rhtHumigadgetSensorManager.bluetoothIsEnabled(this)) {
                 toggleTabletMenu();
                 RHTSensorFacade.getInstance().registerListener(this);
             } else {
-                bleManager.requestEnableBluetooth(this);
+                rhtHumigadgetSensorManager.requestEnableBluetooth(this);
             }
         }
         return view.performClick();

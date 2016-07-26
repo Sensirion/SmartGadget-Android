@@ -5,8 +5,10 @@
     <item
         android:id="@+id/scan_device_refresh"
         android:alphabeticShortcut="r"
+        android:checkable="true"
+        android:checked="false"
         android:icon="@drawable/menu_refresh"
         android:orderInCategory="1"
         android:showAsAction="always"
-        android:title="scan_device_refresh_button" />
+        android:title="scan_device_refresh_button"/>
 </menu>

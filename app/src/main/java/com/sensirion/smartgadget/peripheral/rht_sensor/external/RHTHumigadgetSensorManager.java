@@ -6,37 +6,61 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
-import com.sensirion.libble.BleManager;
-import com.sensirion.libble.devices.BleDevice;
-import com.sensirion.libble.listeners.devices.DeviceStateListener;
-import com.sensirion.libble.listeners.services.RHTListener;
-import com.sensirion.libble.services.AbstractHistoryService;
-import com.sensirion.libble.services.generic.BatteryService;
-import com.sensirion.libble.utils.RHTDataPoint;
-import com.sensirion.smartgadget.peripheral.rht_sensor.RHTSensorManager;
+import com.sensirion.libsmartgadget.Gadget;
+import com.sensirion.libsmartgadget.GadgetDownloadService;
+import com.sensirion.libsmartgadget.GadgetListener;
+import com.sensirion.libsmartgadget.GadgetManager;
+import com.sensirion.libsmartgadget.GadgetManagerCallback;
+import com.sensirion.libsmartgadget.GadgetService;
+import com.sensirion.libsmartgadget.GadgetValue;
+import com.sensirion.libsmartgadget.smartgadget.GadgetManagerFactory;
+import com.sensirion.libsmartgadget.smartgadget.SHT3xHumidityService;
+import com.sensirion.libsmartgadget.smartgadget.SHT3xTemperatureService;
+import com.sensirion.libsmartgadget.smartgadget.SHTC1TemperatureAndHumidityService;
+import com.sensirion.libsmartgadget.utils.BLEUtility;
+import com.sensirion.smartgadget.peripheral.rht_sensor.HumiSensorListener;
+import com.sensirion.smartgadget.peripheral.rht_utils.RHTDataPoint;
 import com.sensirion.smartgadget.persistence.device_name_database.DeviceNameDatabaseManager;
 import com.sensirion.smartgadget.persistence.history_database.HistoryDatabaseManager;
 import com.sensirion.smartgadget.utils.DeviceModel;
 import com.sensirion.smartgadget.utils.view.ColorManager;
 
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-public class RHTHumigadgetSensorManager implements RHTListener, DeviceStateListener {
+public class RHTHumigadgetSensorManager implements GadgetManagerCallback, GadgetListener {
 
     private static final String TAG = RHTHumigadgetSensorManager.class.getSimpleName();
 
     @Nullable
     private static RHTHumigadgetSensorManager mInstance = null;
-    private static BleManager mBleManager;
+    @NonNull
+    private final GadgetManager mGadgetManager;
+    private final Set<HumiSensorListener> mSensorListeners;
+    private final Map<String, Gadget> mDiscoveredGadgets;
+    private final Map<String, Gadget> mConnectedGadgets;
 
-    private final List<RHTSensorManager> mSensorManagers = Collections.synchronizedList(new LinkedList<RHTSensorManager>());
+    private final Map<String, RHTValue> mLiveDataPointAggregator;
+    private final Map<String, RHTValue> mHistoryDataPointAggregator;
+    private HumiGadgetConnectionStateListener mConnectionStateListener;
+    private String[] mHumiGadgetNameFilter = new String[]{"SHTC1 smart gadget", "Smart Humigadget"};
 
     private RHTHumigadgetSensorManager(@NonNull final Context context) {
-        mBleManager = BleManager.getInstance();
-        mBleManager.init(context);
-        mBleManager.registerNotificationListener(this);
+        mGadgetManager = GadgetManagerFactory.create(this);
+        mGadgetManager.initialize(context.getApplicationContext());
+
+        mSensorListeners = Collections.synchronizedSet(new HashSet<HumiSensorListener>());
+
+        mDiscoveredGadgets = Collections.synchronizedMap(new HashMap<String, Gadget>());
+        mConnectedGadgets = Collections.synchronizedMap(new HashMap<String, Gadget>());
+
+        mLiveDataPointAggregator = Collections.synchronizedMap(new HashMap<String, RHTValue>());
+        mHistoryDataPointAggregator = Collections.synchronizedMap(new HashMap<String, RHTValue>());
     }
 
     /**
@@ -73,8 +97,8 @@ public class RHTHumigadgetSensorManager implements RHTListener, DeviceStateListe
      */
     public void release(@NonNull final Context context) {
         Log.i(TAG, String.format("release -> Releasing %s", TAG));
-        disconnectAllPeripherals();
-        mBleManager.release(context.getApplicationContext());
+        disconnectAllGadgets();
+        mGadgetManager.release(context.getApplicationContext());
         mInstance = null;
     }
 
@@ -83,15 +107,8 @@ public class RHTHumigadgetSensorManager implements RHTListener, DeviceStateListe
      *
      * @param listener of the humigadget notifications.
      */
-    public synchronized void registerHumigadgetListener(@NonNull final RHTSensorManager listener) {
-        if (mSensorManagers.contains(listener)) {
-            Log.w(TAG, String.format("registerHumigadgetListener -> Listener %s is already in the listener list.", listener));
-        } else {
-            mSensorManagers.add(listener);
-        }
-        for (final BleDevice device : mBleManager.getConnectedBleDevices()) {
-            mBleManager.registerDeviceListener(this, device.getAddress());
-        }
+    public void registerHumigadgetListener(@NonNull final HumiSensorListener listener) {
+        mSensorListeners.add(listener);
     }
 
     /**
@@ -100,8 +117,12 @@ public class RHTHumigadgetSensorManager implements RHTListener, DeviceStateListe
      * @param listener that doesn't want to hear more notifications.
      */
     @SuppressWarnings("unused")
-    public synchronized void unregisterHumigadgetListener(@NonNull final RHTSensorManager listener) {
-        mSensorManagers.remove(listener);
+    public void unregisterHumigadgetListener(@NonNull final HumiSensorListener listener) {
+        mSensorListeners.remove(listener);
+    }
+
+    public void setConnectionStateListener(@Nullable HumiGadgetConnectionStateListener connectionStateListener) {
+        mConnectionStateListener = connectionStateListener;
     }
 
     /**
@@ -109,113 +130,220 @@ public class RHTHumigadgetSensorManager implements RHTListener, DeviceStateListe
      *
      * @param deviceAddress of the device that should be connected
      */
-    public synchronized void connectPeripheral(@NonNull final String deviceAddress) {
+    public synchronized void connectToGadget(@NonNull final String deviceAddress) {
         Log.d(TAG, String.format("connectDevice -> Bluetooth: Trying to connect device with address: %s", deviceAddress));
-        if (mBleManager.isDeviceConnected(deviceAddress)) {
-            Log.w(TAG, String.format("connectDevice -> Device already added: %s", deviceAddress));
+        final Gadget gadget = mDiscoveredGadgets.get(deviceAddress);
+        if (gadget == null) {
+            Log.w(TAG, String.format("connectDevice -> device with address: %s not in discovered gadgets list", deviceAddress));
+            // TODO: should we notify about a disconnection without having sent a connect?
+            // (we don't have way to report a failure)
+            notifyGadgetConnectionChanged(deviceAddress, null, false);
             return;
         }
-        mBleManager.connectDevice(deviceAddress);
+        gadget.addListener(this);
+        gadget.connect();
     }
 
     /**
-     * Disconnects all the connected devices.
+     * Disconnects all connected devices.
      */
-    public synchronized void disconnectAllPeripherals() {
-        final Iterable<? extends BleDevice> connectedBleDevices = mBleManager.getConnectedBleDevices();
-        for (final BleDevice connectedBleDevice : connectedBleDevices) {
-            mBleManager.disconnectDevice((connectedBleDevice).getAddress());
+    public synchronized void disconnectAllGadgets() {
+        for (final Gadget gadget : mConnectedGadgets.values()) {
+            gadget.disconnect();
         }
+    }
+
+    public Set<GadgetModel> getConnectedDevices() {
+        Set<GadgetModel> connectedDevices = new HashSet<>(mConnectedGadgets.size());
+        synchronized (mConnectedGadgets) {
+            for (final Gadget gadget : mConnectedGadgets.values()) {
+                connectedDevices.add(new GadgetModel(gadget.getAddress(), true, gadget.getName()));
+            }
+        }
+        return connectedDevices;
+    }
+
+    public int getConnectedDevicesCount() {
+        return mConnectedGadgets.size();
+    }
+
+    @Nullable
+    public DeviceModel getConnectedDevice(@NonNull final String deviceAddress) {
+        final Gadget gadget = mConnectedGadgets.get(deviceAddress);
+        if (gadget == null) return null;
+        return createDeviceModel(deviceAddress);
+    }
+
+    public Gadget getConnectedGadget(@NonNull final String deviceAddress) {
+        return mConnectedGadgets.get(deviceAddress);
     }
 
     /**
      * Checks if bluetooth connection is enabled on the device.
      *
-     * @return <code>true</code> if it's enabled - <code>false</code> otherwise.
+     * @param context The android context.
+     * @return <code>true</code> if it's enabled (and context is valid) - <code>false</code> otherwise.
      */
-    public boolean bluetoothIsEnabled() {
-        return mBleManager.isBluetoothEnabled();
+    public boolean bluetoothIsEnabled(@NonNull final Context context) {
+        return BLEUtility.isBLEEnabled(context.getApplicationContext());
     }
 
     /**
-     * Enables the bluetooth in case it's disconnected.
+     * Runtime request for ACCESS_FINE_LOCATION. This is required on Android 6.0 and higher in order
+     * to perform BLE scans.
+     *
+     * @param requestingActivity The activity requesting the permission.
+     * @param requestCode        The request code used to deliver the user feedback to the calling
+     *                           activity.
+     */
+    @SuppressWarnings("unused")
+    public void requestScanningPermission(@NonNull final Activity requestingActivity,
+                                          final int requestCode) {
+        BLEUtility.requestScanningPermission(requestingActivity, requestCode);
+    }
+
+    /**
+     * Enables bluetooth in case it's disconnected.
      *
      * @param activity of the activity. Can't be <code>null</code>
      */
     public void requestEnableBluetooth(@NonNull final Activity activity) {
-        mBleManager.requestEnableBluetooth(activity);
+        BLEUtility.requestEnableBluetooth(activity);
     }
 
     /**
-     * Advices the listeners that the reading of a new data point was obtained.
+     * Tries to synchronize the needed device services.
      *
-     * @param device     {@link com.sensirion.libble.devices.BleDevice} that reported the RHT_DATA.
-     * @param dataPoint  {@link com.sensirion.libble.utils.RHTDataPoint} with the RHT_DATA.
-     * @param sensorName {@link java.lang.String} with the name of the sensor that reported the RHT_DATA
+     * @param deviceAddress of the gadget that needs to be synchronized.
      */
-    @Override
-    public void onNewRHTValue(@NonNull final BleDevice device, @NonNull final RHTDataPoint dataPoint, @NonNull final String sensorName) {
-        synchronized (mSensorManagers) {
-            for (final RHTSensorManager listener : mSensorManagers) {
-                listener.onNewRHTData(dataPoint.getTemperatureCelsius(), dataPoint.getRelativeHumidity(), device.getAddress());
-            }
+    // TODO: Check if this is really needed. otherwise it's implemented and ready to use.
+    @SuppressWarnings("unused")
+    public void synchronizeDeviceServices(@NonNull final String deviceAddress) {
+        final Gadget gadget = mConnectedGadgets.get(deviceAddress);
+        if (gadget == null) {
+            notifyGadgetConnectionChanged(deviceAddress, null, false);
+            return;
         }
-        HistoryDatabaseManager.getInstance().addRHTData(device, dataPoint, false);
-    }
-
-    /**
-     * Advices the listeners that the reading of a new data point was obtained.
-     *
-     * @param device     {@link com.sensirion.libble.devices.BleDevice} that reported the RHT_DATA.
-     * @param dataPoint  {@link com.sensirion.libble.utils.RHTDataPoint} with the historical RHT_DATA.
-     * @param sensorName {@link java.lang.String} with the name of the sensor that reported the RHT_DATA
-     */
-    @Override
-    public void onNewHistoricalRHTValue(@NonNull final BleDevice device, @NonNull final RHTDataPoint dataPoint, @NonNull final String sensorName) {
-        HistoryDatabaseManager.getInstance().addRHTData(device, dataPoint, true);
-    }
-
-    /**
-     * NOTE: The services and characteristics of this device are not connected yet.
-     * NOTE: The connected device is removed from the library internal discovered list.
-     * This method is called when a device is connected.
-     *
-     * @param device that was connected.
-     */
-    @Override
-    public void onDeviceConnected(@NonNull final BleDevice device) {
-        Log.i(TAG, String.format("onDeviceConnected -> Received connected device with address: %s.", device.getAddress()));
-        synchronized (mSensorManagers) {
-            for (RHTSensorManager listener : mSensorManagers) {
-                listener.onGadgetConnectionChanged(createDeviceModel(device.getAddress()), true);
-            }
+        final List<GadgetService> services = gadget.getServices();
+        for (final GadgetService service : services) {
+            service.requestValueUpdate();
         }
     }
 
-    /**
-     * This method is called when a device becomes disconnected.
-     *
-     * @param device that was disconnected.
+    /*
+        Implementation of {@link GadgetManagerCallback}
      */
+
     @Override
-    public void onDeviceDisconnected(@NonNull final BleDevice device) {
-        Log.i(TAG, String.format("onDeviceConnected -> %s has lost the connected with the device: %s ", TAG, device.getAddress()));
-        synchronized (mSensorManagers) {
-            for (RHTSensorManager listener : mSensorManagers) {
-                listener.onGadgetConnectionChanged(createDeviceModel(device.getAddress()), false);
-            }
-        }
+    public void onGadgetManagerInitialized() {
+        // Yeaiii.... Ready to go
+    }
+
+    @Override
+    public void onGadgetManagerInitializationFailed() {
+        throw new IllegalStateException("Failed to initialize libSmartGadget");
     }
 
     /**
      * This method is called when the library discovers a new device.
      *
-     * @param device that was discovered.
+     * @param gadget that was discovered.
+     * @param rssi   the received signal strength
      */
     @Override
-    public void onDeviceDiscovered(@NonNull final BleDevice device) {
-        // Do nothing - we only care about connected devices
+    public void onGadgetDiscovered(final Gadget gadget, final int rssi) {
+        mDiscoveredGadgets.put(gadget.getAddress(), gadget);
+        if (mConnectionStateListener != null) {
+            final GadgetModel gadgetModel = new GadgetModel(gadget.getAddress(), false, gadget.getName());
+            gadgetModel.setRssi(rssi);
+            mConnectionStateListener.onGadgetDiscovered(gadgetModel);
+        }
     }
+
+    @Override
+    public void onGadgetDiscoveryFailed() {
+        if (mConnectionStateListener != null) {
+            mConnectionStateListener.onGadgetDiscoveryFailed();
+        }
+    }
+
+    @Override
+    public void onGadgetDiscoveryFinished() {
+        if (mConnectionStateListener != null) {
+            mConnectionStateListener.onGadgetDiscoveryFinished();
+        }
+    }
+
+    /*
+        Implementation of {@link GadgetListener}
+     */
+
+    /**
+     * The services and characteristics of this device are connected and ready to use.
+     * NOTE: The connected device is removed from the discovered list.
+     * This method is called when a device is connected and all the services and characteristics
+     * were discovered.
+     *
+     * @param gadget that was connected.
+     */
+    @Override
+    public void onGadgetConnected(@NonNull final Gadget gadget) {
+        mDiscoveredGadgets.remove(gadget.getAddress());
+        mConnectedGadgets.put(gadget.getAddress(), gadget);
+
+        gadget.subscribeAll();
+
+        notifyGadgetConnectionChanged(gadget, true);
+    }
+
+    /**
+     * This method is called when a device becomes disconnected.
+     *
+     * @param gadget that was disconnected.
+     */
+    @Override
+    public void onGadgetDisconnected(@NonNull final Gadget gadget) {
+        mConnectedGadgets.remove(gadget.getAddress());
+
+        notifyGadgetConnectionChanged(gadget, false);
+    }
+
+    @Override
+    public void onGadgetValuesReceived(@NonNull final Gadget gadget,
+                                       @NonNull final GadgetService service,
+                                       @NonNull final GadgetValue[] values) {
+        aggregateRHTAndNotify(gadget.getAddress(), values, mLiveDataPointAggregator, false);
+    }
+
+    @Override
+    public void onGadgetDownloadDataReceived(@NonNull final Gadget gadget,
+                                             @NonNull final GadgetDownloadService service,
+                                             @NonNull final GadgetValue[] values,
+                                             final int progress) {
+        aggregateRHTAndNotify(gadget.getAddress(), values, mHistoryDataPointAggregator, true);
+    }
+
+    @Override
+    public void onSetGadgetLoggingEnabledFailed(@NonNull final Gadget gadget,
+                                                @NonNull final GadgetDownloadService service) {
+        Log.w(TAG, String.format("Failed to set logging state in gadget %s", gadget.getAddress()));
+    }
+
+    @Override
+    public void onSetLoggerIntervalFailed(@NonNull final Gadget gadget,
+                                          @NonNull final GadgetDownloadService service) {
+        Log.w(TAG, String.format("Failed to set logger interval in gadget %s", gadget.getAddress()));
+    }
+
+    @Override
+    public void onDownloadFailed(@NonNull final Gadget gadget,
+                                 @NonNull final GadgetDownloadService service) {
+        Log.w(TAG, String.format("Failed to perform download from gadget %s", gadget.getAddress()));
+    }
+
+    /*
+        Private Helpers
+     */
 
     private DeviceModel createDeviceModel(final String deviceAddress) {
         final int color = ColorManager.getInstance().getDeviceColor(deviceAddress);
@@ -224,69 +352,137 @@ public class RHTHumigadgetSensorManager implements RHTListener, DeviceStateListe
         return new DeviceModel(deviceAddress, color, deviceName, false);
     }
 
-    /**
-     * This method is called when all the device services are discovered.
-     */
-    @Override
-    public void onDeviceAllServicesDiscovered(@NonNull final BleDevice device) {
-        Log.i(TAG, String.format("onDeviceAllServiceDiscovered -> Device %s has discovered all its services.", device.getAddress()));
-        mBleManager.registerNotificationListener(this);
+    private void notifyGadgetConnectionChanged(@NonNull Gadget gadget, boolean isConnected) {
+        notifyGadgetConnectionChanged(gadget.getAddress(), gadget.getName(), isConnected);
     }
 
-    /**
-     * Checks if a incoming device has its elements synchronized.
-     *
-     * @param device to check.
-     * @return <code>true</code> if the device is ready - <code>false</code> otherwise.
-     */
-    public boolean isDeviceReady(@NonNull final BleDevice device) {
-        final boolean isSynchronized = isBatteryServiceReady(device) && isHistoryServiceReady(device);
-        if (isSynchronized) {
-            Log.i(TAG, String.format("isDeviceReady -> Device %s is ready.", device.getAddress()));
+    private void notifyGadgetConnectionChanged(@NonNull final String address,
+                                               @Nullable final String name,
+                                               final boolean isConnected) {
+        synchronized (mSensorListeners) {
+            for (HumiSensorListener listener : mSensorListeners) {
+                listener.onGadgetConnectionChanged(createDeviceModel(address), isConnected);
+            }
+        }
+
+        if (mConnectionStateListener != null) {
+            mConnectionStateListener.onConnectionStateChanged(new GadgetModel(address, isConnected, name), isConnected);
+        }
+    }
+
+    private void aggregateRHTAndNotify(@NonNull final String deviceAddress,
+                                       @NonNull final GadgetValue[] values,
+                                       Map<String, RHTValue> aggregator,
+                                       final boolean isHistory) {
+        for (GadgetValue value : values) {
+            RHTDataPoint rhtDataPoint;
+            if (isTemperatureValue(value)) {
+                rhtDataPoint = aggregateRhtValuesForTemperature(aggregator, deviceAddress, value);
+            } else if (isHumidityValue(value)) {
+                rhtDataPoint = aggregateRhtValueForHumidity(aggregator, deviceAddress, value);
+            } else {
+                Log.w(TAG, "Can not aggregate RHT data for value that isn't RH or T");
+                continue;
+            }
+
+            if (rhtDataPoint != null) {
+                notifyRHTDataPoint(deviceAddress, rhtDataPoint, isHistory);
+            }
+        }
+    }
+
+    private RHTDataPoint aggregateRhtValueForHumidity(@NonNull Map<String, RHTValue> aggregator,
+                                                      @NonNull String deviceAddress,
+                                                      @NonNull GadgetValue value) {
+        final float humidity = value.getValue().floatValue();
+        final long timestamp = value.getTimestamp().getTime();
+        final RHTValue rhtValue = aggregator.get(deviceAddress);
+
+        if (rhtValue == null) {
+            aggregator.put(deviceAddress, new RHTValue(null, humidity));
         } else {
-            Log.w(TAG, String.format("isDeviceReady -> Device %s in not ready yet.", device.getAddress()));
+            rhtValue.setHumidity(humidity);
+            if (rhtValue.getTemperature() != null) {
+                aggregator.remove(deviceAddress);
+                return new RHTDataPoint(rhtValue.getTemperature(), rhtValue.getHumidity(), timestamp);
+            }
         }
-        return isSynchronized;
+        return null;
     }
 
-    private boolean isBatteryServiceReady(@NonNull final BleDevice device) {
-        final BatteryService batteryService = device.getDeviceService(BatteryService.class);
-        if (batteryService == null) {
-            Log.w(TAG, String.format("isBatteryServiceReady -> Battery service of %s is not ready yet.", device.getAddress()));
-            return false;
+    private RHTDataPoint aggregateRhtValuesForTemperature(@NonNull Map<String, RHTValue> aggregator,
+                                                          @NonNull String deviceAddress,
+                                                          @NonNull GadgetValue value) {
+        final float temperature = value.getValue().floatValue();
+        final long timestamp = value.getTimestamp().getTime();
+        final RHTValue rhtValue = aggregator.get(deviceAddress);
+
+        if (rhtValue == null) {
+            aggregator.put(deviceAddress, new RHTValue(temperature, null));
+        } else {
+            rhtValue.setTemperature(temperature);
+            if (rhtValue.getHumidity() != null) {
+                aggregator.remove(deviceAddress);
+                return new RHTDataPoint(rhtValue.getTemperature(), rhtValue.getHumidity(), timestamp);
+            }
         }
-        final Integer batteryLevel = batteryService.getBatteryLevel();
-        if (batteryLevel == null) {
-            Log.i(TAG, "isBatteryServiceReady -> The battery level is unknown.");
-            return false;
-        }
-        Log.i(TAG, String.format("isBatteryServiceReady -> The device %s has a battery level of %s%%.", device.getAddress(), batteryLevel));
-        return true;
+        return null;
     }
 
-    private boolean isHistoryServiceReady(@NonNull final BleDevice device) {
-        final AbstractHistoryService historyService = device.getHistoryService();
-        if (historyService == null) {
-            Log.w(TAG, "isHistoryServiceReady -> The device does not have a history service.");
-            return true; //Application is compatible with devices without history.
+    private void notifyRHTDataPoint(@NonNull String deviceAddress, @NonNull RHTDataPoint dataPoint,
+                                    final boolean isHistory) {
+        if (!isHistory) {
+            synchronized (mSensorListeners) {
+                for (final HumiSensorListener listener : mSensorListeners) {
+                    listener.onNewRHTData(dataPoint.getTemperatureCelsius(), dataPoint.getRelativeHumidity(), deviceAddress);
+                }
+            }
         }
-        return historyService.isServiceReady();
+        HistoryDatabaseManager.getInstance().addRHTData(deviceAddress, dataPoint, isHistory);
     }
 
-    /**
-     * Tries to synchronize the needed device services.
-     *
-     * @param device that needs to be synchronized.
-     */
-    public void synchronizeDeviceServices(@NonNull final BleDevice device) {
-        device.registerDeviceListener(this);
-        final BatteryService batteryService = device.getDeviceService(BatteryService.class);
-        if (batteryService != null) {
-            batteryService.synchronizeService();
+    private boolean isHumidityValue(@NonNull final GadgetValue value) {
+        return value.getUnit().equals(SHTC1TemperatureAndHumidityService.UNIT_RH) ||
+                value.getUnit().equals(SHT3xHumidityService.UNIT);
+    }
+
+    private boolean isTemperatureValue(@NonNull final GadgetValue value) {
+        return value.getUnit().equals(SHTC1TemperatureAndHumidityService.UNIT_T) ||
+                value.getUnit().equals(SHT3xTemperatureService.UNIT);
+    }
+
+    public boolean startDiscovery(final int durationMs) {
+        mDiscoveredGadgets.clear();
+        return mGadgetManager.startGadgetDiscovery(durationMs, mHumiGadgetNameFilter);
+    }
+
+    public void stopDiscovery() {
+        mGadgetManager.stopGadgetDiscovery();
+    }
+
+    private class RHTValue {
+        private Float mTemperature;
+        private Float mHumidity;
+
+        public RHTValue(Float temperature, Float humidity) {
+            mTemperature = temperature;
+            mHumidity = humidity;
         }
-        final AbstractHistoryService historyService = device.getHistoryService();
-        if (historyService != null) {
-            historyService.synchronizeService();
+
+        public Float getTemperature() {
+            return mTemperature;
+        }
+
+        public void setTemperature(Float temperature) {
+            mTemperature = temperature;
+        }
+
+        public Float getHumidity() {
+            return mHumidity;
+        }
+
+        public void setHumidity(Float humidity) {
+            mHumidity = humidity;
         }
     }
 }

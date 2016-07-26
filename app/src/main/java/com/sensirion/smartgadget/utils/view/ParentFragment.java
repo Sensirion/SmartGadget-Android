@@ -15,7 +15,6 @@ public abstract class ParentFragment extends Fragment {
     protected Activity mActivity = null;
     @Nullable
     protected Unbinder unbinder = null;
-    protected boolean viewInflated = false;
 
     @Override
     public void onAttach(final Context context) {
@@ -37,7 +36,6 @@ public abstract class ParentFragment extends Fragment {
         super.onDestroyView();
         if (unbinder != null) {
             unbinder.unbind();
-            viewInflated = false;
         }
     }
 

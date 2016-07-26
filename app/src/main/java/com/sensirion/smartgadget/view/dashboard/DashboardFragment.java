@@ -130,7 +130,6 @@ public class DashboardFragment extends ParentFragment implements RHTSensorListen
         Log.i(TAG, "OnCreateView()");
         final View view = inflater.inflate(R.layout.fragment_dashboard, container, false);
         unbinder = ButterKnife.bind(this, view);
-        viewInflated = true;
         return view;
     }
 

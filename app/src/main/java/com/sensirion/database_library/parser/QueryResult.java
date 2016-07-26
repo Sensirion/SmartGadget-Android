@@ -2,9 +2,7 @@ package com.sensirion.database_library.parser;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.util.Log;
 
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -86,7 +84,6 @@ public class QueryResult {
      * @param cursorRowElements with the cursor elements.
      */
     public void addRow(@NonNull final Object[] cursorRowElements) {
-        Log.d(TAG, "addRow -> Received the following row: " + Arrays.toString(cursorRowElements));
         mResultRows.add(new QueryResultRow(this, cursorRowElements));
     }
 
