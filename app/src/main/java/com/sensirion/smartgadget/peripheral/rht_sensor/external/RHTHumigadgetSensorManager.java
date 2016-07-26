@@ -17,6 +17,7 @@ import com.sensirion.libsmartgadget.smartgadget.GadgetManagerFactory;
 import com.sensirion.libsmartgadget.smartgadget.SHT3xHumidityService;
 import com.sensirion.libsmartgadget.smartgadget.SHT3xTemperatureService;
 import com.sensirion.libsmartgadget.smartgadget.SHTC1TemperatureAndHumidityService;
+import com.sensirion.libsmartgadget.smartgadget.SensorTagTemperatureAndHumidityService;
 import com.sensirion.libsmartgadget.utils.BLEUtility;
 import com.sensirion.smartgadget.peripheral.rht_sensor.HumiSensorListener;
 import com.sensirion.smartgadget.peripheral.rht_utils.RHTDataPoint;
@@ -46,7 +47,10 @@ public class RHTHumigadgetSensorManager implements GadgetManagerCallback, Gadget
     private final RHTValueAggregator mAggregator = new RHTValueAggregator();
 
     private HumiGadgetConnectionStateListener mConnectionStateListener;
-    private String[] mHumiGadgetNameFilter = new String[]{"SHTC1 smart gadget", "Smart Humigadget"};
+    // TODO: find a better way to filter devices, right now we have to register the service UUID
+    // and then still enter the exact device names here. Better would be to keep everything within
+    // libsmartgadget.
+    private String[] mHumiGadgetNameFilter = new String[]{"SHTC1 smart gadget", "Smart Humigadget", "SensorTag"};
 
     private RHTHumigadgetSensorManager(@NonNull final Context context) {
         mGadgetManager = GadgetManagerFactory.create(this);
@@ -395,12 +399,14 @@ public class RHTHumigadgetSensorManager implements GadgetManagerCallback, Gadget
 
     private boolean isHumidityValue(@NonNull final GadgetValue value) {
         return value.getUnit().equals(SHTC1TemperatureAndHumidityService.UNIT_RH) ||
-                value.getUnit().equals(SHT3xHumidityService.UNIT);
+               value.getUnit().equals(SHT3xHumidityService.UNIT) ||
+               value.getUnit().equals(SensorTagTemperatureAndHumidityService.UNIT_RH);
     }
 
     private boolean isTemperatureValue(@NonNull final GadgetValue value) {
         return value.getUnit().equals(SHTC1TemperatureAndHumidityService.UNIT_T) ||
-                value.getUnit().equals(SHT3xTemperatureService.UNIT);
+               value.getUnit().equals(SHT3xTemperatureService.UNIT) ||
+               value.getUnit().equals(SensorTagTemperatureAndHumidityService.UNIT_T);
     }
 
     public boolean startDiscovery(final int durationMs) {
