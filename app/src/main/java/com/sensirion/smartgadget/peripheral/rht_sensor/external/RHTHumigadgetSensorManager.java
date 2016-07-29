@@ -25,7 +25,6 @@ import com.sensirion.smartgadget.persistence.history_database.HistoryDatabaseMan
 import com.sensirion.smartgadget.utils.DeviceModel;
 import com.sensirion.smartgadget.utils.view.ColorManager;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -41,26 +40,17 @@ public class RHTHumigadgetSensorManager implements GadgetManagerCallback, Gadget
     private static RHTHumigadgetSensorManager mInstance = null;
     @NonNull
     private final GadgetManager mGadgetManager;
-    private final Set<HumiSensorListener> mSensorListeners;
-    private final Map<String, Gadget> mDiscoveredGadgets;
-    private final Map<String, Gadget> mConnectedGadgets;
+    private final Set<HumiSensorListener> mSensorListeners = Collections.synchronizedSet(new HashSet<HumiSensorListener>());
+    private final Map<String, Gadget> mDiscoveredGadgets = Collections.synchronizedMap(new HashMap<String, Gadget>());
+    private final Map<String, Gadget> mConnectedGadgets = Collections.synchronizedMap(new HashMap<String, Gadget>());
+    private final RHTValueAggregator mAggregator = new RHTValueAggregator();
 
-    private final Map<String, RHTValue> mLiveDataPointAggregator;
-    private final Map<String, RHTValue> mHistoryDataPointAggregator;
     private HumiGadgetConnectionStateListener mConnectionStateListener;
     private String[] mHumiGadgetNameFilter = new String[]{"SHTC1 smart gadget", "Smart Humigadget"};
 
     private RHTHumigadgetSensorManager(@NonNull final Context context) {
         mGadgetManager = GadgetManagerFactory.create(this);
         mGadgetManager.initialize(context.getApplicationContext());
-
-        mSensorListeners = Collections.synchronizedSet(new HashSet<HumiSensorListener>());
-
-        mDiscoveredGadgets = Collections.synchronizedMap(new HashMap<String, Gadget>());
-        mConnectedGadgets = Collections.synchronizedMap(new HashMap<String, Gadget>());
-
-        mLiveDataPointAggregator = Collections.synchronizedMap(new HashMap<String, RHTValue>());
-        mHistoryDataPointAggregator = Collections.synchronizedMap(new HashMap<String, RHTValue>());
     }
 
     /**
@@ -231,7 +221,7 @@ public class RHTHumigadgetSensorManager implements GadgetManagerCallback, Gadget
     }
 
     /*
-        Implementation of {@link GadgetManagerCallback}
+     * Implementation of {@link GadgetManagerCallback}
      */
 
     @Override
@@ -275,7 +265,7 @@ public class RHTHumigadgetSensorManager implements GadgetManagerCallback, Gadget
     }
 
     /*
-        Implementation of {@link GadgetListener}
+     * Implementation of {@link GadgetListener}
      */
 
     /**
@@ -312,7 +302,7 @@ public class RHTHumigadgetSensorManager implements GadgetManagerCallback, Gadget
     public void onGadgetValuesReceived(@NonNull final Gadget gadget,
                                        @NonNull final GadgetService service,
                                        @NonNull final GadgetValue[] values) {
-        aggregateRHTAndNotify(gadget.getAddress(), values, mLiveDataPointAggregator, false);
+        aggregateRHTAndNotify(gadget.getAddress(), values, RHTValueAggregator.AggregatorType.LIVE, false);
     }
 
     @Override
@@ -320,7 +310,7 @@ public class RHTHumigadgetSensorManager implements GadgetManagerCallback, Gadget
                                              @NonNull final GadgetDownloadService service,
                                              @NonNull final GadgetValue[] values,
                                              final int progress) {
-        aggregateRHTAndNotify(gadget.getAddress(), values, mHistoryDataPointAggregator, true);
+        aggregateRHTAndNotify(gadget.getAddress(), values, RHTValueAggregator.AggregatorType.HISTORY, true);
     }
 
     @Override
@@ -342,7 +332,7 @@ public class RHTHumigadgetSensorManager implements GadgetManagerCallback, Gadget
     }
 
     /*
-        Private Helpers
+     * Private Helpers
      */
 
     private DeviceModel createDeviceModel(final String deviceAddress) {
@@ -372,14 +362,14 @@ public class RHTHumigadgetSensorManager implements GadgetManagerCallback, Gadget
 
     private void aggregateRHTAndNotify(@NonNull final String deviceAddress,
                                        @NonNull final GadgetValue[] values,
-                                       Map<String, RHTValue> aggregator,
+                                       RHTValueAggregator.AggregatorType aggregatorType,
                                        final boolean isHistory) {
         for (GadgetValue value : values) {
             RHTDataPoint rhtDataPoint;
             if (isTemperatureValue(value)) {
-                rhtDataPoint = aggregateRhtValuesForTemperature(aggregator, deviceAddress, value);
+                rhtDataPoint = mAggregator.aggregateTemperatureValue(aggregatorType, deviceAddress, value);
             } else if (isHumidityValue(value)) {
-                rhtDataPoint = aggregateRhtValueForHumidity(aggregator, deviceAddress, value);
+                rhtDataPoint = mAggregator.aggregateHumidityValue(aggregatorType, deviceAddress, value);
             } else {
                 Log.w(TAG, "Can not aggregate RHT data for value that isn't RH or T");
                 continue;
@@ -389,44 +379,6 @@ public class RHTHumigadgetSensorManager implements GadgetManagerCallback, Gadget
                 notifyRHTDataPoint(deviceAddress, rhtDataPoint, isHistory);
             }
         }
-    }
-
-    private RHTDataPoint aggregateRhtValueForHumidity(@NonNull Map<String, RHTValue> aggregator,
-                                                      @NonNull String deviceAddress,
-                                                      @NonNull GadgetValue value) {
-        final float humidity = value.getValue().floatValue();
-        final long timestamp = value.getTimestamp().getTime();
-        final RHTValue rhtValue = aggregator.get(deviceAddress);
-
-        if (rhtValue == null) {
-            aggregator.put(deviceAddress, new RHTValue(null, humidity));
-        } else {
-            rhtValue.setHumidity(humidity);
-            if (rhtValue.getTemperature() != null) {
-                aggregator.remove(deviceAddress);
-                return new RHTDataPoint(rhtValue.getTemperature(), rhtValue.getHumidity(), timestamp);
-            }
-        }
-        return null;
-    }
-
-    private RHTDataPoint aggregateRhtValuesForTemperature(@NonNull Map<String, RHTValue> aggregator,
-                                                          @NonNull String deviceAddress,
-                                                          @NonNull GadgetValue value) {
-        final float temperature = value.getValue().floatValue();
-        final long timestamp = value.getTimestamp().getTime();
-        final RHTValue rhtValue = aggregator.get(deviceAddress);
-
-        if (rhtValue == null) {
-            aggregator.put(deviceAddress, new RHTValue(temperature, null));
-        } else {
-            rhtValue.setTemperature(temperature);
-            if (rhtValue.getHumidity() != null) {
-                aggregator.remove(deviceAddress);
-                return new RHTDataPoint(rhtValue.getTemperature(), rhtValue.getHumidity(), timestamp);
-            }
-        }
-        return null;
     }
 
     private void notifyRHTDataPoint(@NonNull String deviceAddress, @NonNull RHTDataPoint dataPoint,
@@ -460,29 +412,4 @@ public class RHTHumigadgetSensorManager implements GadgetManagerCallback, Gadget
         mGadgetManager.stopGadgetDiscovery();
     }
 
-    private class RHTValue {
-        private Float mTemperature;
-        private Float mHumidity;
-
-        public RHTValue(Float temperature, Float humidity) {
-            mTemperature = temperature;
-            mHumidity = humidity;
-        }
-
-        public Float getTemperature() {
-            return mTemperature;
-        }
-
-        public void setTemperature(Float temperature) {
-            mTemperature = temperature;
-        }
-
-        public Float getHumidity() {
-            return mHumidity;
-        }
-
-        public void setHumidity(Float humidity) {
-            mHumidity = humidity;
-        }
-    }
 }
