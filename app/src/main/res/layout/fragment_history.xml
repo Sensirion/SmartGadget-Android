@@ -35,7 +35,7 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content">
 
-            <com.androidplot.xy.XYPlot
+            <com.sensirion.smartgadget.view.history.graph.HistoryPlot
                 android:id="@+id/history_fragment_plot"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

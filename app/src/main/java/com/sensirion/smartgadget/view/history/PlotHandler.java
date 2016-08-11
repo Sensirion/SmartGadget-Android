@@ -10,7 +10,6 @@ import android.view.View;
 import com.androidplot.xy.BoundaryMode;
 import com.androidplot.xy.LineAndPointFormatter;
 import com.androidplot.xy.SimpleXYSeries;
-import com.androidplot.xy.XYPlot;
 import com.androidplot.xy.XYSeries;
 import com.androidplot.xy.XYStepMode;
 import com.sensirion.smartgadget.R;
@@ -18,7 +17,7 @@ import com.sensirion.smartgadget.utils.Converter;
 import com.sensirion.smartgadget.utils.Settings;
 import com.sensirion.smartgadget.utils.XmlFloatExtractor;
 import com.sensirion.smartgadget.utils.view.ColorManager;
-import com.sensirion.smartgadget.view.history.graph.plot_formatter.LinearPlotFormatter;
+import com.sensirion.smartgadget.view.history.graph.HistoryPlot;
 import com.sensirion.smartgadget.view.history.graph.value_formatter.ShowNothingFormat;
 import com.sensirion.smartgadget.view.history.type.HistoryIntervalType;
 import com.sensirion.smartgadget.view.history.type.HistoryUnitType;
@@ -40,7 +39,7 @@ public class PlotHandler {
 
     // Injected XML views
     @BindView(R.id.history_fragment_plot)
-    XYPlot mViewPlot;
+    HistoryPlot mViewPlot;
 
     // Extracted constants from the XML resources
     @BindString(R.string.graph_label_elapsed_time)
@@ -98,14 +97,8 @@ public class PlotHandler {
         final String defaultDomainText = ELAPSED_TIME_STRING;
         final String defaultRangeText = TEMPERATURE_STRING;
 
-        LinearPlotFormatter.formatPlot(
-                context,
-                mViewPlot,
-                defaultDomainText,
-                defaultRangeText,
-                new ShowNothingFormat(),
-                new ShowNothingFormat()
-        );
+        mViewPlot.format(defaultDomainText, defaultRangeText,
+                         new ShowNothingFormat(), new ShowNothingFormat());
     }
 
     public synchronized void updateSeries(@NonNull final Context context,
