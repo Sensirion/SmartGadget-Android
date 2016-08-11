@@ -12,6 +12,5 @@
     <!-- Plot-->
     <dimen name="history_fragment_plot_min_height">290dp</dimen>
     <dimen name="history_fragment_plot_general_padding">8dp</dimen>
-    <integer name="history_fragment_margin_left_graph">49</integer>
     <dimen name="history_fragment_axis_text_size">9dp</dimen>
 </resources>
