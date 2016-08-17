@@ -99,7 +99,6 @@ public class SmartgadgetPreferenceFragment extends ParentListFragment implements
         if (mConnectionsAdapter == null) {
             initPreferencesList();
         }
-        mConnectionsAdapter.clear();
         refreshPreferenceAdapter();
         refreshUserPreferenceAdapter();
         setListAdapter(mSectionAdapter);
@@ -187,13 +186,16 @@ public class SmartgadgetPreferenceFragment extends ParentListFragment implements
                     } else {
                         mainActivity.changeFragment(new ScanDeviceFragment());
                     }
+                    return;
                 }
                 Log.w(TAG, "initConnectionPreferences -> Bluetooth has to be active in" +
                         " order to scan for new devices.");
                 RHTHumigadgetSensorManager.getInstance().requestEnableBluetooth(getParent());
             }
         };
+        mConnectionsAdapter.clear();
         mConnectionsAdapter.addPreference(title, null, clickListener);
+        mConnectionsAdapter.notifyDataSetChanged();
     }
 
     @NonNull
