@@ -3,7 +3,6 @@ package com.sensirion.smartgadget.persistence.device_name_database;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.util.Log;
 
 import com.sensirion.database_library.DatabaseFacade;
 import com.sensirion.database_library.attributes.DatabaseAttributes;
@@ -103,7 +102,6 @@ public class DeviceNameDatabaseManager {
             return deviceAddress;
         }
         final String deviceName = queryResult.getFirstQueryResult().getString(DeviceNameTable.COLUMN_USER_DEVICE_NAME);
-        Log.i(TAG, String.format("readDeviceName -> The device %s has been found in the database with the name %s.", deviceAddress, deviceName));
         mKnownDeviceNames.put(deviceAddress, deviceName);
         return deviceName;
     }
@@ -116,24 +114,23 @@ public class DeviceNameDatabaseManager {
      */
     public void updateDeviceName(@NonNull final String deviceAddress, @NonNull final String deviceName) {
         final DeviceNameTable deviceNameTable = DeviceNameTable.getInstance();
+        final String oldDeviceName = readDeviceName(deviceAddress);
         final String sqlQuery;
 
-        if (deviceName.trim().isEmpty() || deviceName.equals(deviceAddress)) {
+        String deviceNameToStore = deviceName.trim();
+
+        if (deviceNameToStore.isEmpty() || deviceNameToStore.equals(deviceAddress)) {
             sqlQuery = deviceNameTable.deleteDeviceNameSql(deviceAddress);
-            Log.i(TAG, String.format("updateDeviceName -> Device %s has been deleted from the user device name table.", deviceAddress));
-        } else if (readDeviceName(deviceAddress).equals(deviceName)) {
-            return;
-        } else if (!readDeviceName(deviceAddress).equals(deviceName)) {
+            deviceNameToStore = deviceAddress;
+        } else if (!deviceAddress.equals(oldDeviceName)) {
             // We already have a device name, so we update the database with a new value.
-            sqlQuery = deviceNameTable.updateDeviceNameSql(deviceAddress, deviceName);
-            Log.i(TAG, String.format("updateDeviceName -> Device %s has its name updated to: %s", deviceAddress, deviceName));
+            sqlQuery = deviceNameTable.updateDeviceNameSql(deviceAddress, deviceNameToStore);
         } else {
-            sqlQuery = deviceNameTable.insertUserDeviceNameSql(deviceAddress, deviceName);
-            Log.i(TAG, String.format("updateDeviceName -> Device %s has been inserted in the database with the following name: %s", deviceAddress, deviceName));
+            sqlQuery = deviceNameTable.insertUserDeviceNameSql(deviceAddress, deviceNameToStore);
         }
         mDatabase.executeSQL(sqlQuery);
         mDatabase.commit();
-        mKnownDeviceNames.put(deviceAddress, deviceName);
+        mKnownDeviceNames.put(deviceAddress, deviceNameToStore);
     }
 
     /**
