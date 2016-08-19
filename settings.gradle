@@ -1,6 +1,1 @@
 include ':app'
-
-include ':libble'
-project(':libble').projectDir = new File('../libble/libble')
-include ':libsmartgadget'
-project(':libsmartgadget').projectDir = new File('../libble/libsmartgadget')
