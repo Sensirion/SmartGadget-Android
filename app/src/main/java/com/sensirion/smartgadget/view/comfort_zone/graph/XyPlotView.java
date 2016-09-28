@@ -220,55 +220,6 @@ public class XyPlotView extends GraphView {
 
     /**
      * Checks if the given PointF is inside the given
-     * ComfortZone. This will only work for polygons
-     * with 4 corners.
-     *
-     * @param p PointF with vertical and horizontal pos.
-     * @return Point is in ComfortZone flag.
-     */
-    public boolean isOutsideComfortZone(@NonNull final PointF p) {
-        /* NOTE JWI: the divisions should be performed at compile time,
-                     thus this should be only 4 mul, 4 add, and 4 sub
-
-             the numbering of the corners must look like this:
-             x0,y0 -------------- x1,y1
-               |                    |
-               |                    |
-             x3,y3 -------------- x2,y2
-
-             unlike in this drawing, the sides need not be perpendicular
-        */
-
-        float xLine, yLine;
-
-        // y = y1 + [(y2 - y1) / (x2 - x1)] * (x - x1)
-        yLine = mCzActive[0].y + ((mCzActive[1].y - mCzActive[0].y) / (mCzActive[1].x - mCzActive[0].x)) * (p.x - mCzActive[0].x);
-        if (p.y > yLine) { // above top line
-            Log.v(TAG, String.format("isOutsideComfortZone -> y is above the top line of the comfort zone. | p.y = %s.", p.y));
-            return true;
-        }
-        yLine = mCzActive[3].y + ((mCzActive[2].y - mCzActive[3].y) / (mCzActive[2].x - mCzActive[3].x)) * (p.x - mCzActive[3].x);
-        if (p.y < yLine) { // below bottom line
-            Log.v(TAG, String.format("isOutsideComfortZone -> y is below the bottom line of the comfort zone. | p.y = %s.", p.y));
-            return true;
-        }
-
-        // x = x1 + [(x2 - x1) / (y2 - y1)] * (y - y1),
-        xLine = mCzActive[0].x + ((mCzActive[3].x - mCzActive[0].x) / (mCzActive[3].y - mCzActive[0].y)) * (p.y - mCzActive[0].y);
-        if (p.x < xLine) { // left of left line
-            Log.v(TAG, String.format("isOutsideComfortZone -> x is on the left of the left line of the comfort zone. | p.x = %s.", p.x));
-            return true;
-        }
-        xLine = mCzActive[1].x + ((mCzActive[2].x - mCzActive[1].x) / (mCzActive[2].y - mCzActive[1].y)) * (p.y - mCzActive[1].y);
-        if (p.x > xLine) { // right of right line
-            Log.v(TAG, String.format("isOutsideComfortZone -> x is on the right of the right line of the comfort zone. | p.x = %s.", p.x));
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * Checks if the given PointF is inside the given
      * Grid provided by GraphView.
      *
      * @param p PointF with vertical and horizontal pos.
