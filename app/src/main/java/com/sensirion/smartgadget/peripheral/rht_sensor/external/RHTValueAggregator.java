@@ -11,74 +11,62 @@ import java.util.Map;
 
 /**
  * Class to aggregates individual RH or T values until the other reading arrives and the
- * RHTDataPoint is complete.
+ * RHTDataPoint is complete. The key according to which the aggregation occurs is configurable
+ * and can contain the device address and the value timestamp.
  */
-class RHTValueAggregator {
-    private final Map<String, RHTValue> mLiveDataPointAggregator = Collections.synchronizedMap(new HashMap<String, RHTValue>());
-    private final Map<String, RHTValue> mHistoryDataPointAggregator = Collections.synchronizedMap(new HashMap<String, RHTValue>());
+abstract class RHTValueAggregator<AggregationKey> {
+    private final Map<AggregationKey, RHTValue> mAggregatedValues = Collections.synchronizedMap(new HashMap<AggregationKey, RHTValue>());
 
-    RHTDataPoint aggregateHumidityValue(@NonNull AggregatorType aggregatorType,
-                                        @NonNull String deviceAddress,
+    protected abstract AggregationKey getAggregationKey(String deviceAddress, long timestamp);
+
+    private RHTDataPoint aggregateValues(@NonNull String deviceAddress, GadgetValue temperature, GadgetValue humidity) {
+        if (! (temperature == null ^ humidity == null)) {
+            throw new IllegalArgumentException("can only aggregate either temperature or humidity");
+        }
+
+        final GadgetValue value = temperature != null ? temperature : humidity;
+        final long timestamp = value.getTimestamp().getTime();
+
+        final AggregationKey aggregationKey = getAggregationKey(deviceAddress, timestamp);
+        RHTValue rhtValue = mAggregatedValues.get(aggregationKey);
+        if (rhtValue == null) {
+            rhtValue = new RHTValue(null, null);
+            mAggregatedValues.put(aggregationKey, rhtValue);
+        }
+        if (temperature != null) {
+            rhtValue.setTemperature(value.getValue().floatValue());
+        } else {
+            rhtValue.setHumidity(value.getValue().floatValue());
+        }
+
+        if (rhtValue.isComplete()) {
+            mAggregatedValues.remove(aggregationKey);
+            return new RHTDataPoint(rhtValue.getTemperature(), rhtValue.getHumidity(), timestamp);
+        }
+        return null;
+    }
+
+    public RHTDataPoint aggregateHumidityValue(@NonNull String deviceAddress,
                                         @NonNull GadgetValue value) {
-        final Map<String, RHTValue> aggregator = getAggregatorMapForType(aggregatorType);
-        final float humidity = value.getValue().floatValue();
-        final long timestamp = value.getTimestamp().getTime();
-        final RHTValue rhtValue = aggregator.get(deviceAddress);
-
-        if (rhtValue == null) {
-            aggregator.put(deviceAddress, new RHTValue(null, humidity));
-        } else {
-            rhtValue.setHumidity(humidity);
-            if (rhtValue.getTemperature() != null) {
-                aggregator.remove(deviceAddress);
-                return new RHTDataPoint(rhtValue.getTemperature(), rhtValue.getHumidity(), timestamp);
-            }
-        }
-        return null;
+        return aggregateValues(deviceAddress, null, value);
     }
 
-    RHTDataPoint aggregateTemperatureValue(@NonNull AggregatorType aggregatorType,
-                                           @NonNull String deviceAddress,
+    public RHTDataPoint aggregateTemperatureValue(@NonNull String deviceAddress,
                                            @NonNull GadgetValue value) {
-        final Map<String, RHTValue> aggregator = getAggregatorMapForType(aggregatorType);
-        final float temperature = value.getValue().floatValue();
-        final long timestamp = value.getTimestamp().getTime();
-        final RHTValue rhtValue = aggregator.get(deviceAddress);
-
-        if (rhtValue == null) {
-            aggregator.put(deviceAddress, new RHTValue(temperature, null));
-        } else {
-            rhtValue.setTemperature(temperature);
-            if (rhtValue.getHumidity() != null) {
-                aggregator.remove(deviceAddress);
-                return new RHTDataPoint(rhtValue.getTemperature(), rhtValue.getHumidity(), timestamp);
-            }
-        }
-        return null;
+        return aggregateValues(deviceAddress, value, null);
     }
 
-    private Map<String, RHTValue> getAggregatorMapForType(AggregatorType aggregatorType) {
-        switch (aggregatorType) {
-            case LIVE:
-                return mLiveDataPointAggregator;
-            case HISTORY:
-                return mHistoryDataPointAggregator;
-        }
-        return null;
-    }
-
-    public enum AggregatorType {
-        LIVE,
-        HISTORY
-    }
-
-    public class RHTValue {
+    protected static class RHTValue {
         private Float mTemperature;
         private Float mHumidity;
 
         public RHTValue(Float temperature, Float humidity) {
             mTemperature = temperature;
             mHumidity = humidity;
+        }
+
+        public boolean isComplete() {
+            return mTemperature != null && mHumidity != null;
         }
 
         public Float getTemperature() {
