@@ -597,7 +597,7 @@ public class MainActivity extends FragmentActivity implements View.OnTouchListen
      */
     public static void requestScanningPermission(@NonNull final Activity requestingActivity,
                                                  final int requestCode) {
-        final String permission = Manifest.permission.ACCESS_FINE_LOCATION;
+        final String permission = Manifest.permission.ACCESS_COARSE_LOCATION;
         if (ContextCompat.checkSelfPermission(requestingActivity, permission) != PackageManager.PERMISSION_GRANTED) {
             if (!ActivityCompat.shouldShowRequestPermissionRationale(requestingActivity, permission)) {
                 ActivityCompat.requestPermissions(requestingActivity, new String[]{permission}, requestCode);
