@@ -578,10 +578,8 @@ public class ComfortZoneFragment extends ParentFragment implements OnTouchListen
 
                     final PointF newPos = new PointF(newTemperature, relativeHumidity);
                     boolean isClipped = false;
-                    if (mPlotView.isOutsideComfortZone(newPos)) {
-                        if (mPlotView.isOutsideGrid(newPos)) {
-                            isClipped = true;
-                        }
+                    if (mPlotView.isOutsideGrid(newPos)) {
+                        isClipped = true;
                     }
                     final XyPoint selectedPoint = mActiveSensorViews.get(address);
                     if (selectedPoint != null) {
