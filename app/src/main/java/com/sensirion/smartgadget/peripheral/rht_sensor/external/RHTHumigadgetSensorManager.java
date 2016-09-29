@@ -44,7 +44,7 @@ public class RHTHumigadgetSensorManager implements GadgetManagerCallback, Gadget
     private final Set<HumiSensorListener> mSensorListeners = Collections.synchronizedSet(new HashSet<HumiSensorListener>());
     private final Map<String, Gadget> mDiscoveredGadgets = Collections.synchronizedMap(new HashMap<String, Gadget>());
     private final Map<String, Gadget> mConnectedGadgets = Collections.synchronizedMap(new HashMap<String, Gadget>());
-    private final RHTValueAggregator mAggregator = new RHTValueAggregator();
+    private final Map<AggregatorType, RHTValueAggregator> mAggregators = new HashMap<>();
 
     private HumiGadgetConnectionStateListener mConnectionStateListener;
     // TODO: find a better way to filter devices, right now we have to register the service UUID
@@ -52,9 +52,16 @@ public class RHTHumigadgetSensorManager implements GadgetManagerCallback, Gadget
     // libsmartgadget.
     private String[] mHumiGadgetNameFilter = new String[]{"SHTC1 smart gadget", "Smart Humigadget", "SensorTag"};
 
+    public enum AggregatorType {
+        LIVE,
+        HISTORY
+    }
+
     private RHTHumigadgetSensorManager(@NonNull final Context context) {
         mGadgetManager = GadgetManagerFactory.create(this);
         mGadgetManager.initialize(context.getApplicationContext());
+        mAggregators.put(AggregatorType.LIVE, new LiveValueAggregator());
+        mAggregators.put(AggregatorType.HISTORY, new HistoryValueAggregator());
     }
 
     /**
@@ -306,7 +313,7 @@ public class RHTHumigadgetSensorManager implements GadgetManagerCallback, Gadget
     public void onGadgetValuesReceived(@NonNull final Gadget gadget,
                                        @NonNull final GadgetService service,
                                        @NonNull final GadgetValue[] values) {
-        aggregateRHTAndNotify(gadget.getAddress(), values, RHTValueAggregator.AggregatorType.LIVE, false);
+        aggregateRHTAndNotify(gadget.getAddress(), values, AggregatorType.LIVE);
     }
 
     @Override
@@ -314,7 +321,7 @@ public class RHTHumigadgetSensorManager implements GadgetManagerCallback, Gadget
                                              @NonNull final GadgetDownloadService service,
                                              @NonNull final GadgetValue[] values,
                                              final int progress) {
-        aggregateRHTAndNotify(gadget.getAddress(), values, RHTValueAggregator.AggregatorType.HISTORY, true);
+        aggregateRHTAndNotify(gadget.getAddress(), values, AggregatorType.HISTORY);
     }
 
     @Override
@@ -366,21 +373,20 @@ public class RHTHumigadgetSensorManager implements GadgetManagerCallback, Gadget
 
     private void aggregateRHTAndNotify(@NonNull final String deviceAddress,
                                        @NonNull final GadgetValue[] values,
-                                       RHTValueAggregator.AggregatorType aggregatorType,
-                                       final boolean isHistory) {
+                                       AggregatorType aggregatorType) {
         for (GadgetValue value : values) {
             RHTDataPoint rhtDataPoint;
             if (isTemperatureValue(value)) {
-                rhtDataPoint = mAggregator.aggregateTemperatureValue(aggregatorType, deviceAddress, value);
+                rhtDataPoint = mAggregators.get(aggregatorType).aggregateTemperatureValue(deviceAddress, value);
             } else if (isHumidityValue(value)) {
-                rhtDataPoint = mAggregator.aggregateHumidityValue(aggregatorType, deviceAddress, value);
+                rhtDataPoint = mAggregators.get(aggregatorType).aggregateHumidityValue(deviceAddress, value);
             } else {
                 Log.w(TAG, "Can not aggregate RHT data for value that isn't RH or T");
                 continue;
             }
 
             if (rhtDataPoint != null) {
-                notifyRHTDataPoint(deviceAddress, rhtDataPoint, isHistory);
+                notifyRHTDataPoint(deviceAddress, rhtDataPoint, aggregatorType == AggregatorType.HISTORY);
             }
         }
     }
