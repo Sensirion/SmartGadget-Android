@@ -378,7 +378,7 @@ public class SmartgadgetPreferenceFragment extends ParentListFragment implements
                 .append(System.getProperty("line.separator"))
                 .append(ABOUT_CHAR_COPYRIGHT)
                 .append(" ")
-                .append((deviceYear <= 2015 ? 2015 : deviceYear))
+                .append((deviceYear <= 2016 ? 2016 : deviceYear))
                 .append(" ")
                 .append(ABOUT_SENSIRION_AG);
 
