@@ -2,7 +2,7 @@
 <manifest package="com.sensirion.smartgadget"
           xmlns:android="http://schemas.android.com/apk/res/android"
           android:versionCode="89"
-          android:versionName="1.7.3-SNAPSHOT">
+          android:versionName="1.8.0">
 
     <uses-feature
         android:name="android.hardware.bluetooth_le"
