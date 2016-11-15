@@ -9,8 +9,10 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.sensirion.smartgadget.R;
+import com.sensirion.smartgadget.utils.view.SmartgadgetRequirementDialog;
 
 public class Settings {
+
     private static final String TAG = Settings.class.getSimpleName();
     private static final String PREFIX = Settings.class.getName();
     private static final String KEY_SELECTED_SENSOR = PREFIX + ".KEY_SELECTED_SENSOR";
@@ -77,5 +79,39 @@ public class Settings {
         final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context.getApplicationContext());
         final String selectedSeason = prefs.getString(context.getString(R.string.key_pref_season), context.getString(R.string.pref_season_default));
         return selectedSeason.equals(context.getString(R.string.label_season_winter));
+    }
+
+    /**
+     * Checks if the {@link SmartgadgetRequirementDialog} needs
+     * to be displayed when initializing the application.
+     *
+     * @param context needed to obtain the preference.
+     * @return <code>true</code> if the dialog is going to be displayed - <code>false</code> otherwise.
+     */
+    public boolean isSmartgadgetRequirementDisplayed(@NonNull final Context context) {
+        final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context.getApplicationContext());
+        final String isDisplayed = prefs.getString(
+                context.getString(R.string.key_display_smartgadget_required),
+                context.getString(R.string.no)
+        );
+        return isDisplayed.equals(context.getString(R.string.no));
+    }
+
+    /**
+     * Sets if the {@link SmartgadgetRequirementDialog} needs
+     * to be displayed when initializing the application.
+     *
+     * @param context needed to store the preference.
+     * @param isSmartgadgetRequirementDisplayed if the dialog is going to be displayed - <code>false</code> otherwise.
+     */
+    public void setSmartgadgetWarningDisplayed(@NonNull final Context context,
+                                               final boolean isSmartgadgetRequirementDisplayed) {
+        mPreferences.
+                edit().
+                putString(
+                        context.getString(R.string.key_display_smartgadget_required),
+                        context.getString((isSmartgadgetRequirementDisplayed) ? R.string.yes : R.string.no)
+                ).
+                apply();
     }
 }

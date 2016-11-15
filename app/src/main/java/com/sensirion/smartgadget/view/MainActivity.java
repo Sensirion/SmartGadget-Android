@@ -45,10 +45,12 @@ import com.sensirion.smartgadget.peripheral.rht_sensor.RHTSensorListener;
 import com.sensirion.smartgadget.peripheral.rht_sensor.external.RHTHumigadgetSensorManager;
 import com.sensirion.smartgadget.persistence.device_name_database.DeviceNameDatabaseManager;
 import com.sensirion.smartgadget.utils.ManagerInitializer;
+import com.sensirion.smartgadget.utils.Settings;
 import com.sensirion.smartgadget.utils.section_manager.SectionManager;
 import com.sensirion.smartgadget.utils.section_manager.SectionManagerMobile;
 import com.sensirion.smartgadget.utils.section_manager.SectionManagerTablet;
 import com.sensirion.smartgadget.utils.view.ApplicationHeaderGenerator;
+import com.sensirion.smartgadget.utils.view.SmartgadgetRequirementDialog;
 import com.sensirion.smartgadget.view.device_management.ManageDeviceFragment;
 import com.sensirion.smartgadget.view.device_management.ScanDeviceFragment;
 
@@ -120,9 +122,15 @@ public class MainActivity extends FragmentActivity implements View.OnTouchListen
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
         requestScanningPermission(this, PERMISSION_REQUEST_CODE);
-        ManagerInitializer.initializeApplicationManagers(getApplicationContext());
+        final Context appContext = getApplicationContext();
+        ManagerInitializer.initializeApplicationManagers(appContext);
         setScreenOrientation();
         initFragmentNavigator();
+        final Settings appSettings = Settings.getInstance();
+        if (!RHTSensorFacade.getInstance().hasInternalRHTSensor() &&
+                appSettings.isSmartgadgetRequirementDisplayed(appContext)) {
+            (new SmartgadgetRequirementDialog(this)).show();
+        }
     }
 
     private void setScreenOrientation() {

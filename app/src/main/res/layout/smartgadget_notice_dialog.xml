@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:text="@string/requirements_text"
+        android:scaleType="center"
+        android:padding="13dp"
+        android:layout_marginStart="4dp"
+        android:layout_marginEnd="14dp"
+        android:textSize="@dimen/text_default" />
+
+    <ImageView
+        android:src="@drawable/smartgadget"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="2dp"
+        android:scaleType="center"
+        android:contentDescription="@string/app_name" />
+
+    <CheckBox
+        android:id="@+id/requirements_checkbox"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginStart="7dp"
+        android:text="@string/requirements_show_next_launch"
+        android:textSize="@dimen/text_default" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:text="@string/requirements_url"
+        android:textColor="@color/sensirion_green"
+        android:scaleType="center"
+        android:padding="13dp"
+        android:layout_marginStart="4dp"
+        android:layout_marginEnd="14dp"
+        android:textSize="@dimen/text_default"
+        android:autoLink="web"
+        />
+
+    <Button
+        android:id="@+id/requirements_button"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clickable="true"
+        android:text="@string/ok"
+        android:scaleType="center"
+        android:textStyle="bold" />
+
+</LinearLayout>

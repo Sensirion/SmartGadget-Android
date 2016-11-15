@@ -24,6 +24,7 @@
     <color name="orange">#FFD58925</color>
     <color name="violet">#FF763880</color>
     <color name="lila">#FFA685AC</color>
+    <color name="black">#000000</color>
 
     <!-- Default device color -->
     <color name="default_device_color">#FF000000</color>

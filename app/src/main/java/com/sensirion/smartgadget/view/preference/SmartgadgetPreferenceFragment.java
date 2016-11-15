@@ -26,6 +26,7 @@ import com.sensirion.smartgadget.peripheral.rht_sensor.external.RHTHumigadgetSen
 import com.sensirion.smartgadget.utils.Settings;
 import com.sensirion.smartgadget.utils.view.ParentListFragment;
 import com.sensirion.smartgadget.utils.view.SectionAdapter;
+import com.sensirion.smartgadget.utils.view.SmartgadgetRequirementDialog;
 import com.sensirion.smartgadget.view.MainActivity;
 import com.sensirion.smartgadget.view.device_management.ScanDeviceFragment;
 import com.sensirion.smartgadget.view.glossary.GlossaryFragment;
@@ -75,6 +76,8 @@ public class SmartgadgetPreferenceFragment extends ParentListFragment implements
     String TEMPERATURE_PREFERENCE_LABEL;
     @BindString(R.string.header_user_prefs)
     String USER_PREFERENCES_HEADER;
+    @BindString(R.string.label_application_requirements)
+    String APPLICATION_REQUIREMENTS_LABEL;
     @BindString(R.string.label_about)
     String ABOUT_PREFERENCE_LABEL;
     @BindString(R.string.header_app_information)
@@ -323,8 +326,21 @@ public class SmartgadgetPreferenceFragment extends ParentListFragment implements
         final Typeface typefaceCondensed = Typeface.createFromAsset(assets, CONDENSED_TYPEFACE);
         final PreferenceAdapter appInformationAdapter = new PreferenceAdapter(typefaceCondensed);
         //  addGlossaryAdapter(appInformationAdapter);
+        if (!RHTSensorFacade.getInstance().hasInternalRHTSensor()) {
+            addApplicationRequirementsAdapter(appInformationAdapter);
+        }
         addShowAboutAdapter(appInformationAdapter);
         return appInformationAdapter;
+    }
+
+    private void addApplicationRequirementsAdapter(@NonNull final PreferenceAdapter adapter) {
+        final View.OnClickListener clickListener = new View.OnClickListener() {
+            @Override
+            public void onClick(@NonNull final View v) {
+                (new SmartgadgetRequirementDialog(getActivity())).show();
+            }
+        };
+        adapter.addPreference(APPLICATION_REQUIREMENTS_LABEL, null, clickListener);
     }
 
     private void addGlossaryAdapter(@NonNull final PreferenceAdapter adapter) {
@@ -352,7 +368,6 @@ public class SmartgadgetPreferenceFragment extends ParentListFragment implements
         };
         adapter.addPreference(ABOUT_PREFERENCE_LABEL, null, clickListener);
     }
-
 
     private void showAboutText() {
         String versionName = null;

@@ -231,6 +231,13 @@ public class RHTSensorFacade implements HumiSensorListener {
     }
 
     /**
+     * @see {@link RHTInternalSensorManager#hasInternalSensor}
+     */
+    public boolean hasInternalRHTSensor() {
+        return RHTInternalSensorManager.getInstance().hasInternalSensor();
+    }
+
+    /**
      * Notifies a new listener of the last value for each device
      *
      * @param listener that will be notified

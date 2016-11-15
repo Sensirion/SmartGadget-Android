@@ -10,4 +10,5 @@
     <string name="key_pref_glossary">pref_glossary</string>
     <string name="key_pref_upload_data">pref_upload_data</string>
     <string name="key_pref_about">pref_about</string>
+    <string name="key_display_smartgadget_required">pref_smartgadget_warning</string>
 </resources>
