@@ -62,6 +62,11 @@ public class RHTHumigadgetSensorManager implements GadgetManagerCallback, Gadget
         HISTORY
     }
 
+    public enum AggregatorType {
+        LIVE,
+        HISTORY
+    }
+
     private RHTHumigadgetSensorManager(@NonNull final Context context) {
         mGadgetManager = GadgetManagerFactory.create(this);
         mGadgetManager.initialize(context.getApplicationContext());
