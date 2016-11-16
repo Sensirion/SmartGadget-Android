@@ -50,7 +50,12 @@ public class RHTHumigadgetSensorManager implements GadgetManagerCallback, Gadget
     // TODO: find a better way to filter devices, right now we have to register the service UUID
     // and then still enter the exact device names here. Better would be to keep everything within
     // libsmartgadget.
-    private String[] mHumiGadgetNameFilter = new String[]{"SHTC1 smart gadget", "Smart Humigadget", "SensorTag"};
+    private String[] mHumiGadgetNameFilter = new String[]{"SHTC1 smart gadget",
+            "SHTC1 smart gadget\u0002", "Smart Humigadget", "SensorTag"};
+    private String[] mHumiGadgetServiceUUIDFilter = new String[]{SHT3xTemperatureService.SERVICE_UUID,
+            SHT3xHumidityService.SERVICE_UUID,
+            SHTC1TemperatureAndHumidityService.SERVICE_UUID,
+            SensorTagTemperatureAndHumidityService.SERVICE_UUID};
 
     public enum AggregatorType {
         LIVE,
@@ -405,19 +410,20 @@ public class RHTHumigadgetSensorManager implements GadgetManagerCallback, Gadget
 
     private boolean isHumidityValue(@NonNull final GadgetValue value) {
         return value.getUnit().equals(SHTC1TemperatureAndHumidityService.UNIT_RH) ||
-               value.getUnit().equals(SHT3xHumidityService.UNIT) ||
-               value.getUnit().equals(SensorTagTemperatureAndHumidityService.UNIT_RH);
+                value.getUnit().equals(SHT3xHumidityService.UNIT) ||
+                value.getUnit().equals(SensorTagTemperatureAndHumidityService.UNIT_RH);
     }
 
     private boolean isTemperatureValue(@NonNull final GadgetValue value) {
         return value.getUnit().equals(SHTC1TemperatureAndHumidityService.UNIT_T) ||
-               value.getUnit().equals(SHT3xTemperatureService.UNIT) ||
-               value.getUnit().equals(SensorTagTemperatureAndHumidityService.UNIT_T);
+                value.getUnit().equals(SHT3xTemperatureService.UNIT) ||
+                value.getUnit().equals(SensorTagTemperatureAndHumidityService.UNIT_T);
     }
 
     public boolean startDiscovery(final int durationMs) {
         mDiscoveredGadgets.clear();
-        return mGadgetManager.startGadgetDiscovery(durationMs, mHumiGadgetNameFilter);
+        return mGadgetManager.startGadgetDiscovery(durationMs, mHumiGadgetNameFilter,
+                mHumiGadgetServiceUUIDFilter);
     }
 
     public void stopDiscovery() {
