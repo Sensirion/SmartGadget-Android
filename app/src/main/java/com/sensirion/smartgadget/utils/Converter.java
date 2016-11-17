@@ -80,8 +80,11 @@ public class Converter {
         private static float calcHeatIndexInFahrenheit(final float h, final float t) {
 
             //Checks if the temperature and the humidity makes sense.
-            if (t < LOW_BOUNDARY_FORMULA_FAHRENHEIT || t > UPPER_BOUNDARY_FORMULA_FAHRENHEIT || h < 0 || h > 100) {
+            if (t > UPPER_BOUNDARY_FORMULA_FAHRENHEIT || h < 0 || h > 100) {
                 return Float.NaN;
+            } else if (t < LOW_BOUNDARY_FORMULA_FAHRENHEIT) {
+                // use actual temperature for heat index if below LOW_BOUNDARY_FORMULA_FAHRENHEIT
+                return t;
             }
 
             //Prepares values for improving the readability of the method.
