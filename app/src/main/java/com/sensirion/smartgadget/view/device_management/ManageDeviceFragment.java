@@ -10,6 +10,7 @@ import android.content.res.ColorStateList;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -63,6 +64,7 @@ public class ManageDeviceFragment extends ParentFragment implements GadgetListen
     private static final String TAG = ManageDeviceFragment.class.getSimpleName();
     public static final int UNKNOWN_BATTERY_LEVEL = -1;
     private static final int UNKNOWN_LOGGING_INTERVAL = -1;
+    private static final int[] RETRY_DELAYS_MS = {500, 1500, 3000, 5000}; // retry delays to update logger interval
 
     private Gadget mSelectedGadget;
     private DeviceModel mSelectedDeviceModel;
@@ -211,6 +213,9 @@ public class ManageDeviceFragment extends ParentFragment implements GadgetListen
     public boolean onOptionsItemSelected(@NonNull final MenuItem item) {
         switch (item.getItemId()) {
             case R.id.scan_device_refresh:
+                if (isDownloading(mSelectedGadget)) {
+                    return false; // don't refresh while downloading
+                }
                 mSelectedGadget.refresh();
                 initUiElements();
                 return true;
@@ -271,12 +276,41 @@ public class ManageDeviceFragment extends ParentFragment implements GadgetListen
      * Manage Gadget Methods
      */
 
+    private void updateIntervalDelayed(@NonNull final Gadget gadget, final int expectedInterval, final int delay_index) {
+        // Recursive stop condition
+        if (delay_index >= RETRY_DELAYS_MS.length)
+            return;
+
+        // update view with a small delay
+        final int delay = RETRY_DELAYS_MS[delay_index];
+        final Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (mSelectedGadget != gadget) {
+                    return; // gadget changed
+                }
+
+                int interval = getLoggerInterval(gadget);
+                if (interval == expectedInterval) {
+                    initIntervalChooser();
+                } else {
+                    updateIntervalDelayed(gadget, expectedInterval, delay_index + 1);
+                }
+            }
+        }, delay);
+    }
+
     private void setLoggerInterval(@NonNull final Gadget gadget, final int valueInMilliseconds) {
         final GadgetDownloadService downloadService = getDownloadService(gadget);
         if (downloadService == null) {
             return;
         }
-        downloadService.setLoggerInterval(valueInMilliseconds);
+
+        /* TODO (29.11.2016) If libsmartgadget would provide a onSetLoggerIntervalSuccess method we would not have to try several times */
+        if (downloadService.setLoggerInterval(valueInMilliseconds)) {
+            updateIntervalDelayed(gadget, valueInMilliseconds, 0);
+        }
     }
 
     private int getLoggerInterval(Gadget gadget) {
