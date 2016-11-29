@@ -11,9 +11,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
-        android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginTop="10dp"
         android:orientation="vertical">
 
         <EditText
@@ -21,7 +21,7 @@
             android:layout_width="wrap_content"
             android:layout_height="0dp"
             android:layout_gravity="start"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="0dp"
             android:layout_weight="1"
             android:background="@android:color/white"
             android:ems="10"
@@ -44,7 +44,7 @@
             android:background="@android:color/white"
             android:text="Gadget Type"
             android:textColor="@color/light_gray"
-            android:textSize="24sp"
+            android:textSize="@dimen/dashboard_button_text_size"
             android:visibility="visible"/>
 
         <RelativeLayout
@@ -61,7 +61,7 @@
                 android:gravity="center_vertical"
                 android:paddingLeft="10dp"
                 android:text="@string/label_batteryLevel"
-                android:textSize="24sp"/>
+                android:textSize="@dimen/dashboard_button_text_size"/>
 
             <TextView
                 android:id="@+id/manage_device_battery_level_value"
@@ -107,7 +107,7 @@
                 android:gravity="center_vertical"
                 android:paddingLeft="10dp"
                 android:text="@string/label_gadgetLogging"
-                android:textSize="24sp"/>
+                android:textSize="@dimen/dashboard_button_text_size"/>
 
             <Switch
                 android:id="@+id/manage_device_switch_toggle_logger"
@@ -141,7 +141,7 @@
                 android:gravity="center_vertical"
                 android:paddingLeft="10dp"
                 android:text="@string/label_loggingInterval"
-                android:textSize="24sp"/>
+                android:textSize="@dimen/dashboard_button_text_size"/>
 
             <Button
                 android:id="@+id/manage_device_button_logging_interval"
@@ -156,7 +156,7 @@
                 android:background="@color/sensirion_grey_light"
                 android:text="@string/label_interval_second_singular"
                 android:textColor="@color/light_gray"
-                android:textSize="24sp"
+                android:textSize="@dimen/dashboard_button_text_size"
                 android:visibility="visible"/>
         </RelativeLayout>
 
@@ -174,7 +174,7 @@
                 android:gravity="center_vertical"
                 android:paddingLeft="10dp"
                 android:text="@string/label_gadgetdownload"
-                android:textSize="24sp"/>
+                android:textSize="@dimen/dashboard_button_text_size"/>
 
             <ProgressBar
                 android:id="@+id/manage_device_download_progress_bar"
@@ -198,7 +198,7 @@
                 android:layout_centerVertical="true"
                 android:layout_marginEnd="8dp"
                 android:textColor="@color/light_gray"
-                android:textSize="24sp"/>
+                android:textSize="@dimen/dashboard_button_text_size"/>
 
         </RelativeLayout>
 

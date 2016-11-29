@@ -369,6 +369,7 @@ public class ManageDeviceFragment extends ParentFragment implements GadgetListen
         final Typeface typefaceBold = Typeface.createFromAsset(assets, TYPEFACE_BOLD_LOCATION);
         mBatteryLevelValue.setTypeface(typefaceNormal);
         mGadgetNameEditText.setTypeface(typefaceNormal);
+        mGadgetType.setTypeface(typefaceNormal);
         mDisconnectButton.setTypeface(typefaceBold);
         mDownloadButtonText.setTypeface(typefaceNormal);
         mLoggingIntervalButton.setTypeface(typefaceNormal);
