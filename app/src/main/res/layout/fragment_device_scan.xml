@@ -20,11 +20,7 @@
             android:cacheColorHint="@android:color/transparent"
             android:scrollbarStyle="insideOverlay"/>
 
-        <FrameLayout
-            android:id="@+id/scan_background"
-            android:layout_width="fill_parent"
-            android:layout_height="match_parent"
-            android:layout_marginBottom="6dp"/>
+        <include layout="@layout/scanning_info"/>
     </LinearLayout>
 
     <ToggleButton

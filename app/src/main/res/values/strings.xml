@@ -200,4 +200,16 @@
     <string name="requirements_text">This application requires a Sensirion SmartGadget in order to work.</string>
     <string name="requirements_url">https://www.sensirion.com/products/humidity-sensors/development-kit/</string>
     <string name="requirements_show_next_launch">Show on next launch</string>
+
+    <!--Scanning Info-->
+    <string name="scanning_help_title">Can\'t find your gadget?</string>
+    <string name="scanning_help_bullet_point">-</string>
+    <string name="scanning_help_proximity_title">Get close to your Smart Gadget</string>
+    <string name="scanning_help_proximity_description">Make sure to be in close proximity of your Smart Gadget.</string>
+    <string name="scanning_help_gadget_ble_title">Enable BLE on the SmartGadget</string>
+    <string name="scanning_help_gadget_ble_description">To enable BLE on the Smart Gadget, press and hold the button on the gadget for 3 seconds.</string>
+    <string name="scanning_help_location_title">Enable location services</string>
+    <string name="scanning_help_location_description">Android requires location permissions to scan for BLE devices. The application does not use or track your location.</string>
+    <string name="scanning_help_pairing_title">Let this app pair with the Smart Gadget</string>
+    <string name="scanning_help_pairing_description">To ensure seamless functionality, do not use the system\'s bluetooth settings to pair.</string>
 </resources>
