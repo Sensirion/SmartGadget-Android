@@ -50,7 +50,7 @@ import com.sensirion.smartgadget.utils.section_manager.SectionManager;
 import com.sensirion.smartgadget.utils.section_manager.SectionManagerMobile;
 import com.sensirion.smartgadget.utils.section_manager.SectionManagerTablet;
 import com.sensirion.smartgadget.utils.view.ApplicationHeaderGenerator;
-import com.sensirion.smartgadget.utils.view.SmartgadgetRequirementDialog;
+import com.sensirion.smartgadget.utils.view.SmartGadgetRequirementDialog;
 import com.sensirion.smartgadget.view.device_management.ManageDeviceFragment;
 import com.sensirion.smartgadget.view.device_management.ScanDeviceFragment;
 
@@ -128,8 +128,8 @@ public class MainActivity extends FragmentActivity implements View.OnTouchListen
         initFragmentNavigator();
         final Settings appSettings = Settings.getInstance();
         if (!RHTSensorFacade.getInstance().hasInternalRHTSensor() &&
-                appSettings.isSmartgadgetRequirementDisplayed(appContext)) {
-            (new SmartgadgetRequirementDialog(this)).show();
+                appSettings.isSmartGadgetRequirementDisplayed()) {
+            (new SmartGadgetRequirementDialog(this)).show();
         }
     }
 

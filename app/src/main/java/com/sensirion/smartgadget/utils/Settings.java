@@ -5,26 +5,37 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.util.Log;
 
 import com.sensirion.smartgadget.R;
-import com.sensirion.smartgadget.utils.view.SmartgadgetRequirementDialog;
 
 public class Settings {
 
     private static final String TAG = Settings.class.getSimpleName();
     private static final String PREFIX = Settings.class.getName();
-    private static final String KEY_SELECTED_SENSOR = PREFIX + ".KEY_SELECTED_SENSOR";
+    public static final String KEY_SELECTED_SENSOR = PREFIX + ".SELECTED_SENSOR";
+    public static final String KEY_SELECTED_TEMPERATURE_UNIT = PREFIX + ".SELECTED_TEMPERATURE_UNIT";
+    public static final String KEY_SELECTED_SEASON = PREFIX + ".SELECTED_SEASON";
+    public static final String KEY_SMART_GADGET_REQUIRED = PREFIX + ".SMART_GADGET_REQUIRED";
 
-    public static final String UNKNOWN_VALUE = "";
     public static final String SELECTED_NONE = PREFIX + ".SELECTED_NONE";
 
     private static Settings mInstance;
     private final SharedPreferences mPreferences;
+    private final String mDefaultTemperatureUnitString;
+    private final String mFahrenheitUnitString;
+    private final String mDefaultSeasonString;
+    private final String mWinterSeasonString;
+    private final String mNoString;
+    private final String mYesString;
 
     private Settings(@NonNull final Context context) {
         mPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+        mDefaultTemperatureUnitString = context.getString(R.string.pref_temp_unit_default);
+        mFahrenheitUnitString = context.getString(R.string.unit_fahrenheit);
+        mDefaultSeasonString = context.getString(R.string.pref_season_default);
+        mWinterSeasonString = context.getString(R.string.label_season_winter);
+        mNoString = context.getString(R.string.no);
+        mYesString = context.getString(R.string.yes);
     }
 
     public static void init(@NonNull final Context context) {
@@ -40,78 +51,93 @@ public class Settings {
         return mInstance;
     }
 
-    @Nullable
+    @NonNull
     public String getSelectedAddress() {
         return mPreferences.getString(KEY_SELECTED_SENSOR, SELECTED_NONE);
     }
 
     @SuppressLint("CommitPrefEdits")
-    public void setSelectedAddress(@Nullable final String deviceAddress) {
-        mPreferences.edit()
-                .putString(KEY_SELECTED_SENSOR, deviceAddress)
-                .commit();
-        Log.i(TAG, String.format("setSelectedAddress -> Address %s was selected.", deviceAddress));
+    public void setSelectedAddress(@NonNull final String deviceAddress) {
+        mPreferences.edit().putString(KEY_SELECTED_SENSOR, deviceAddress).commit();
     }
 
     public void unselectCurrentAddress() {
         setSelectedAddress(SELECTED_NONE);
     }
 
+    @NonNull
+    public String getSelectedTemperatureUnit() {
+        return mPreferences.getString(KEY_SELECTED_TEMPERATURE_UNIT, mDefaultTemperatureUnitString);
+    }
+
+    @SuppressLint("CommitPrefEdits")
+    public void setSelectedTemperatureUnit(@NonNull final String unitString) {
+        mPreferences.edit().putString(KEY_SELECTED_TEMPERATURE_UNIT, unitString).commit();
+    }
+
     /**
      * Checks if the user has select Fahrenheit as the temperature unit.
      *
-     * @param context needed for obtaining the temperature preference.
      * @return <code>true</code> if the user has selected Fahrenheit as the temperature unit - <code>false</code> otherwise.
      */
-    public boolean isTemperatureUnitFahrenheit(@NonNull final Context context) {
-        final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context.getApplicationContext());
-        final String selectedTemperatureUnit = prefs.getString(context.getString(R.string.key_pref_temp_unit), context.getString(R.string.pref_temp_unit_default));
-        return selectedTemperatureUnit.equals(context.getString(R.string.unit_fahrenheit));
+    public boolean isTemperatureUnitFahrenheit() {
+        return getSelectedTemperatureUnit().equals(mFahrenheitUnitString);
+    }
+
+    @NonNull
+    public String getSelectedSeason() {
+        return mPreferences.getString(KEY_SELECTED_SEASON, mDefaultSeasonString);
+    }
+
+    @SuppressLint("CommitPrefEdits")
+    public void setSelectedSeason(@NonNull final String seasonString) {
+        mPreferences.edit().putString(KEY_SELECTED_SEASON, seasonString).commit();
     }
 
     /**
      * Checks if the user has select Winter as the season.
      *
-     * @param context needed for obtaining the season preference.
      * @return <code>true</code> if the user has selected Winter as the season - <code>false</code> otherwise.
      */
-    public boolean isSeasonWinter(@NonNull final Context context) {
-        final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context.getApplicationContext());
-        final String selectedSeason = prefs.getString(context.getString(R.string.key_pref_season), context.getString(R.string.pref_season_default));
-        return selectedSeason.equals(context.getString(R.string.label_season_winter));
+    public boolean isSeasonWinter() {
+        return getSelectedSeason().equals(mWinterSeasonString);
     }
 
     /**
-     * Checks if the {@link SmartgadgetRequirementDialog} needs
-     * to be displayed when initializing the application.
+     * Checks if a Smart Gadget Requirements dialog needs to be shown on App Start.
      *
-     * @param context needed to obtain the preference.
      * @return <code>true</code> if the dialog is going to be displayed - <code>false</code> otherwise.
      */
-    public boolean isSmartgadgetRequirementDisplayed(@NonNull final Context context) {
-        final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context.getApplicationContext());
-        final String isDisplayed = prefs.getString(
-                context.getString(R.string.key_display_smartgadget_required),
-                context.getString(R.string.no)
-        );
-        return isDisplayed.equals(context.getString(R.string.no));
+    public boolean isSmartGadgetRequirementDisplayed() {
+        final String isDisplayed = mPreferences.getString(KEY_SMART_GADGET_REQUIRED, mNoString);
+        return isDisplayed.equals(mNoString);
     }
 
     /**
-     * Sets if the {@link SmartgadgetRequirementDialog} needs
-     * to be displayed when initializing the application.
+     * Sets if a Smart Gadget Requirements dialog needs to be displayed on App Start.
      *
-     * @param context needed to store the preference.
-     * @param isSmartgadgetRequirementDisplayed if the dialog is going to be displayed - <code>false</code> otherwise.
+     * @param isSmartGadgetRequirementDisplayed if the dialog is going to be displayed - <code>false</code> otherwise.
      */
-    public void setSmartgadgetWarningDisplayed(@NonNull final Context context,
-                                               final boolean isSmartgadgetRequirementDisplayed) {
-        mPreferences.
-                edit().
-                putString(
-                        context.getString(R.string.key_display_smartgadget_required),
-                        context.getString((isSmartgadgetRequirementDisplayed) ? R.string.yes : R.string.no)
-                ).
-                apply();
+    public void setSmartGadgetWarningDisplayed(final boolean isSmartGadgetRequirementDisplayed) {
+        mPreferences.edit().putString(KEY_SMART_GADGET_REQUIRED,
+                (isSmartGadgetRequirementDisplayed) ? mYesString : mNoString).apply();
+    }
+
+    /**
+     * Registers a Shared preference listener.
+     *
+     * @param listener The {@link android.content.SharedPreferences.OnSharedPreferenceChangeListener} to register.
+     */
+    public void registerOnSharedPreferenceChangeListener(@NonNull final SharedPreferences.OnSharedPreferenceChangeListener listener) {
+        mPreferences.registerOnSharedPreferenceChangeListener(listener);
+    }
+
+    /**
+     * Unregisters a Shared preference listener.
+     *
+     * @param listener The {@link android.content.SharedPreferences.OnSharedPreferenceChangeListener} to unregister.
+     */
+    public void unregisterOnSharedPreferenceChangeListener(@NonNull final SharedPreferences.OnSharedPreferenceChangeListener listener) {
+        mPreferences.unregisterOnSharedPreferenceChangeListener(listener);
     }
 }

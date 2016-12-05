@@ -1,6 +1,7 @@
 package com.sensirion.smartgadget.view.history;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.res.AssetManager;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
@@ -27,6 +28,7 @@ import com.sensirion.smartgadget.persistence.device_name_database.DeviceNameData
 import com.sensirion.smartgadget.persistence.history_database.HistoryDatabaseManager;
 import com.sensirion.smartgadget.utils.DeviceModel;
 import com.sensirion.smartgadget.utils.Interval;
+import com.sensirion.smartgadget.utils.Settings;
 import com.sensirion.smartgadget.utils.view.ColorManager;
 import com.sensirion.smartgadget.utils.view.ParentFragment;
 import com.sensirion.smartgadget.view.MainActivity;
@@ -44,7 +46,8 @@ import butterknife.BindString;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class HistoryFragment extends ParentFragment implements RHTSensorListener {
+public class HistoryFragment extends ParentFragment
+        implements RHTSensorListener, SharedPreferences.OnSharedPreferenceChangeListener {
 
     // Class TAG
     @NonNull
@@ -118,12 +121,14 @@ public class HistoryFragment extends ParentFragment implements RHTSensorListener
     public void onResume() {
         super.onResume();
         RHTSensorFacade.getInstance().registerListener(this);
+        Settings.getInstance().registerOnSharedPreferenceChangeListener(this);
     }
 
     @Override
     public void onPause() {
         super.onPause();
         RHTSensorFacade.getInstance().unregisterListener(this);
+        Settings.getInstance().unregisterOnSharedPreferenceChangeListener(this);
     }
 
     public void init(@NonNull final View historyView) {
@@ -131,7 +136,7 @@ public class HistoryFragment extends ParentFragment implements RHTSensorListener
         initHistoryDeviceListView();
         refreshTypeValueTabs();
         updateDeviceView();
-        mPlotHandler = new PlotHandler(getContext(), historyView, DEFAULT_TIME_INTERVAL, DEFAULT_UNIT_TYPE);
+        mPlotHandler = new PlotHandler(historyView, DEFAULT_TIME_INTERVAL, DEFAULT_UNIT_TYPE);
         updateGraph();
     }
 
@@ -479,5 +484,18 @@ public class HistoryFragment extends ParentFragment implements RHTSensorListener
             return dataPoint.getTemperatureCelsius();
         }
         return dataPoint.getRelativeHumidity();
+    }
+
+    /**
+     * Updates the Fragment to show temperature in Fahrenheit or Celsius
+     * if the temperature Unit was changed by the user.
+     */
+    @Override
+    public void onSharedPreferenceChanged(@NonNull final SharedPreferences sharedPreferences,
+                                          @NonNull final String key) {
+
+        if (key.equals(Settings.KEY_SELECTED_TEMPERATURE_UNIT)) {
+            updateGraph();
+        }
     }
 }

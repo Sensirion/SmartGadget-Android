@@ -81,15 +81,14 @@ public class PlotHandler {
     @NonNull
     private HistoryIntervalType mLastInterval;
 
-    public PlotHandler(@NonNull final Context context,
-                       @NonNull final View historyView,
+    public PlotHandler(@NonNull final View historyView,
                        @NonNull final HistoryIntervalType defaultInterval,
                        @NonNull final HistoryUnitType defaultUnitType) {
 
         ButterKnife.bind(this, historyView);
 
         mViewPlot.setDomainStep(XYStepMode.SUBDIVIDE, defaultInterval.getNumberDomainElements());
-        mIsFahrenheit = Settings.getInstance().isTemperatureUnitFahrenheit(context);
+        mIsFahrenheit = Settings.getInstance().isTemperatureUnitFahrenheit();
 
         mLastInterval = defaultInterval;
         mLastUnit = defaultUnitType;
@@ -98,7 +97,7 @@ public class PlotHandler {
         final String defaultRangeText = TEMPERATURE_STRING;
 
         mViewPlot.format(defaultDomainText, defaultRangeText,
-                         new ShowNothingFormat(), new ShowNothingFormat());
+                new ShowNothingFormat(), new ShowNothingFormat());
     }
 
     public synchronized void updateSeries(@NonNull final Context context,
@@ -128,14 +127,14 @@ public class PlotHandler {
         mViewPlot.setRangeValueFormat(type.getValueFormat(context));
         mViewPlot.setRangeStep(XYStepMode.SUBDIVIDE, DEFAULT_NUMBER_RANGE_LABELS);
         if (type == HistoryUnitType.TEMPERATURE) {
-            updateRangeFormatToTemperature(context);
+            updateRangeFormatToTemperature();
         } else {
             updateRangeFormatToHumidity();
         }
     }
 
-    private void updateRangeFormatToTemperature(@NonNull final Context context) {
-        mIsFahrenheit = Settings.getInstance().isTemperatureUnitFahrenheit(context);
+    private void updateRangeFormatToTemperature() {
+        mIsFahrenheit = Settings.getInstance().isTemperatureUnitFahrenheit();
         if (mIsFahrenheit) {
             mViewPlot.setRangeLabel(TEMPERATURE_LABEL_IN_FAHRENHEIT);
         } else {

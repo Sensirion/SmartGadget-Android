@@ -2,14 +2,11 @@ package com.sensirion.smartgadget.view.preference;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.DialogInterface;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.graphics.Typeface;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -26,10 +23,9 @@ import com.sensirion.smartgadget.peripheral.rht_sensor.external.RHTHumigadgetSen
 import com.sensirion.smartgadget.utils.Settings;
 import com.sensirion.smartgadget.utils.view.ParentListFragment;
 import com.sensirion.smartgadget.utils.view.SectionAdapter;
-import com.sensirion.smartgadget.utils.view.SmartgadgetRequirementDialog;
+import com.sensirion.smartgadget.utils.view.SmartGadgetRequirementDialog;
 import com.sensirion.smartgadget.view.MainActivity;
 import com.sensirion.smartgadget.view.device_management.ScanDeviceFragment;
-import com.sensirion.smartgadget.view.glossary.GlossaryFragment;
 import com.sensirion.smartgadget.view.preference.adapter.PreferenceAdapter;
 
 import java.util.Calendar;
@@ -62,16 +58,12 @@ public class SmartgadgetPreferenceFragment extends ParentListFragment implements
     String SEASON_PREFERENCE_LABEL;
     @BindString(R.string.label_smart_gadgets)
     String DEVICES_PREFERENCE_LABEL;
-    @BindString(R.string.key_pref_season)
-    String KEY_PREFERENCE_SEASON;
     @BindString(R.string.label_glossary)
     String GLOSSARY_PREFERENCE_LABEL;
     @BindString(R.string.about_sensirion_ag)
     String ABOUT_SENSIRION_AG;
     @BindString(R.string.header_connections)
     String CONNECTION_HEADER;
-    @BindString(R.string.key_pref_temp_unit)
-    String TEMPERATURE_PREFERENCE_KEY;
     @BindString(R.string.label_temperature_unit)
     String TEMPERATURE_PREFERENCE_LABEL;
     @BindString(R.string.header_user_prefs)
@@ -193,7 +185,9 @@ public class SmartgadgetPreferenceFragment extends ParentListFragment implements
                 }
                 Log.w(TAG, "initConnectionPreferences -> Bluetooth has to be active in" +
                         " order to scan for new devices.");
-                RHTHumigadgetSensorManager.getInstance().requestEnableBluetooth(getParent());
+                if (getParent() != null) {
+                    RHTHumigadgetSensorManager.getInstance().requestEnableBluetooth(getParent());
+                }
             }
         };
         mConnectionsAdapter.clear();
@@ -239,15 +233,7 @@ public class SmartgadgetPreferenceFragment extends ParentListFragment implements
             Log.e(TAG, "addTemperatureUnitPreferenceAdapter -> mUserPreferenceAdapter can't be null");
             return;
         }
-        final Context appContext = getContext().getApplicationContext();
-        final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(appContext);
-
-        String summary = prefs.getString(TEMPERATURE_PREFERENCE_KEY, Settings.UNKNOWN_VALUE);
-        if (summary.equals(Settings.UNKNOWN_VALUE)) {
-            Log.d(TAG, "addTemperaturePreferenceAdapter -> Temperature settings is not known ");
-            summary = getResources().getTextArray(R.array.array_temp_unit)[0].toString();
-            prefs.edit().putString(TEMPERATURE_PREFERENCE_KEY, summary).commit();
-        }
+        final String summary = Settings.getInstance().getSelectedTemperatureUnit();
 
         final View.OnClickListener clickListener = new View.OnClickListener() {
             @Override
@@ -260,11 +246,8 @@ public class SmartgadgetPreferenceFragment extends ParentListFragment implements
                                                 final int which) {
                                 final String newSummary =
                                         getResources().getTextArray(R.array.array_temp_unit)[which].toString();
-                                Log.d(TAG, String.format(
-                                        "addTemperaturePreferenceAdapter -> Selected temperature unit %s.",
-                                        newSummary));
+                                Settings.getInstance().setSelectedTemperatureUnit(newSummary);
                                 final TextView summaryTextView = (TextView) v.findViewById(R.id.preference_summary);
-                                prefs.edit().putString(TEMPERATURE_PREFERENCE_KEY, newSummary).commit();
                                 summaryTextView.setText(newSummary);
                             }
                         });
@@ -281,14 +264,7 @@ public class SmartgadgetPreferenceFragment extends ParentListFragment implements
             Log.e(TAG, "addSeasonPreferenceAdapter -> mUserPreferenceAdapter can't be null");
             return;
         }
-        final Context appContext = getContext().getApplicationContext();
-        final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(appContext);
-
-        String summary = prefs.getString(KEY_PREFERENCE_SEASON, Settings.UNKNOWN_VALUE);
-        if (summary.equals(Settings.UNKNOWN_VALUE)) {
-            summary = getResources().getTextArray(R.array.array_season)[0].toString();
-            prefs.edit().putString(KEY_PREFERENCE_SEASON, summary).commit();
-        }
+        final String summary = Settings.getInstance().getSelectedSeason();
 
         final View.OnClickListener clickListener = new View.OnClickListener() {
             @Override
@@ -303,7 +279,7 @@ public class SmartgadgetPreferenceFragment extends ParentListFragment implements
                                         getResources().
                                                 getTextArray(R.array.array_season)[which].
                                                 toString();
-                                prefs.edit().putString(KEY_PREFERENCE_SEASON, newSummary).commit();
+                                Settings.getInstance().setSelectedSeason(newSummary);
                                 final TextView summaryView = ((TextView) v.findViewById(R.id.preference_summary));
                                 summaryView.setText(newSummary);
                             }
@@ -337,27 +313,28 @@ public class SmartgadgetPreferenceFragment extends ParentListFragment implements
         final View.OnClickListener clickListener = new View.OnClickListener() {
             @Override
             public void onClick(@NonNull final View v) {
-                (new SmartgadgetRequirementDialog(getActivity())).show();
+                (new SmartGadgetRequirementDialog(getActivity())).show();
             }
         };
         adapter.addPreference(APPLICATION_REQUIREMENTS_LABEL, null, clickListener);
     }
 
-    private void addGlossaryAdapter(@NonNull final PreferenceAdapter adapter) {
-        final View.OnClickListener clickListener = new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                getListView().setVisibility(View.GONE);
-                final MainActivity mainActivity = (MainActivity) getParent();
-                if (mainActivity == null) {
-                    Log.e(TAG, "addGlossaryAdapter -> Cannot obtain the MainActivity.");
-                } else {
-                    mainActivity.changeFragment(new GlossaryFragment());
-                }
-            }
-        };
-        adapter.addPreference(GLOSSARY_PREFERENCE_LABEL, null, clickListener);
-    }
+    // TODO: Check with PM if still needed. Otherwise remove entirely
+//    private void addGlossaryAdapter(@NonNull final PreferenceAdapter adapter) {
+//        final View.OnClickListener clickListener = new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                getListView().setVisibility(View.GONE);
+//                final MainActivity mainActivity = (MainActivity) getParent();
+//                if (mainActivity == null) {
+//                    Log.e(TAG, "addGlossaryAdapter -> Cannot obtain the MainActivity.");
+//                } else {
+//                    mainActivity.changeFragment(new GlossaryFragment());
+//                }
+//            }
+//        };
+//        adapter.addPreference(GLOSSARY_PREFERENCE_LABEL, null, clickListener);
+//    }
 
     private void addShowAboutAdapter(@NonNull final PreferenceAdapter adapter) {
         final View.OnClickListener clickListener = new View.OnClickListener() {

@@ -40,7 +40,7 @@ import butterknife.BindString;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class DashboardFragment extends ParentFragment implements RHTSensorListener {
+public class DashboardFragment extends ParentFragment implements RHTSensorListener, SharedPreferences.OnSharedPreferenceChangeListener {
 
     private static final String TAG = DashboardFragment.class.getSimpleName();
 
@@ -100,10 +100,6 @@ public class DashboardFragment extends ParentFragment implements RHTSensorListen
     //Connection Adapter
     private ConnectedDeviceAdapter mConnectedDeviceAdapter;
 
-    private void updateViewForSelectedTemperatureUnit() {
-        mIsFahrenheit = Settings.getInstance().isTemperatureUnitFahrenheit(getContext());
-    }
-
     private void updateListView() {
         if (isAdded()) {
             Log.i(TAG, "updateListView()");
@@ -152,12 +148,14 @@ public class DashboardFragment extends ParentFragment implements RHTSensorListen
         updateViewForSelectedTemperatureUnit();
         updateListView();
         RHTSensorFacade.getInstance().registerListener(this);
+        Settings.getInstance().registerOnSharedPreferenceChangeListener(this);
     }
 
     @Override
     public void onPause() {
         super.onPause();
         RHTSensorFacade.getInstance().unregisterListener(this);
+        Settings.getInstance().unregisterOnSharedPreferenceChangeListener(this);
     }
 
     @UiThread
@@ -203,7 +201,7 @@ public class DashboardFragment extends ParentFragment implements RHTSensorListen
                                     final long arg3) {
                 final String clickedAddress = mConnectedDeviceAdapter.getItem(position).getAddress();
                 final String selectedAddress = Settings.getInstance().getSelectedAddress();
-                if (selectedAddress == null || selectedAddress.equals(clickedAddress)) {
+                if (selectedAddress.equals(clickedAddress)) {
                     return;
                 }
                 Settings.getInstance().setSelectedAddress(clickedAddress);
@@ -370,5 +368,22 @@ public class DashboardFragment extends ParentFragment implements RHTSensorListen
                 }
             });
         }
+    }
+
+    /**
+     * Updates the Fragment to show temperature in Fahrenheit or Celsius
+     * if the temperature Unit was changed by the user.
+     */
+    @Override
+    public void onSharedPreferenceChanged(@NonNull final SharedPreferences sharedPreferences,
+                                          @NonNull final String key) {
+        if (key.equals(Settings.KEY_SELECTED_TEMPERATURE_UNIT)) {
+            updateViewForSelectedTemperatureUnit();
+        }
+    }
+
+    private void updateViewForSelectedTemperatureUnit() {
+        mIsFahrenheit = Settings.getInstance().isTemperatureUnitFahrenheit();
+        updateListView();
     }
 }

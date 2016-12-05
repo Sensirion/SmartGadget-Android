@@ -9,8 +9,6 @@ import butterknife.Unbinder;
 
 public abstract class ParentListFragment extends ListFragment {
 
-    private final String TAG = this.getClass().getSimpleName();
-
     @Nullable
     protected Activity mActivity = null;
     @Nullable

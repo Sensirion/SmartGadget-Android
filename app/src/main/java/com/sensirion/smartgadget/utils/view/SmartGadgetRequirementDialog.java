@@ -2,7 +2,6 @@ package com.sensirion.smartgadget.utils.view;
 
 import android.app.Activity;
 import android.app.Dialog;
-import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.view.View;
@@ -17,14 +16,10 @@ import com.sensirion.smartgadget.utils.Settings;
  * Displays a {@link Dialog} showing a notice indicating that a Sensirion Smartgadget
  * is needed in order to use the application.
  */
-public class SmartgadgetRequirementDialog extends Dialog implements View.OnClickListener {
+public class SmartGadgetRequirementDialog extends Dialog implements View.OnClickListener {
 
-    @NonNull
-    private Context mAppContext;
-
-    public SmartgadgetRequirementDialog(@NonNull final Activity activity) {
+    public SmartGadgetRequirementDialog(@NonNull final Activity activity) {
         super(activity);
-        this.mAppContext = activity.getApplicationContext();
     }
 
     @Override
@@ -36,13 +31,13 @@ public class SmartgadgetRequirementDialog extends Dialog implements View.OnClick
         final Button smartgadgetRequiredButton = (Button) findViewById(R.id.requirements_button);
         smartgadgetRequiredButton.setOnClickListener(this);
         final CheckBox mShowAgainCheckbox = (CheckBox) findViewById(R.id.requirements_checkbox);
-        final boolean checked = Settings.getInstance().isSmartgadgetRequirementDisplayed(mAppContext);
+        final boolean checked = Settings.getInstance().isSmartGadgetRequirementDisplayed();
         mShowAgainCheckbox.setChecked(checked);
         mShowAgainCheckbox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(@NonNull final CompoundButton buttonView,
                                          final boolean isChecked) {
-                Settings.getInstance().setSmartgadgetWarningDisplayed(mAppContext, !isChecked);
+                Settings.getInstance().setSmartGadgetWarningDisplayed(!isChecked);
             }
         });
     }

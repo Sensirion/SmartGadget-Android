@@ -29,7 +29,6 @@ import com.sensirion.smartgadget.utils.view.ColorManager;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -215,25 +214,6 @@ public class RHTHumigadgetSensorManager implements GadgetManagerCallback, Gadget
      */
     public void requestEnableBluetooth(@NonNull final Activity activity) {
         BLEUtility.requestEnableBluetooth(activity);
-    }
-
-    /**
-     * Tries to synchronize the needed device services.
-     *
-     * @param deviceAddress of the gadget that needs to be synchronized.
-     */
-    // TODO: Check if this is really needed. otherwise it's implemented and ready to use.
-    @SuppressWarnings("unused")
-    public void synchronizeDeviceServices(@NonNull final String deviceAddress) {
-        final Gadget gadget = mConnectedGadgets.get(deviceAddress);
-        if (gadget == null) {
-            notifyGadgetConnectionChanged(deviceAddress, null, false);
-            return;
-        }
-        final List<GadgetService> services = gadget.getServices();
-        for (final GadgetService service : services) {
-            service.requestValueUpdate();
-        }
     }
 
     /*

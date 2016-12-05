@@ -1,6 +1,7 @@
 package com.sensirion.smartgadget.view.comfort_zone;
 
 import android.app.Activity;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.PointF;
 import android.os.Bundle;
@@ -44,7 +45,7 @@ import static com.sensirion.smartgadget.utils.XmlFloatExtractor.getFloatValueFro
 /**
  * A fragment representing the ComfortZone view
  */
-public class ComfortZoneFragment extends ParentFragment implements OnTouchListener, RHTSensorListener {
+public class ComfortZoneFragment extends ParentFragment implements OnTouchListener, RHTSensorListener, SharedPreferences.OnSharedPreferenceChangeListener {
 
     private static final String TAG = ComfortZoneFragment.class.getSimpleName();
 
@@ -210,6 +211,8 @@ public class ComfortZoneFragment extends ParentFragment implements OnTouchListen
         updateViewForSelectedTemperatureUnit();
         updateTextViewName();
         touchSelectedSensorView();
+
+        Settings.getInstance().registerOnSharedPreferenceChangeListener(this);
     }
 
     @Override
@@ -217,6 +220,7 @@ public class ComfortZoneFragment extends ParentFragment implements OnTouchListen
         super.onPause();
         Log.d(TAG, "onPause()");
         RHTSensorFacade.getInstance().unregisterListener(this);
+        Settings.getInstance().unregisterOnSharedPreferenceChangeListener(this);
     }
 
     private void updateSensorViews() {
@@ -286,7 +290,7 @@ public class ComfortZoneFragment extends ParentFragment implements OnTouchListen
             Log.e(TAG, "updateViewForSelectedSeason -> obtained null activity when calling parent.");
             return;
         }
-        final boolean isSeasonWinter = Settings.getInstance().isSeasonWinter(getContext());
+        final boolean isSeasonWinter = Settings.getInstance().isSeasonWinter();
         Log.i(TAG,
                 String.format(
                         "updateViewForSelectedSeason(): Season %s was selected.",
@@ -313,7 +317,7 @@ public class ComfortZoneFragment extends ParentFragment implements OnTouchListen
         float minXAxisValue = GRAPH_MIN_X_VALUE;
         float maxXAxisValue = GRAPH_MAX_X_VALUE;
 
-        mIsFahrenheit = Settings.getInstance().isTemperatureUnitFahrenheit(getContext());
+        mIsFahrenheit = Settings.getInstance().isTemperatureUnitFahrenheit();
 
         if (mIsFahrenheit) {
             minXAxisValue = Converter.convertToF(minXAxisValue);
@@ -339,7 +343,7 @@ public class ComfortZoneFragment extends ParentFragment implements OnTouchListen
     private void touchSelectedSensorView() {
         if (isAdded()) {
             final String selectedAddress = Settings.getInstance().getSelectedAddress();
-            if (selectedAddress == Settings.SELECTED_NONE) {
+            if (selectedAddress.equals(Settings.SELECTED_NONE)) {
                 return;
             }
             final XyPoint point = mActiveSensorViews.get(selectedAddress);
@@ -371,13 +375,16 @@ public class ComfortZoneFragment extends ParentFragment implements OnTouchListen
     public boolean onTouch(@NonNull final View view, @NonNull final MotionEvent event) {
         if (event.getAction() == MotionEvent.ACTION_DOWN) {
             if (view instanceof XyPoint) {
-                selectSensor(view.getTag().toString());
+                final Object tag = view.getTag();
+                if (tag != null) {
+                    selectSensor(tag.toString());
+                }
                 final Activity parent = getParent();
                 if (parent == null) {
                     Log.e(TAG, "onTouch -> obtained null activity when calling parent.");
                     return false;
                 }
-                getParent().runOnUiThread(new Runnable() {
+                parent.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         ((XyPoint) view).animateTouch();
@@ -388,11 +395,11 @@ public class ComfortZoneFragment extends ParentFragment implements OnTouchListen
         return view.performClick();
     }
 
-    private void selectSensor(final String selectedAddress) {
+    private void selectSensor(@NonNull final String selectedAddress) {
         synchronized (mActiveSensorViews) {
             for (final Map.Entry<String, XyPoint> activeSensorView : mActiveSensorViews.entrySet()) {
                 final XyPoint point = activeSensorView.getValue();
-                if (activeSensorView.getKey() == selectedAddress) {
+                if (selectedAddress.equals(activeSensorView.getKey())) {
                     Settings.getInstance().setSelectedAddress(selectedAddress);
                     point.setOutlineColor(Color.WHITE);
                     updateTextViewName();
@@ -407,12 +414,7 @@ public class ComfortZoneFragment extends ParentFragment implements OnTouchListen
     private void updateTextViewName() {
         try {
             final String selectedAddress = Settings.getInstance().getSelectedAddress();
-            final DeviceModel model;
-            if (selectedAddress == null) {
-                model = null;
-            } else {
-                model = RHTSensorFacade.getInstance().getDeviceModel(selectedAddress);
-            }
+            final DeviceModel model = RHTSensorFacade.getInstance().getDeviceModel(selectedAddress);
             if (model == null) {
                 mActiveSensorViews.remove(selectedAddress);
                 return;
@@ -544,7 +546,7 @@ public class ComfortZoneFragment extends ParentFragment implements OnTouchListen
                 return;
             }
 
-            if (address != RHTInternalSensorManager.INTERNAL_SENSOR_ADDRESS &&
+            if (!address.equals(RHTInternalSensorManager.INTERNAL_SENSOR_ADDRESS) &&
                     !mActiveSensorViews.containsKey(address)) {
                 Log.w(TAG, String.format(
                         "updateViewValues() -> Received value from inactive device %s. Updating views.",
@@ -605,7 +607,7 @@ public class ComfortZoneFragment extends ParentFragment implements OnTouchListen
             final NumberFormat nf = NumberFormat.getNumberInstance(Locale.ENGLISH);
             nf.setMaximumFractionDigits(1);
             nf.setMinimumFractionDigits(1);
-            mSensorAmbientTemperatureTextView.setText(nf.format(temperature) + unit);
+            mSensorAmbientTemperatureTextView.setText(String.format("%s %s", nf.format(temperature), unit));
             mSensorRelativeHumidity.setText(String.format("%s %s", nf.format(humidity), getString(R.string.unit_humidity)));
         }
     }
@@ -651,5 +653,19 @@ public class ComfortZoneFragment extends ParentFragment implements OnTouchListen
 
     private float getDipFor(final float px) {
         return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, px, getResources().getDisplayMetrics());
+    }
+
+    /**
+     * Updates the Fragment to show temperature in Fahrenheit or Celsius
+     * if the temperature Unit was changed by the user.
+     */
+    @Override
+    public void onSharedPreferenceChanged(@NonNull final SharedPreferences sharedPreferences,
+                                          @NonNull final String key) {
+        if (key.equals(Settings.KEY_SELECTED_TEMPERATURE_UNIT)) {
+            updateViewForSelectedTemperatureUnit();
+        } else if (key.equals(Settings.KEY_SELECTED_SEASON)) {
+            updateViewForSelectedSeason();
+        }
     }
 }

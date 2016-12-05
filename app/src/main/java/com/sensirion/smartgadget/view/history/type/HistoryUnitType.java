@@ -80,7 +80,7 @@ public enum HistoryUnitType {
     @NonNull
     public Format getValueFormat(@NonNull final Context context) {
         if (this == TEMPERATURE) {
-            if (Settings.getInstance().isTemperatureUnitFahrenheit(context)) {
+            if (Settings.getInstance().isTemperatureUnitFahrenheit()) {
                 return new DecimalFormat(context.getResources().getString(R.string.history_temperature_decimal_format_fahrenheit));
             }
             return new DecimalFormat(context.getResources().getString(R.string.history_temperature_decimal_format_celsius));
@@ -99,7 +99,7 @@ public enum HistoryUnitType {
      */
     public float getMinimumGraphResolution(@NonNull final Context context) {
         if (this == TEMPERATURE) {
-            if (Settings.getInstance().isTemperatureUnitFahrenheit(context)) {
+            if (Settings.getInstance().isTemperatureUnitFahrenheit()) {
                 return XmlFloatExtractor.getFloatValueFromId(context, R.dimen.history_temperature_separation_fahrenheit);
             }
             return XmlFloatExtractor.getFloatValueFromId(context, R.dimen.history_temperature_separation_celsius);
