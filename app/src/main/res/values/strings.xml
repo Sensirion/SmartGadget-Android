@@ -212,4 +212,7 @@
     <string name="scanning_help_location_description">Android requires location permissions to scan for BLE devices. The application does not use or track your location.</string>
     <string name="scanning_help_pairing_title">Let this app pair with the Smart Gadget</string>
     <string name="scanning_help_pairing_description">To ensure seamless functionality, do not use the system\'s bluetooth settings to pair.</string>
+
+    <string name="dialog_unbind_gadget_title">Inconsistent pairing state</string>
+    <string name="dialog_unbind_gadget_message">Go to the bluetooth settings and remove the gadget from the list of paired devices before connecting within this app.\n</string>
 </resources>

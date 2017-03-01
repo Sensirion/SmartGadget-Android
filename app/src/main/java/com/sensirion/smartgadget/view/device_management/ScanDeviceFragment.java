@@ -1,7 +1,10 @@
 package com.sensirion.smartgadget.view.device_management;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.res.AssetManager;
 import android.graphics.Typeface;
@@ -33,6 +36,9 @@ import com.sensirion.smartgadget.utils.view.ParentListFragment;
 import com.sensirion.smartgadget.utils.view.SectionAdapter;
 import com.sensirion.smartgadget.view.MainActivity;
 import com.sensirion.smartgadget.view.device_management.utils.HumiGadgetListAdapter;
+
+import java.lang.reflect.Method;
+import java.util.Set;
 
 import butterknife.BindBool;
 import butterknife.BindString;
@@ -235,6 +241,25 @@ public class ScanDeviceFragment extends ParentListFragment implements HumiGadget
         handleScanningInfoVisibility();
     }
 
+    private boolean unbindGadgetIfBoundByDevice(final GadgetModel gadget) {
+        final BluetoothAdapter defaultAdapter = BluetoothAdapter.getDefaultAdapter();
+        final Set<BluetoothDevice> bondedDevices = defaultAdapter.getBondedDevices();
+        for (final BluetoothDevice device : bondedDevices) {
+            if (gadget.getAddress().equals(device.getAddress())) {
+                Log.d(TAG, device.getAddress() + " bound in device settings... will unbind");
+                try {
+                    Method m = device.getClass()
+                            .getMethod("removeBond", (Class[]) null);
+                    m.invoke(device, (Object[]) null);
+                } catch (Exception e) {
+                    Log.e(TAG, "Failed to unbind from gadget");
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
     @Override
     public void onGadgetDiscoveryFailed() {
         updateScanButtonsState(false);
@@ -290,6 +315,14 @@ public class ScanDeviceFragment extends ParentListFragment implements HumiGadget
         if (gadget.isConnected()) {
             openManageDeviceFragment(gadget);
         } else {
+            if (!unbindGadgetIfBoundByDevice(gadget)) {
+                final AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(getContext());
+                dialogBuilder.setTitle(R.string.dialog_unbind_gadget_title);
+                dialogBuilder.setMessage(R.string.dialog_unbind_gadget_message);
+                dialogBuilder.create().show();
+                return;
+            }
+
             mDiscoveredDevicesAdapter.remove(gadget);
             mSectionAdapter.notifyDataSetChanged();
             handleScanningInfoVisibility();
