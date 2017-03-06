@@ -238,7 +238,7 @@ public class ScanDeviceFragment extends ParentListFragment implements HumiGadget
         mDiscoveredDevicesAdapter.sortForRssi();
         mSectionAdapter.notifyDataSetChanged();
 
-        handleScanningInfoVisibility();
+        handleScanningInfoVisibility(false);
     }
 
     private boolean unbindGadgetIfBoundByDevice(final GadgetModel gadget) {
@@ -282,15 +282,24 @@ public class ScanDeviceFragment extends ParentListFragment implements HumiGadget
         }
         mSectionAdapter.notifyDataSetChanged();
 
-        handleScanningInfoVisibility();
+        handleScanningInfoVisibility(false);
     }
 
-    private void handleScanningInfoVisibility() {
-        if (mDiscoveredDevicesAdapter.isEmpty() && mScanInfoContainer.getVisibility() == View.GONE) {
+    private void handleScanningInfoVisibility(final boolean forceToggle) {
+        if (forceToggle) {
+            mScanInfoContainer.setVisibility(isScanInfoContainerVisible() ? View.GONE : View.VISIBLE);
+            return;
+        }
+
+        if (mDiscoveredDevicesAdapter.isEmpty() && !isScanInfoContainerVisible()) {
             mScanInfoContainer.setVisibility(View.VISIBLE);
-        } else if (!mDiscoveredDevicesAdapter.isEmpty() && mScanInfoContainer.getVisibility() == View.VISIBLE) {
+        } else if (!mDiscoveredDevicesAdapter.isEmpty() && isScanInfoContainerVisible()) {
             mScanInfoContainer.setVisibility(View.GONE);
         }
+    }
+
+    private boolean isScanInfoContainerVisible() {
+        return mScanInfoContainer.getVisibility() == View.VISIBLE;
     }
 
     @Override
@@ -325,7 +334,7 @@ public class ScanDeviceFragment extends ParentListFragment implements HumiGadget
 
             mDiscoveredDevicesAdapter.remove(gadget);
             mSectionAdapter.notifyDataSetChanged();
-            handleScanningInfoVisibility();
+            handleScanningInfoVisibility(false);
 
             showConnectionInProgressDialog(gadget.getAddress());
             RHTHumigadgetSensorManager.getInstance().connectToGadget(gadget.getAddress());
@@ -356,7 +365,7 @@ public class ScanDeviceFragment extends ParentListFragment implements HumiGadget
         mConnectedDevicesAdapter.clear();
         mConnectedDevicesAdapter.addAll(mHumiGadgetSensorManager.getConnectedDevices());
         mSectionAdapter.notifyDataSetChanged();
-        handleScanningInfoVisibility();
+        handleScanningInfoVisibility(false);
         mHumiGadgetSensorManager.setConnectionStateListener(this);
         startDeviceDiscovery();
     }
@@ -417,10 +426,16 @@ public class ScanDeviceFragment extends ParentListFragment implements HumiGadget
     public boolean onOptionsItemSelected(@NonNull final MenuItem item) {
         switch (item.getItemId()) {
             case R.id.scan_device_info:
-                stopDeviceDiscovery();
-                mDiscoveredDevicesAdapter.clear();
-                mSectionAdapter.notifyDataSetChanged();
-                handleScanningInfoVisibility();
+                if (isScanInfoContainerVisible()) {
+                    handleScanningInfoVisibility(true);
+                    startDeviceDiscovery();
+                } else {
+                    stopDeviceDiscovery();
+                    mDiscoveredDevicesAdapter.clear();
+                    mSectionAdapter.notifyDataSetChanged();
+                    handleScanningInfoVisibility(true);
+                }
+
                 return true;
         }
         return super.onOptionsItemSelected(item);

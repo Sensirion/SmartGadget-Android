@@ -5,7 +5,7 @@
     android:layout_height="wrap_content"
     android:fillViewport="true"
     android:orientation="vertical"
-    tools:context=".MainActivity$DashboardFragment"
+    tools:context=".view.MainActivity"
     tools:ignore="RtlHardcoded,RtlSymmetry,SpUsage">
 
     <RelativeLayout
