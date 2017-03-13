@@ -22,6 +22,7 @@ import com.sensirion.smartgadget.peripheral.rht_sensor.RHTSensorListener;
 import com.sensirion.smartgadget.peripheral.rht_sensor.external.RHTHumigadgetSensorManager;
 import com.sensirion.smartgadget.utils.Settings;
 import com.sensirion.smartgadget.utils.view.ParentListFragment;
+import com.sensirion.smartgadget.utils.view.PrivacyPolicyDialog;
 import com.sensirion.smartgadget.utils.view.SectionAdapter;
 import com.sensirion.smartgadget.utils.view.SmartGadgetRequirementDialog;
 import com.sensirion.smartgadget.view.MainActivity;
@@ -70,6 +71,8 @@ public class SmartgadgetPreferenceFragment extends ParentListFragment implements
     String USER_PREFERENCES_HEADER;
     @BindString(R.string.label_application_requirements)
     String APPLICATION_REQUIREMENTS_LABEL;
+    @BindString(R.string.label_privacy_policy)
+    String PRIVACY_POLICY_LABEL;
     @BindString(R.string.label_about)
     String ABOUT_PREFERENCE_LABEL;
     @BindString(R.string.header_app_information)
@@ -297,6 +300,7 @@ public class SmartgadgetPreferenceFragment extends ParentListFragment implements
         if (!RHTSensorFacade.getInstance().hasInternalRHTSensor()) {
             addApplicationRequirementsAdapter(appInformationAdapter);
         }
+        addPrivacyPolicyAdapter(appInformationAdapter);
         addShowAboutAdapter(appInformationAdapter);
         return appInformationAdapter;
     }
@@ -309,6 +313,16 @@ public class SmartgadgetPreferenceFragment extends ParentListFragment implements
             }
         };
         adapter.addPreference(APPLICATION_REQUIREMENTS_LABEL, null, clickListener);
+    }
+
+    private void addPrivacyPolicyAdapter(@NonNull final PreferenceAdapter adapter) {
+        final View.OnClickListener clickListener = new View.OnClickListener() {
+            @Override
+            public void onClick(@NonNull final View v) {
+                (new PrivacyPolicyDialog(getActivity())).show();
+            }
+        };
+        adapter.addPreference(PRIVACY_POLICY_LABEL, null, clickListener);
     }
 
     // TODO: Check with PM if still needed. Otherwise remove entirely

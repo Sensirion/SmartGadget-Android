@@ -27,6 +27,7 @@
     <string name="label_temperature_unit">Temperature Unit</string>
     <string name="label_glossary">Glossary</string>
     <string name="label_application_requirements">Application Requirements</string>
+    <string name="label_privacy_policy">Privacy Policy</string>
     <string name="label_about">About the App</string>
 
     <string-array name="array_temp_unit">
@@ -97,6 +98,7 @@
     <string name="label_on">ON</string>
     <string name="label_off">OFF</string>
     <string name="ok">OK</string>
+    <string name="got_it">Got it</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
     <string name="quit">Quit</string>
@@ -200,6 +202,14 @@
     <string name="requirements_text">This application requires a Sensirion SmartGadget in order to work.</string>
     <string name="requirements_url">https://www.sensirion.com/products/humidity-sensors/development-kit/</string>
     <string name="requirements_show_next_launch">Show on next launch</string>
+
+    <!--Privacy Policy Dialog-->
+    <string name="policy_title">Privacy Policy</string>
+    <string name="policy_text_1">Last update: March 15th, 2017\n\nSensirion AG designs products and tools that allow measuring and tracking of environmental data like temperature and humidity to provide users with insight about their environmental conditions. This privacy policy applies to the Sensirion Smart Gadget (“Device”) and the Sensirion Smart Gadget mobile application thereto (“App”).\n\nThe Device allows tracking of the environmental data temperature and humidity. These data are saved locally onto the Device. The Device has a Bluetooth Low Energy (BLE) module which – when switched on - allows other Bluetooth enabled devices in the vicinity to connect to the Device and show current measured values as well as download saved data.\n\nThe Sensirion App allows the user to connect a mobile phone or tablet to the Device and show current measured values as well as download saved data. In order to connect an Android mobile phone or tablet to a Device via BLE, Android demands turning on the location services and providing to the app access to location data. This is a general Android/BLE demand to allow scanning for nearby devices, independent of whether or not location data are used.</string>
+    <string name="policy_text_2">Sensirion does not collect, use, save, track or share your location data in any form, nor does Sensirion collect, use, save, track or share other personal data through the App.</string>
+    <string name="policy_text_contact_text">You can contact us for any questions or comments at </string>
+    <string name="policy_text_contact_email">info@sensirion.com</string>
+    <string name="policy_url">https://www.sensirion.com/privacy-policy</string>
 
     <!--Scanning Info-->
     <string name="scanning_help_title">Can\'t find your gadget?</string>
