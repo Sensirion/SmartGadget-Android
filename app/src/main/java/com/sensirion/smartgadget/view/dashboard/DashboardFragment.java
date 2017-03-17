@@ -27,9 +27,11 @@ import com.sensirion.smartgadget.peripheral.rht_sensor.internal.RHTInternalSenso
 import com.sensirion.smartgadget.utils.Converter;
 import com.sensirion.smartgadget.utils.DeviceModel;
 import com.sensirion.smartgadget.utils.Settings;
+import com.sensirion.smartgadget.utils.section_manager.SectionManagerMobile;
 import com.sensirion.smartgadget.utils.view.ParentFragment;
 import com.sensirion.smartgadget.view.MainActivity;
 import com.sensirion.smartgadget.view.dashboard.adapter.ConnectedDeviceAdapter;
+import com.sensirion.smartgadget.view.preference.SmartgadgetPreferenceFragment;
 
 import java.text.NumberFormat;
 import java.util.List;
@@ -73,6 +75,8 @@ public class DashboardFragment extends ParentFragment implements RHTSensorListen
     TextView mDewPointValueTextView;
     @BindView(R.id.dashboard_heat_index_value)
     TextView mHeatIndexValueTextView;
+    @BindView(R.id.button_find_gadget)
+    Button mFindGadgetButton;
 
     //Extracted attributes from the XML
     @BindBool(R.bool.is_tablet)
@@ -187,6 +191,20 @@ public class DashboardFragment extends ParentFragment implements RHTSensorListen
         mHeatIndexButton.setTypeface(typefaceNormal);
         prefs.edit().putInt(String.valueOf(mHeatIndexButton.getId()), BUTTON_STATE_HEAT_INDEX).commit();
         addButtonListener(mHeatIndexButton);
+
+        mFindGadgetButton.setTypeface(typefaceBold);
+        mFindGadgetButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Navigate to Smart Gadgets Scanning View
+                final MainActivity activity = (MainActivity) getParent();
+                if (activity != null) {
+                    activity.onMobileTabSelected(SectionManagerMobile.POSITION_SETTINGS,
+                            SmartgadgetPreferenceFragment.REMOTE_INSTRUCTION_OPEN_SCAN_FRAGMENT);
+                }
+
+            }
+        });
     }
 
     private void initListView() {

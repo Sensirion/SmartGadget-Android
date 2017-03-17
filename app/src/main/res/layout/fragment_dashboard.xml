@@ -1,33 +1,44 @@
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/dashboard_fragment"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:fillViewport="true"
-    android:orientation="vertical"
-    tools:context=".view.MainActivity"
-    tools:ignore="RtlHardcoded,RtlSymmetry,SpUsage">
+<ScrollView android:id="@+id/dashboard_fragment"
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:tools="http://schemas.android.com/tools"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fillViewport="true"
+            android:orientation="vertical"
+            tools:context=".view.MainActivity"
+            tools:ignore="RtlHardcoded,RtlSymmetry,SpUsage">
 
     <RelativeLayout
         android:id="@+id/dashboard_content_layout"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="@dimen/dashboard_lateral_margin"
-        android:layout_marginRight="@dimen/dashboard_lateral_margin"
-        android:padding="@dimen/dashboard_padding">
+        android:layout_height="match_parent">
+
+        <Button
+            android:id="@+id/button_find_gadget"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:background="@drawable/toggle_button_scan"
+            android:text="@string/find_your_smart_gadget"
+            android:textAllCaps="true"
+            android:textColor="@android:color/white"
+            android:textSize="16sp"
+            android:textStyle="bold"/>
 
         <Button
             android:id="@+id/dashboard_temperature_button"
             android:layout_width="match_parent"
             android:layout_height="@dimen/dashboard_button_height"
-            android:layout_marginTop="@dimen/dashboard_button_margin_top"
+            android:layout_marginEnd="@dimen/dashboard_padding"
+            android:layout_marginStart="@dimen/dashboard_padding"
+            android:layout_marginTop="@dimen/dashboard_button_first_margin_top"
             android:background="@drawable/button_released"
             android:drawableLeft="@drawable/temperature_icon"
             android:drawablePadding="@dimen/dashboard_padding"
             android:gravity="center_vertical"
             android:paddingLeft="@dimen/dashboard_button_padding_left"
             android:text="@string/label_t"
-            android:textSize="@dimen/dashboard_button_text_size" />
+            android:textSize="@dimen/dashboard_button_text_size"/>
 
         <TextView
             android:id="@+id/dashboard_temperature_value"
@@ -39,13 +50,15 @@
             android:layout_marginRight="@dimen/dashboard_button_text_margin_right"
             android:text="@string/label_empty_t"
             android:textIsSelectable="false"
-            android:textSize="@dimen/dashboard_button_text_size" />
+            android:textSize="@dimen/dashboard_button_text_size"/>
 
         <Button
             android:id="@+id/dashboard_humidity_button"
             android:layout_width="match_parent"
             android:layout_height="@dimen/dashboard_button_height"
             android:layout_below="@id/dashboard_temperature_button"
+            android:layout_marginEnd="@dimen/dashboard_padding"
+            android:layout_marginStart="@dimen/dashboard_padding"
             android:layout_marginTop="@dimen/dashboard_button_margin_top"
             android:background="@drawable/button_released"
             android:drawableLeft="@drawable/humidity_icon"
@@ -53,7 +66,7 @@
             android:gravity="center_vertical"
             android:paddingLeft="@dimen/dashboard_button_padding_left"
             android:text="@string/label_rh"
-            android:textSize="@dimen/dashboard_button_text_size" />
+            android:textSize="@dimen/dashboard_button_text_size"/>
 
         <TextView
             android:id="@+id/dashboard_humidity_value"
@@ -65,13 +78,15 @@
             android:layout_marginRight="@dimen/dashboard_button_text_margin_right"
             android:text="@string/label_empty_rh"
             android:textIsSelectable="false"
-            android:textSize="@dimen/dashboard_button_text_size" />
+            android:textSize="@dimen/dashboard_button_text_size"/>
 
         <Button
             android:id="@+id/dashboard_dew_point_button"
             android:layout_width="match_parent"
             android:layout_height="@dimen/dashboard_button_height"
             android:layout_below="@id/dashboard_humidity_button"
+            android:layout_marginEnd="@dimen/dashboard_padding"
+            android:layout_marginStart="@dimen/dashboard_padding"
             android:layout_marginTop="@dimen/dashboard_button_margin_top"
             android:background="@drawable/button_released"
             android:drawableLeft="@drawable/dew_point_icon"
@@ -79,7 +94,7 @@
             android:gravity="center_vertical"
             android:paddingLeft="@dimen/dashboard_button_padding_left"
             android:text="@string/label_dp"
-            android:textSize="@dimen/dashboard_button_text_size" />
+            android:textSize="@dimen/dashboard_button_text_size"/>
 
         <TextView
             android:id="@+id/dashboard_dew_point_value"
@@ -91,13 +106,15 @@
             android:layout_marginRight="@dimen/dashboard_button_text_margin_right"
             android:text="@string/label_empty_t"
             android:textIsSelectable="false"
-            android:textSize="@dimen/dashboard_button_text_size" />
+            android:textSize="@dimen/dashboard_button_text_size"/>
 
         <Button
             android:id="@+id/dashboard_heat_index_button"
             android:layout_width="match_parent"
             android:layout_height="@dimen/dashboard_button_height"
             android:layout_below="@id/dashboard_dew_point_button"
+            android:layout_marginEnd="@dimen/dashboard_padding"
+            android:layout_marginStart="@dimen/dashboard_padding"
             android:layout_marginTop="@dimen/dashboard_button_margin_top"
             android:background="@drawable/button_released"
             android:drawableLeft="@drawable/heat_index_icon"
@@ -105,7 +122,7 @@
             android:gravity="center_vertical"
             android:paddingLeft="@dimen/dashboard_button_padding_left"
             android:text="@string/label_hi"
-            android:textSize="@dimen/dashboard_button_text_size" />
+            android:textSize="@dimen/dashboard_button_text_size"/>
 
         <TextView
             android:id="@+id/dashboard_heat_index_value"
@@ -117,14 +134,14 @@
             android:layout_marginRight="@dimen/dashboard_button_text_margin_right"
             android:text="@string/label_empty_t"
             android:textIsSelectable="false"
-            android:textSize="@dimen/dashboard_button_text_size" />
+            android:textSize="@dimen/dashboard_button_text_size"/>
 
         <com.sensirion.smartgadget.utils.view.NestedListView
             android:id="@+id/dashboard_connected_device_nested_list_view"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@id/dashboard_heat_index_button"
-            android:layout_marginTop="@dimen/activity_vertical_margin" />
+            android:layout_marginTop="@dimen/activity_vertical_margin"/>
     </RelativeLayout>
 
 </ScrollView>

@@ -12,14 +12,15 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.sensirion.smartgadget.R;
 import com.sensirion.smartgadget.peripheral.rht_sensor.RHTSensorFacade;
 import com.sensirion.smartgadget.peripheral.rht_sensor.RHTSensorListener;
 import com.sensirion.smartgadget.peripheral.rht_sensor.external.RHTHumigadgetSensorManager;
 import com.sensirion.smartgadget.utils.Settings;
+import com.sensirion.smartgadget.utils.section_manager.SectionManagerMobile;
 import com.sensirion.smartgadget.utils.view.AboutDialog;
 import com.sensirion.smartgadget.utils.view.ParentListFragment;
 import com.sensirion.smartgadget.utils.view.PrivacyPolicyDialog;
@@ -30,13 +31,19 @@ import com.sensirion.smartgadget.view.device_management.ScanDeviceFragment;
 import com.sensirion.smartgadget.view.preference.adapter.PreferenceAdapter;
 
 import butterknife.BindString;
+import butterknife.BindView;
 import butterknife.ButterKnife;
 
 public class SmartgadgetPreferenceFragment extends ParentListFragment implements RHTSensorListener {
 
+    public static final int REMOTE_INSTRUCTION_OPEN_SCAN_FRAGMENT = 1;
+
     // Class name
     @NonNull
     private static final String TAG = SmartgadgetPreferenceFragment.class.getSimpleName();
+
+    @BindView(R.id.button_find_gadget)
+    Button mFindGadgetButton;
 
     // XML resources
     @BindString(R.string.typeface_condensed)
@@ -72,10 +79,6 @@ public class SmartgadgetPreferenceFragment extends ParentListFragment implements
     @Nullable
     private PreferenceAdapter mUserPreferencesAdapter;
 
-    // Last printed Toast
-    @Nullable
-    private Toast mLastAboutToast = null;
-
     @Override
     public void onResume() {
         super.onResume();
@@ -103,7 +106,37 @@ public class SmartgadgetPreferenceFragment extends ParentListFragment implements
         final View view = inflater.inflate(R.layout.fragment_smartgadget_list, container, false);
         ButterKnife.bind(this, view);
         initPreferencesList();
+
+        final AssetManager assets = getContext().getAssets();
+        final Typeface typefaceBold = Typeface.createFromAsset(assets, BOLD_TYPEFACE);
+        mFindGadgetButton.setTypeface(typefaceBold);
+        mFindGadgetButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openScanDeviceFragment();
+            }
+        });
+
         return view;
+    }
+
+    @Override
+    public void setMenuVisibility(boolean menuVisible) {
+        super.setMenuVisibility(menuVisible);
+        if (menuVisible) {
+            MainActivity activity = (MainActivity) getParent();
+            if (activity == null) {
+                return;
+            }
+            final int instruction = activity.getRemoteInstruction();
+            switch (instruction) {
+                case REMOTE_INSTRUCTION_OPEN_SCAN_FRAGMENT:
+                    openScanDeviceFragment();
+                    break;
+                default:
+                    break;
+            }
+        }
     }
 
     private void initPreferencesList() {
@@ -162,18 +195,22 @@ public class SmartgadgetPreferenceFragment extends ParentListFragment implements
         final View.OnClickListener clickListener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                getListView().setVisibility(View.GONE);
-                final MainActivity mainActivity = (MainActivity) getParent();
-                if (mainActivity == null) {
-                    Log.e(TAG, "refreshPreferenceAdapter.onClick -> getParent() returned null");
-                } else {
-                    mainActivity.changeFragment(new ScanDeviceFragment());
-                }
+                openScanDeviceFragment();
             }
         };
         mConnectionsAdapter.clear();
         mConnectionsAdapter.addPreference(title, null, clickListener);
         mConnectionsAdapter.notifyDataSetChanged();
+    }
+
+    private void openScanDeviceFragment() {
+        getListView().setVisibility(View.GONE);
+        final MainActivity mainActivity = (MainActivity) getParent();
+        if (mainActivity == null) {
+            Log.e(TAG, "refreshPreferenceAdapter.onClick -> getParent() returned null");
+        } else {
+            mainActivity.changeFragment(new ScanDeviceFragment());
+        }
     }
 
     @NonNull

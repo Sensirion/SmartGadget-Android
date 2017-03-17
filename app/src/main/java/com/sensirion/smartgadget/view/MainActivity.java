@@ -60,8 +60,9 @@ import butterknife.OnPageChange;
 import butterknife.Optional;
 
 public class MainActivity extends FragmentActivity implements View.OnTouchListener, RHTSensorListener {
-
     private static final String TAG = MainActivity.class.getSimpleName();
+    public static final int NO_REMOTE_INSTRUCTION = 0;
+    protected int mRemoteInstruction;
 
     // Attributes only used in mobile devices.
     @Nullable
@@ -307,7 +308,11 @@ public class MainActivity extends FragmentActivity implements View.OnTouchListen
         return view;
     }
 
-    private void onMobileTabSelected(final int position) {
+    public void onMobileTabSelected(final int position) {
+        onMobileTabSelected(position, MainActivity.NO_REMOTE_INSTRUCTION);
+    }
+
+    public void onMobileTabSelected(final int position, final int remoteInstruction) {
         if (mMobileViewPager == null) {
             Log.e(TAG, "initMobileActionBarWithTabs -> The mobile View Pager is null. (HINT -> ButterKnife.bind(this)");
             return;
@@ -325,8 +330,10 @@ public class MainActivity extends FragmentActivity implements View.OnTouchListen
             mIsChildScreen = false;
             mUserPreferencesModified = false;
         }
-        mMobileViewPager.setCurrentItem(position);
         mLastFragment = mSectionsPagerAdapter.getItem(position);
+        setRemoteInstruction(remoteInstruction);
+        mMobileViewPager.setCurrentItem(position);
+
         updateMobileTabState(position);
     }
 
@@ -582,5 +589,13 @@ public class MainActivity extends FragmentActivity implements View.OnTouchListen
                                    final float relativeHumidity,
                                    final String deviceAddress) {
         // Do nothing
+    }
+
+    public void setRemoteInstruction(int remoteInstruction) {
+        mRemoteInstruction = remoteInstruction;
+    }
+
+    public int getRemoteInstruction() {
+        return mRemoteInstruction;
     }
 }

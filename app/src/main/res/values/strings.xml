@@ -226,4 +226,5 @@
 
     <string name="dialog_phone_setup_location_title">Phone Setup</string>
     <string name="dialog_phone_setup_location_message">Location Services are needed to scan for nearby Smart Gadget devices. Location data are not saved or shared by the App.</string>
+    <string name="find_your_smart_gadget">Find your Smart Gadget</string>
 </resources>
