@@ -4,8 +4,6 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.view.View;
-import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 
@@ -16,20 +14,15 @@ import com.sensirion.smartgadget.utils.Settings;
  * Displays a {@link Dialog} showing a notice indicating that a Sensirion Smartgadget
  * is needed in order to use the application.
  */
-public class SmartGadgetRequirementDialog extends Dialog implements View.OnClickListener {
+public class SmartGadgetRequirementDialog extends GenericDialog {
 
     public SmartGadgetRequirementDialog(@NonNull final Activity activity) {
-        super(activity);
+        super(activity, R.layout.smartgadget_notice_dialog, R.string.requirements_title);
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setCancelable(false);
-        setTitle(R.string.requirements_title);
-        setContentView(R.layout.smartgadget_notice_dialog);
-        final Button smartgadgetRequiredButton = (Button) findViewById(R.id.requirements_button);
-        smartgadgetRequiredButton.setOnClickListener(this);
         final CheckBox mShowAgainCheckbox = (CheckBox) findViewById(R.id.requirements_checkbox);
         final boolean checked = Settings.getInstance().isSmartGadgetRequirementDisplayed();
         mShowAgainCheckbox.setChecked(checked);
@@ -40,16 +33,5 @@ public class SmartGadgetRequirementDialog extends Dialog implements View.OnClick
                 Settings.getInstance().setSmartGadgetWarningDisplayed(!isChecked);
             }
         });
-    }
-
-    @Override
-    public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.requirements_button:
-                dismiss();
-                break;
-            default:
-                break;
-        }
     }
 }

@@ -30,16 +30,6 @@
 
         <TextView
             android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:autoLink="web"
-            android:padding="16dp"
-            android:scaleType="center"
-            android:text="@string/policy_url"
-            android:textColor="@color/sensirion_green"
-            android:textSize="@dimen/text_default"/>
-
-        <TextView
-            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:paddingBottom="8dp"
             android:paddingEnd="16dp"
@@ -60,13 +50,25 @@
             android:textSize="16sp"
             android:textStyle="bold"/>
 
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:autoLink="web"
+            android:paddingEnd="16dp"
+            android:paddingStart="16dp"
+            android:scaleType="center"
+            android:text="@string/policy_url"
+            android:textColor="@color/sensirion_green"
+            android:textSize="@dimen/text_default"/>
+
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="0.1dp"
+            android:layout_marginTop="16dp"
             android:background="@color/background_light"/>
 
         <Button
-            android:id="@+id/privacy_policy_button"
+            android:id="@+id/close_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@drawable/button_dialog"

@@ -3,7 +3,6 @@ package com.sensirion.smartgadget.view.preference;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
-import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.graphics.Typeface;
 import android.os.Bundle;
@@ -21,6 +20,7 @@ import com.sensirion.smartgadget.peripheral.rht_sensor.RHTSensorFacade;
 import com.sensirion.smartgadget.peripheral.rht_sensor.RHTSensorListener;
 import com.sensirion.smartgadget.peripheral.rht_sensor.external.RHTHumigadgetSensorManager;
 import com.sensirion.smartgadget.utils.Settings;
+import com.sensirion.smartgadget.utils.view.AboutDialog;
 import com.sensirion.smartgadget.utils.view.ParentListFragment;
 import com.sensirion.smartgadget.utils.view.PrivacyPolicyDialog;
 import com.sensirion.smartgadget.utils.view.SectionAdapter;
@@ -29,12 +29,8 @@ import com.sensirion.smartgadget.view.MainActivity;
 import com.sensirion.smartgadget.view.device_management.ScanDeviceFragment;
 import com.sensirion.smartgadget.view.preference.adapter.PreferenceAdapter;
 
-import java.util.Calendar;
-
 import butterknife.BindString;
 import butterknife.ButterKnife;
-
-import static android.content.pm.PackageManager.NameNotFoundException;
 
 public class SmartgadgetPreferenceFragment extends ParentListFragment implements RHTSensorListener {
 
@@ -43,14 +39,6 @@ public class SmartgadgetPreferenceFragment extends ParentListFragment implements
     private static final String TAG = SmartgadgetPreferenceFragment.class.getSimpleName();
 
     // XML resources
-    @BindString(R.string.app_name)
-    String APP_NAME;
-    @BindString(R.string.app_platform)
-    String APP_PLATFORM;
-    @BindString(R.string.txt_about_url)
-    String APP_ABOUT_URL;
-    @BindString(R.string.txt_about_char_copyright)
-    String ABOUT_CHAR_COPYRIGHT;
     @BindString(R.string.typeface_condensed)
     String CONDENSED_TYPEFACE;
     @BindString(R.string.typeface_bold)
@@ -61,8 +49,6 @@ public class SmartgadgetPreferenceFragment extends ParentListFragment implements
     String DEVICES_PREFERENCE_LABEL;
     @BindString(R.string.label_glossary)
     String GLOSSARY_PREFERENCE_LABEL;
-    @BindString(R.string.about_sensirion_ag)
-    String ABOUT_SENSIRION_AG;
     @BindString(R.string.header_connections)
     String CONNECTION_HEADER;
     @BindString(R.string.label_temperature_unit)
@@ -346,48 +332,10 @@ public class SmartgadgetPreferenceFragment extends ParentListFragment implements
         final View.OnClickListener clickListener = new View.OnClickListener() {
             @Override
             public void onClick(@NonNull final View v) {
-                showAboutText();
+                (new AboutDialog(getActivity())).show();
             }
         };
         adapter.addPreference(ABOUT_PREFERENCE_LABEL, null, clickListener);
-    }
-
-    private void showAboutText() {
-        String versionName = null;
-        final PackageManager packageManager = getContext().getPackageManager();
-        final String packageName = getContext().getPackageName();
-        try {
-            versionName = packageManager.getPackageInfo(packageName, 0).versionName;
-        } catch (final NameNotFoundException e) {
-            Log.e(TAG, "showAboutText -> The following error was produced " +
-                    "when obtaining the version name -> ", e);
-        }
-
-        final StringBuilder aboutText = new StringBuilder();
-
-        final int deviceYear = Calendar.getInstance().get(Calendar.YEAR);
-        aboutText.append(APP_NAME)
-                .append(" ")
-                .append(APP_PLATFORM)
-                .append(" ")
-                .append(versionName)
-                .append(System.getProperty("line.separator"))
-                .append(APP_ABOUT_URL)
-                .append(System.getProperty("line.separator"))
-                .append(ABOUT_CHAR_COPYRIGHT)
-                .append(" ")
-                .append((deviceYear <= 2016 ? 2016 : deviceYear))
-                .append(" ")
-                .append(ABOUT_SENSIRION_AG);
-
-        synchronized (this) {
-            if (mLastAboutToast != null) {
-                mLastAboutToast.cancel();
-                mLastAboutToast = null;
-            }
-            mLastAboutToast = Toast.makeText(getParent(), aboutText.toString(), Toast.LENGTH_LONG);
-            mLastAboutToast.show();
-        }
     }
 
     @Override
