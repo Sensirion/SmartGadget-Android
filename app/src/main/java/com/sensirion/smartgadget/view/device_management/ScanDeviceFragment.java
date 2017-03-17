@@ -1,6 +1,5 @@
 package com.sensirion.smartgadget.view.device_management;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
@@ -32,6 +31,7 @@ import com.sensirion.smartgadget.peripheral.rht_sensor.external.GadgetModel;
 import com.sensirion.smartgadget.peripheral.rht_sensor.external.HumiGadgetConnectionStateListener;
 import com.sensirion.smartgadget.peripheral.rht_sensor.external.RHTHumigadgetSensorManager;
 import com.sensirion.smartgadget.persistence.device_name_database.DeviceNameDatabaseManager;
+import com.sensirion.smartgadget.utils.PhoneSettingsSetup;
 import com.sensirion.smartgadget.utils.view.ParentListFragment;
 import com.sensirion.smartgadget.utils.view.SectionAdapter;
 import com.sensirion.smartgadget.view.MainActivity;
@@ -168,10 +168,6 @@ public class ScanDeviceFragment extends ParentListFragment implements HumiGadget
 
         mScanToggleButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (lazyRequestEnableBLE()) {
-                    return;
-                }
-
                 if (isChecked) {
                     startDeviceDiscovery();
                 } else {
@@ -181,14 +177,6 @@ public class ScanDeviceFragment extends ParentListFragment implements HumiGadget
         });
         // start scanning immediately when fragment is active
         mScanToggleButton.performClick();
-    }
-
-    private boolean lazyRequestEnableBLE() {
-        if (getParent() != null && !RHTHumigadgetSensorManager.getInstance().bluetoothIsEnabled(getContext())) {
-            RHTHumigadgetSensorManager.getInstance().requestEnableBluetooth(getParent());
-            return true;
-        }
-        return false;
     }
 
     /*
@@ -305,10 +293,6 @@ public class ScanDeviceFragment extends ParentListFragment implements HumiGadget
     @Override
     public void onListItemClick(final ListView l, final View v, final int position, final long id) {
         super.onListItemClick(l, v, position, id);
-        if (lazyRequestEnableBLE()) {
-            return;
-        }
-
         stopDeviceDiscovery();
 
         final Object item = mSectionAdapter.getItem(position);
@@ -356,12 +340,8 @@ public class ScanDeviceFragment extends ParentListFragment implements HumiGadget
     @Override
     public void onResume() {
         super.onResume();
-        final Activity parent = getParent();
-        if (parent == null) {
-            Log.e(TAG, "onResume -> Received null parent, can't enable Bluetooth");
-        } else {
-            RHTHumigadgetSensorManager.getInstance().requestEnableBluetooth(parent);
-        }
+        PhoneSettingsSetup.lazyRequestPhoneSetup(getParent());
+
         mConnectedDevicesAdapter.clear();
         mConnectedDevicesAdapter.addAll(mHumiGadgetSensorManager.getConnectedDevices());
         mSectionAdapter.notifyDataSetChanged();

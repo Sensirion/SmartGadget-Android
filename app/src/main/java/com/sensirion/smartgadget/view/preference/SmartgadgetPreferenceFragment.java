@@ -173,20 +173,12 @@ public class SmartgadgetPreferenceFragment extends ParentListFragment implements
         final View.OnClickListener clickListener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (RHTHumigadgetSensorManager.getInstance().bluetoothIsEnabled(getContext())) {
-                    getListView().setVisibility(View.GONE);
-                    final MainActivity mainActivity = (MainActivity) getParent();
-                    if (mainActivity == null) {
-                        Log.e(TAG, "refreshPreferenceAdapter.onClick -> getParent() returned null");
-                    } else {
-                        mainActivity.changeFragment(new ScanDeviceFragment());
-                    }
-                    return;
-                }
-                Log.w(TAG, "initConnectionPreferences -> Bluetooth has to be active in" +
-                        " order to scan for new devices.");
-                if (getParent() != null) {
-                    RHTHumigadgetSensorManager.getInstance().requestEnableBluetooth(getParent());
+                getListView().setVisibility(View.GONE);
+                final MainActivity mainActivity = (MainActivity) getParent();
+                if (mainActivity == null) {
+                    Log.e(TAG, "refreshPreferenceAdapter.onClick -> getParent() returned null");
+                } else {
+                    mainActivity.changeFragment(new ScanDeviceFragment());
                 }
             }
         };

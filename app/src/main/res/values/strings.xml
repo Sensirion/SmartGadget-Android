@@ -215,4 +215,7 @@
 
     <string name="dialog_unbind_gadget_title">Inconsistent pairing state</string>
     <string name="dialog_unbind_gadget_message">Go to the bluetooth settings and remove the gadget from the list of paired devices before connecting within this app.\n</string>
+
+    <string name="dialog_phone_setup_location_title">Phone Setup</string>
+    <string name="dialog_phone_setup_location_message">Location Services are needed to scan for nearby Smart Gadget devices. Location data are not saved or shared by the App.</string>
 </resources>
