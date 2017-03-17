@@ -198,7 +198,7 @@
     <!-- Requirements dialog -->
     <string name="requirements_title">Sensirion SmartGadget Required</string>
     <string name="requirements_text">This application requires a Sensirion SmartGadget in order to work.</string>
-    <string name="requirements_url">https://www.sensirion.com/products/humidity-sensors/development-kit/</string>
+    <string name="requirements_url">https://www.sensirion.com/gadget/</string>
     <string name="requirements_show_next_launch">Show on next launch</string>
 
     <!--Privacy Policy Dialog-->
