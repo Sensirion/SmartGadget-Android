@@ -18,6 +18,7 @@ import com.sensirion.smartgadget.R;
 public final class PhoneSettingsSetup {
     private static final String LOCATION_PERMISSION = Manifest.permission.ACCESS_COARSE_LOCATION;
     private static final int PERMISSION_REQUEST_CODE = 123;
+    private static AlertDialog mDialog;
 
     private PhoneSettingsSetup() {
     }
@@ -79,7 +80,10 @@ public final class PhoneSettingsSetup {
     private static void showPermissionRequestWarning(final Activity activity, final String title,
                                                      final String contentMessage,
                                                      final DialogInterface.OnClickListener onClickListener) {
-        new AlertDialog.Builder(activity)
+        if (mDialog != null) {
+            mDialog.dismiss();
+        }
+        mDialog = new AlertDialog.Builder(activity)
                 .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
@@ -90,7 +94,7 @@ public final class PhoneSettingsSetup {
                 .setPositiveButton("OK", onClickListener)
                 .setTitle(title)
                 .setMessage(contentMessage)
-                .create()
-                .show();
+                .create();
+        mDialog.show();
     }
 }
