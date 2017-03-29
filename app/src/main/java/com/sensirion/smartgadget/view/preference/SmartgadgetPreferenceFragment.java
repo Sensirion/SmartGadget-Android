@@ -20,7 +20,6 @@ import com.sensirion.smartgadget.peripheral.rht_sensor.RHTSensorFacade;
 import com.sensirion.smartgadget.peripheral.rht_sensor.RHTSensorListener;
 import com.sensirion.smartgadget.peripheral.rht_sensor.external.RHTHumigadgetSensorManager;
 import com.sensirion.smartgadget.utils.Settings;
-import com.sensirion.smartgadget.utils.section_manager.SectionManagerMobile;
 import com.sensirion.smartgadget.utils.view.AboutDialog;
 import com.sensirion.smartgadget.utils.view.ParentListFragment;
 import com.sensirion.smartgadget.utils.view.PrivacyPolicyDialog;
@@ -30,6 +29,7 @@ import com.sensirion.smartgadget.view.MainActivity;
 import com.sensirion.smartgadget.view.device_management.ScanDeviceFragment;
 import com.sensirion.smartgadget.view.preference.adapter.PreferenceAdapter;
 
+import butterknife.BindBool;
 import butterknife.BindString;
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -44,6 +44,9 @@ public class SmartgadgetPreferenceFragment extends ParentListFragment implements
 
     @BindView(R.id.button_find_gadget)
     Button mFindGadgetButton;
+
+    @BindBool(R.bool.is_tablet)
+    boolean IS_TABLET;
 
     // XML resources
     @BindString(R.string.typeface_condensed)
@@ -110,6 +113,9 @@ public class SmartgadgetPreferenceFragment extends ParentListFragment implements
         final AssetManager assets = getContext().getAssets();
         final Typeface typefaceBold = Typeface.createFromAsset(assets, BOLD_TYPEFACE);
         mFindGadgetButton.setTypeface(typefaceBold);
+        if (IS_TABLET) {
+            mFindGadgetButton.setVisibility(View.GONE);
+        }
         mFindGadgetButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

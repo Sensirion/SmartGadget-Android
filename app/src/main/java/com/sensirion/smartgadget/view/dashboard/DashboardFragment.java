@@ -193,6 +193,9 @@ public class DashboardFragment extends ParentFragment implements RHTSensorListen
         addButtonListener(mHeatIndexButton);
 
         mFindGadgetButton.setTypeface(typefaceBold);
+        if (IS_TABLET) {
+            mFindGadgetButton.setVisibility(View.GONE);
+        }
         mFindGadgetButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

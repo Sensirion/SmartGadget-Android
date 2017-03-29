@@ -38,7 +38,7 @@ public class RHTSensorFacade implements HumiSensorListener {
     @NonNull
     public synchronized static RHTSensorFacade getInstance() {
         if (mInstance == null) {
-            throw new IllegalStateException(String.format("%s: getInstance -> The manager has already been initialized.", TAG));
+            throw new IllegalStateException(String.format("%s: getInstance -> The manager has not been initialized yet.", TAG));
         }
         return mInstance;
     }
