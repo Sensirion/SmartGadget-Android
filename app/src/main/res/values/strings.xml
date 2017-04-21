@@ -193,7 +193,8 @@
     <string name="inphone_rht_sensor">In-phone Sensor</string>
     <string name="manage_device_download_failed_retry">Failed… Retry</string>
     <string name="label_gadgetdownload">Logged Data</string>
-    <string name="manage_device_string_download">downloading…</string>
+    <string name="manage_device_download_progress">Downloading: %d%%</string>
+    <string name="manage_device_download_completed">Download completed</string>
 
     <!-- Requirements dialog -->
     <string name="requirements_title">Sensirion SmartGadget Required</string>

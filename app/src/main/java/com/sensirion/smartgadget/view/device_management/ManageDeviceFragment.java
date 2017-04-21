@@ -65,9 +65,11 @@ public class ManageDeviceFragment extends ParentFragment implements GadgetListen
     public static final int UNKNOWN_BATTERY_LEVEL = -1;
     private static final int UNKNOWN_LOGGING_INTERVAL = -1;
     private static final int[] RETRY_DELAYS_MS = {500, 1500, 3000, 5000}; // retry delays to update logger interval
+    private static final int DOWNLOAD_COMPLETE_RESET_DELAY_MS = 2000;
 
     private Gadget mSelectedGadget;
     private DeviceModel mSelectedDeviceModel;
+    private Runnable mDownloadButtonReset;
 
     // XML Resources
     @BindBool(R.bool.is_tablet)
@@ -182,6 +184,9 @@ public class ManageDeviceFragment extends ParentFragment implements GadgetListen
             assert mSelectedGadget != null;
             mSelectedGadget.removeListener(this);
         }
+        if (mDownloadButtonReset != null) {
+            mDownloadButtonText.removeCallbacks(mDownloadButtonReset);
+        }
         super.onPause();
     }
 
@@ -244,13 +249,24 @@ public class ManageDeviceFragment extends ParentFragment implements GadgetListen
 
     @Override
     public void onGadgetDownloadDataReceived(@NonNull Gadget gadget, @NonNull GadgetDownloadService service, @NonNull GadgetValue[] values, int progress) {
-        if (progress >= 100) {
-            initUiElements();
-        }
         mDownloadProgressBar.setProgressDrawable(mDownloadProgressDrawable);
         mDownloadProgressBar.setVisibility(View.VISIBLE);
-        mDownloadButtonText.setText(String.format(Locale.GERMAN, "Downloading: %d%%", progress));
+        mDownloadButtonText.setText(String.format(Locale.GERMAN, getString(R.string.manage_device_download_progress), progress));
         mDownloadProgressBar.setProgress(progress);
+
+        if (progress >= 100) {
+            initUiElements();
+            mDownloadButtonText.setEnabled(false);
+            mDownloadButtonText.setText(R.string.manage_device_download_completed);
+            mDownloadButtonReset = new Runnable() {
+                @Override
+                public void run() {
+                    mDownloadButtonText.setText(R.string.label_download);
+                    mDownloadButtonText.setEnabled(true);
+                }
+            };
+            mDownloadButtonText.postDelayed(mDownloadButtonReset, DOWNLOAD_COMPLETE_RESET_DELAY_MS);
+        }
     }
 
     @Override
@@ -353,7 +369,7 @@ public class ManageDeviceFragment extends ParentFragment implements GadgetListen
         if (downloadService == null) {
             return;
         }
-        mDownloadButtonText.setText(R.string.manage_device_string_download);
+        mDownloadButtonText.setText(String.format(Locale.GERMAN, getString(R.string.manage_device_download_progress), 0));
         downloadService.download();
     }
 
