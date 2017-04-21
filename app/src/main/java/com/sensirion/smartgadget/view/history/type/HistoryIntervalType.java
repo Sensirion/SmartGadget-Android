@@ -23,7 +23,7 @@ public enum HistoryIntervalType {
             0,
             R.string.label_10_minutes,
             HistoryDataLast10MinutesView.getInstance(),
-            10,
+            11,
             new MinutesElapsedTimeFormat(),
             R.string.graph_label_domain_min
     ),
@@ -31,7 +31,7 @@ public enum HistoryIntervalType {
             1,
             R.string.label_1_hour,
             HistoryDataLast1HourView.getInstance(),
-            10,
+            7,
             new MinutesElapsedTimeFormat(),
             R.string.graph_label_domain_min
     ),
@@ -55,7 +55,7 @@ public enum HistoryIntervalType {
             4,
             R.string.label_1_week,
             HistoryDataLast1WeekView.getInstance(),
-            7,
+            8,
             new DaysElapsedTimeFormat(),
             R.string.graph_label_domain_days
     );

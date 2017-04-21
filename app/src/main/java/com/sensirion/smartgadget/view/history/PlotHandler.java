@@ -15,7 +15,6 @@ import com.androidplot.xy.XYStepMode;
 import com.sensirion.smartgadget.R;
 import com.sensirion.smartgadget.utils.Converter;
 import com.sensirion.smartgadget.utils.Settings;
-import com.sensirion.smartgadget.utils.XmlFloatExtractor;
 import com.sensirion.smartgadget.utils.view.ColorManager;
 import com.sensirion.smartgadget.view.history.graph.HistoryPlot;
 import com.sensirion.smartgadget.view.history.graph.value_formatter.ShowNothingFormat;
@@ -110,7 +109,7 @@ public class PlotHandler {
         mDeviceSeries = series;
         updatePlotRangeFormat(context, type);
         updatePlotDomainFormat(context, interval);
-        updatePlot(context);
+        updatePlot();
         Log.i(TAG, "updateSeries -> Series where updated, graph was updated.");
     }
 
@@ -148,7 +147,7 @@ public class PlotHandler {
         mViewPlot.setRangeLabel(fixedHumidityString);
     }
 
-    private void updatePlot(@NonNull final Context context) {
+    private void updatePlot() {
         boolean validSeriesFound = false;
         long biggestTimestampSeries = 0;
         for (final SimpleXYSeries deviceSeries : mDeviceSeries) {
@@ -166,14 +165,13 @@ public class PlotHandler {
 
             validSeriesFound = true;
         }
-        adjustGraphFormat(context, biggestTimestampSeries, validSeriesFound);
+        adjustGraphFormat(biggestTimestampSeries, validSeriesFound);
     }
 
-    private void adjustGraphFormat(@NonNull final Context context,
-                                   final long biggestTimestampSeries,
+    private void adjustGraphFormat(final long biggestTimestampSeries,
                                    final boolean validSeriesFound) {
         if (validSeriesFound) {
-            adjustGraphBoundaries(context, biggestTimestampSeries);
+            adjustGraphBoundaries(biggestTimestampSeries);
         } else {
             mViewPlot.setRangeValueFormat(new ShowNothingFormat());
             mViewPlot.setDomainValueFormat(new ShowNothingFormat());
@@ -298,7 +296,7 @@ public class PlotHandler {
     private void cleanSeries() {
         mDeviceSeries.clear();
 
-        /** FIXME Change plot update approach.
+        /* FIXME Change plot update approach.
          *
          * Memory leak in the XYPlot element is caused by incorrect SimpleXYSeries handling.
          * The solution below is a workaround, not a fix, since it solves the OOM problem, but
@@ -324,9 +322,8 @@ public class PlotHandler {
          * http://androidplot.com/docs/dynamically-plotting-sensor-data/
          * http://androidplot.com/docs/a-dynamic-xy-plot/
          */
-        Iterator<XYSeries> seriesIterator = mViewPlot.getSeriesSet().iterator();
-        while (seriesIterator.hasNext()) {
-            SimpleXYSeries setElement = (SimpleXYSeries) seriesIterator.next();
+        for (XYSeries xySeries : mViewPlot.getSeriesSet()) {
+            SimpleXYSeries setElement = (SimpleXYSeries) xySeries;
             while (setElement.size() > 0) {
                 setElement.removeLast();
             }
@@ -360,71 +357,51 @@ public class PlotHandler {
         return true;
     }
 
-    private void adjustGraphBoundaries(@NonNull final Context context, final long timestampMillis) {
-        adjustRangeBoundaries(context);
+    private void adjustGraphBoundaries(final long timestampMillis) {
+        adjustRangeBoundaries();
         adjustDomainBoundaries(timestampMillis);
         mViewPlot.redraw();
     }
 
-    private void adjustRangeBoundaries(@NonNull final Context context) {
-        final double boundaryStep = getStep(context);
+    private void adjustRangeBoundaries() {
 
-        double minRangeValue = getMinStep(boundaryStep);
-        double maxRangeValue = getMaxStep(boundaryStep);
-
-        mViewPlot.setRangeLowerBoundary(minRangeValue, BoundaryMode.FIXED);
-        mViewPlot.setRangeUpperBoundary(maxRangeValue, BoundaryMode.FIXED);
-    }
-
-    private double getStep(@NonNull final Context context) {
-        final float graphMargin = XmlFloatExtractor.getFloatValueFromId(context, R.dimen.history_graph_top_bottom_margin);
-
-        final double minimumStep = getMinimumBoundariesStep(context);
-        double boundaryStep = (mRangeValueMax - mRangeValueMin) * (1 - graphMargin);
-        if (boundaryStep == 0) {
-            boundaryStep = (mRangeValueMax < 0) ? mRangeValueMax * 0.001 : mRangeValueMax * 1.001;
+        double delta = mRangeValueMax - mRangeValueMin;
+        int roundTo = 5;
+        if (delta < 1) {
+            roundTo = 1;
+        } else if (delta < 2) {
+            roundTo = 2;
         }
 
-        if (boundaryStep < minimumStep) {
-            return minimumStep;
-        }
-        return boundaryStep;
+        int minValueRounded = roundDown(mRangeValueMin, roundTo);
+        int maxValueRounded = roundUp(mRangeValueMax, roundTo);
+
+        mViewPlot.setRangeLowerBoundary(minValueRounded, BoundaryMode.FIXED);
+        mViewPlot.setRangeUpperBoundary(maxValueRounded, BoundaryMode.FIXED);
     }
 
-    private double getMinStep(final double boundaryStep) {
-        double minRangeValue = mRangeValueMin - boundaryStep;
-
-        if (mLastUnit == HistoryUnitType.HUMIDITY) {
-
-            if (minRangeValue < MIN_PLOT_HUMIDITY) {
-                return MIN_PLOT_HUMIDITY;
-            }
-            if (minRangeValue > MAX_PLOT_HUMIDITY - MIN_PLOT_SEPARATION) {
-                return MAX_PLOT_HUMIDITY - MIN_PLOT_SEPARATION;
-            }
-        }
-        return minRangeValue;
+    /**
+     * Rounds a double to the next lower multiple of a specified integer
+     *
+     * @param n number to be rounded
+     * @param r multiple
+     * @return The next lower multiple of r
+     */
+    private int roundDown(double n, int r) {
+        int rounded = (int) Math.floor(n);
+        return rounded / r * r;
     }
 
-    private double getMaxStep(final double boundaryStep) {
-        double maxRangeStep = mRangeValueMin + boundaryStep;
-
-        if (mLastUnit == HistoryUnitType.HUMIDITY) {
-
-            if (maxRangeStep < MIN_PLOT_HUMIDITY + MIN_PLOT_SEPARATION) {
-                return MIN_PLOT_HUMIDITY + MIN_PLOT_SEPARATION;
-            }
-            if (maxRangeStep > MAX_PLOT_HUMIDITY) {
-                return MAX_PLOT_HUMIDITY;
-            }
-        }
-        return maxRangeStep;
-    }
-
-    private double getMinimumBoundariesStep(@NonNull final Context context) {
-        final int rangeLabels = DEFAULT_NUMBER_RANGE_LABELS;
-        final float minimumGraphResolution = mLastUnit.getMinimumGraphResolution(context);
-        return (rangeLabels * minimumGraphResolution) / 2;
+    /**
+     * Rounds a double to the next higher multiple of a specified integer
+     *
+     * @param n number to be rounded
+     * @param r multiple
+     * @return The next higher multiple of r
+     */
+    private int roundUp(double n, int r) {
+        int rounded = (int) Math.ceil(n);
+        return rounded / r * r + ((rounded % r) > 0 ? r : 0);
     }
 
     /**

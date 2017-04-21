@@ -3,7 +3,7 @@
 
     <color name="history_graph_view_bar_color">#ff0094ff</color>
     <integer name="history_graph_view_default_num_domain_labels">11</integer>
-    <integer name="history_graph_view_num_default_range_labels">10</integer>
+    <integer name="history_graph_view_num_default_range_labels">11</integer>
 
     <!-- Number representation settings in labels-->
     <string name="history_format_resistance_label">0.00000E0</string>
@@ -20,8 +20,8 @@
 
     <!-- format -->
     <string name="history_temperature_decimal_format_celsius">0.0</string>
-    <string name="history_temperature_decimal_format_fahrenheit">0</string>
-    <string name="history_humidity_decimal_format">0</string>
+    <string name="history_temperature_decimal_format_fahrenheit">0.0</string>
+    <string name="history_humidity_decimal_format">0.0</string>
 
     <!-- separation -->
     <integer name="history_graph_threshold_time_representation_ms">15000</integer>
