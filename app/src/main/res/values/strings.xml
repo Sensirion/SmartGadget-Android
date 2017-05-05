@@ -134,8 +134,10 @@
     <!-- ManageDeviceFragment -->
     <string name="label_details">Details</string>
     <string name="label_batteryLevel">Battery</string>
+    <string name="label_battery_loading">Loading…</string>
     <string name="label_gadgetName">Gadget name</string>
     <string name="label_loggingInterval">Logging Interval</string>
+    <string name="label_logging_interval_updating">Updating…</string>
     <string name="label_gadgetLogging">Logging</string>
     <string name="label_disconnect">Disconnect</string>
     <string name="label_downloading">Downloading </string>

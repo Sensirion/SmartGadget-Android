@@ -322,6 +322,11 @@ public class RHTHumigadgetSensorManager implements GadgetManagerCallback, Gadget
     }
 
     @Override
+    public void onSetLoggerIntervalSuccess(@NonNull Gadget gadget) {
+        // Ignore
+    }
+
+    @Override
     public void onDownloadFailed(@NonNull final Gadget gadget,
                                  @NonNull final GadgetDownloadService service) {
         Log.w(TAG, String.format("Failed to perform download from gadget %s", gadget.getAddress()));

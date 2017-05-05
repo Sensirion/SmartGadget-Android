@@ -10,14 +10,12 @@ import android.content.res.ColorStateList;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -64,7 +62,6 @@ public class ManageDeviceFragment extends ParentFragment implements GadgetListen
     private static final String TAG = ManageDeviceFragment.class.getSimpleName();
     public static final int UNKNOWN_BATTERY_LEVEL = -1;
     private static final int UNKNOWN_LOGGING_INTERVAL = -1;
-    private static final int[] RETRY_DELAYS_MS = {500, 1500, 3000, 5000}; // retry delays to update logger interval
     private static final int DOWNLOAD_COMPLETE_RESET_DELAY_MS = 2000;
 
     private Gadget mSelectedGadget;
@@ -205,30 +202,6 @@ public class ManageDeviceFragment extends ParentFragment implements GadgetListen
     }
 
     /*
-     * Options Menu
-     */
-
-    @Override
-    public void onCreateOptionsMenu(@NonNull final Menu menu, @NonNull final MenuInflater inflater) {
-        menu.clear();
-        inflater.inflate(R.menu.refresh_action_bar, menu);
-        super.onCreateOptionsMenu(menu, inflater);
-    }
-
-    public boolean onOptionsItemSelected(@NonNull final MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.scan_device_refresh:
-                if (isDownloading(mSelectedGadget)) {
-                    return false; // don't refresh while downloading
-                }
-                mSelectedGadget.refresh();
-                initUiElements();
-                return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
-    /*
      * Implementation of {@link GadgetListener}
      */
 
@@ -244,7 +217,9 @@ public class ManageDeviceFragment extends ParentFragment implements GadgetListen
 
     @Override
     public void onGadgetValuesReceived(@NonNull Gadget gadget, @NonNull GadgetService service, @NonNull GadgetValue[] values) {
-        // ignore
+        if (service instanceof BatteryService) {
+            updateBatteryLevel();
+        }
     }
 
     @Override
@@ -255,8 +230,14 @@ public class ManageDeviceFragment extends ParentFragment implements GadgetListen
         mDownloadProgressBar.setProgress(progress);
 
         if (progress >= 100) {
-            initUiElements();
+            mDownloadProgressBar.setVisibility(View.GONE);
             mDownloadButtonText.setEnabled(false);
+            if (isLoggingStateEditable(gadget)) {
+                mLoggingToggle.setEnabled(true);
+                mLoggingIntervalButton.setEnabled(!mLoggingToggle.isChecked());
+            } else {
+                mLoggingIntervalButton.setEnabled(true);
+            }
             mDownloadButtonText.setText(R.string.manage_device_download_completed);
             mDownloadButtonReset = new Runnable() {
                 @Override
@@ -272,6 +253,19 @@ public class ManageDeviceFragment extends ParentFragment implements GadgetListen
     @Override
     public void onSetGadgetLoggingEnabledFailed(@NonNull Gadget gadget, @NonNull GadgetDownloadService service) {
         initUiElements();
+    }
+
+    @Override
+    public void onSetLoggerIntervalSuccess(@NonNull final Gadget gadget){
+        final int valueInMilliseconds = getLoggerInterval(gadget);
+        if (valueInMilliseconds == UNKNOWN_LOGGING_INTERVAL) {
+            return;
+        }
+        final int intervalSeconds = valueInMilliseconds / Interval.ONE_SECOND.getNumberMilliseconds();
+        mLoggingIntervalButton.setText(new TimeFormatter(intervalSeconds).getShortTime(getContext().getApplicationContext()));
+        if(!isDownloading(gadget)){
+            mLoggingIntervalButton.setEnabled(true);
+        }
     }
 
     @Override
@@ -292,41 +286,14 @@ public class ManageDeviceFragment extends ParentFragment implements GadgetListen
      * Manage Gadget Methods
      */
 
-    private void updateIntervalDelayed(@NonNull final Gadget gadget, final int expectedInterval, final int delay_index) {
-        // Recursive stop condition
-        if (delay_index >= RETRY_DELAYS_MS.length)
-            return;
-
-        // update view with a small delay
-        final int delay = RETRY_DELAYS_MS[delay_index];
-        final Handler handler = new Handler();
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                if (mSelectedGadget != gadget) {
-                    return; // gadget changed
-                }
-
-                int interval = getLoggerInterval(gadget);
-                if (interval == expectedInterval) {
-                    initIntervalChooser();
-                } else {
-                    updateIntervalDelayed(gadget, expectedInterval, delay_index + 1);
-                }
-            }
-        }, delay);
-    }
-
     private void setLoggerInterval(@NonNull final Gadget gadget, final int valueInMilliseconds) {
         final GadgetDownloadService downloadService = getDownloadService(gadget);
         if (downloadService == null) {
             return;
         }
-
-        /* TODO (29.11.2016) If libsmartgadget would provide a onSetLoggerIntervalSuccess method we would not have to try several times */
-        if (downloadService.setLoggerInterval(valueInMilliseconds)) {
-            updateIntervalDelayed(gadget, valueInMilliseconds, 0);
-        }
+        downloadService.setLoggerInterval(valueInMilliseconds);
+        mLoggingIntervalButton.setEnabled(false);
+        mLoggingIntervalButton.setText(R.string.label_logging_interval_updating);
     }
 
     private int getLoggerInterval(Gadget gadget) {
@@ -526,13 +493,6 @@ public class ManageDeviceFragment extends ParentFragment implements GadgetListen
 
     private void initBatteryBar() {
         updateBatteryLevel();
-        mBatteryBar.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(@NonNull View view, MotionEvent motionEvent) {
-                updateBatteryLevel();
-                return view.performClick();
-            }
-        });
     }
 
     private void initDownloadButton() {
@@ -564,7 +524,8 @@ public class ManageDeviceFragment extends ParentFragment implements GadgetListen
     private void updateBatteryLevel() {
         final int batteryLevel = getBatteryLevel(mSelectedGadget);
         if (batteryLevel == UNKNOWN_BATTERY_LEVEL) {
-            mBatteryLevelLayout.setVisibility(View.GONE);
+            mBatteryBar.setVisibility(View.GONE);
+            mBatteryLevelValue.setText(R.string.label_battery_loading);
         } else {
             mBatteryLevelLayout.setVisibility(View.VISIBLE);
             mBatteryLevelValue.setText(String.format(Locale.GERMAN, "%d%%", batteryLevel));
@@ -577,6 +538,7 @@ public class ManageDeviceFragment extends ParentFragment implements GadgetListen
             } else {
                 mBatteryLevelValue.setTextColor(mColorRed);
             }
+            mBatteryBar.setVisibility(View.VISIBLE);
             mBatteryBar.setProgress(batteryLevel);
             mBatteryBar.setEnabled(false);
         }

@@ -195,25 +195,6 @@ public class ScanDeviceFragment extends ParentListFragment implements HumiGadget
     private void updateScanButtonsState(final boolean scanning) {
         mScanToggleButton.setBackgroundResource(R.drawable.toggle_button_scan);
         mScanToggleButton.setChecked(scanning);
-        setRefreshActionButtonState(scanning);
-    }
-
-    /**
-     * Shows or hides the refresh button in dependence if it's scanning or not.
-     *
-     * @param refreshing <code>true</code> for making it visible - <code>false</code> otherwise.
-     */
-    private void setRefreshActionButtonState(final boolean refreshing) {
-        if (mOptionsMenu != null) {
-            final MenuItem refreshItem = mOptionsMenu.findItem(R.id.scan_device_refresh);
-            if (refreshItem != null) {
-                if (refreshing) {
-                    refreshItem.setActionView(R.layout.actionbar_indeterminate_progress);
-                } else {
-                    refreshItem.setActionView(null);
-                }
-            }
-        }
     }
 
     /*
@@ -399,7 +380,6 @@ public class ScanDeviceFragment extends ParentListFragment implements HumiGadget
         menu.clear();
         mOptionsMenu = menu;
         inflater.inflate(R.menu.info_action_bar, menu);
-        setRefreshActionButtonState(true);
         super.onCreateOptionsMenu(menu, inflater);
     }
 
