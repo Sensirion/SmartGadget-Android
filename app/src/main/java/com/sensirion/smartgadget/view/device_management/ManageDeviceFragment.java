@@ -112,6 +112,8 @@ public class ManageDeviceFragment extends ParentFragment implements GadgetListen
     Switch mLoggingToggle;
     @BindView(R.id.manage_device_battery_bar_layout)
     RelativeLayout mBatteryLevelLayout;
+    @BindView(R.id.manage_device_gadget_logging_layout)
+    RelativeLayout mLoggingLayout;
     @BindView(R.id.manage_device_download_progress)
     TextView mDownloadButtonText;
     @BindView(R.id.manage_device_download_progress_bar)
@@ -486,8 +488,7 @@ public class ManageDeviceFragment extends ParentFragment implements GadgetListen
                 }
             });
         } else {
-            mLoggingToggle.setEnabled(false);
-            mLoggingToggle.setChecked(isDownloadingEnabled(mSelectedGadget));
+            mLoggingLayout.setVisibility(View.GONE);
         }
     }
 
