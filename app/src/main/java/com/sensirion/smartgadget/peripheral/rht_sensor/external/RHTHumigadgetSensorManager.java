@@ -332,6 +332,18 @@ public class RHTHumigadgetSensorManager implements GadgetManagerCallback, Gadget
         Log.w(TAG, String.format("Failed to perform download from gadget %s", gadget.getAddress()));
     }
 
+    @Override
+    public void onDownloadCompleted(@NonNull final Gadget gadget,
+                                    @NonNull final GadgetDownloadService service) {
+        // Ignore
+    }
+
+    @Override
+    public void onDownloadNoData(@NonNull final Gadget gadget,
+                                 @NonNull final GadgetDownloadService service){
+        Log.w(TAG, String.format("No data available to download for gadget %s", gadget.getAddress()));
+    }
+
     /*
      * Private Helpers
      */

@@ -194,7 +194,9 @@
     <!-- Default Sensor Names -->
     <string name="inphone_rht_sensor">In-phone Sensor</string>
     <string name="manage_device_download_failed_retry">Failed… Retry</string>
+    <string name="manage_device_download_no_data">No data available</string>
     <string name="label_gadgetdownload">Logged Data</string>
+    <string name="manage_device_download_start">Starting download…</string>
     <string name="manage_device_download_progress">Downloading: %d%%</string>
     <string name="manage_device_download_completed">Download completed</string>
 

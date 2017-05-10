@@ -14,8 +14,6 @@ import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -227,29 +225,8 @@ public class ManageDeviceFragment extends ParentFragment implements GadgetListen
     @Override
     public void onGadgetDownloadDataReceived(@NonNull Gadget gadget, @NonNull GadgetDownloadService service, @NonNull GadgetValue[] values, int progress) {
         mDownloadProgressBar.setProgressDrawable(mDownloadProgressDrawable);
-        mDownloadProgressBar.setVisibility(View.VISIBLE);
         mDownloadButtonText.setText(String.format(Locale.GERMAN, getString(R.string.manage_device_download_progress), progress));
         mDownloadProgressBar.setProgress(progress);
-
-        if (progress >= 100) {
-            mDownloadProgressBar.setVisibility(View.GONE);
-            mDownloadButtonText.setEnabled(false);
-            if (isLoggingStateEditable(gadget)) {
-                mLoggingToggle.setEnabled(true);
-                mLoggingIntervalButton.setEnabled(!mLoggingToggle.isChecked());
-            } else {
-                mLoggingIntervalButton.setEnabled(true);
-            }
-            mDownloadButtonText.setText(R.string.manage_device_download_completed);
-            mDownloadButtonReset = new Runnable() {
-                @Override
-                public void run() {
-                    mDownloadButtonText.setText(R.string.label_download);
-                    mDownloadButtonText.setEnabled(true);
-                }
-            };
-            mDownloadButtonText.postDelayed(mDownloadButtonReset, DOWNLOAD_COMPLETE_RESET_DELAY_MS);
-        }
     }
 
     @Override
@@ -278,10 +255,46 @@ public class ManageDeviceFragment extends ParentFragment implements GadgetListen
 
     @Override
     public void onDownloadFailed(@NonNull Gadget gadget, @NonNull GadgetDownloadService service) {
-        initUiElements();
-        mDownloadProgressBar.setVisibility(View.GONE);
-        mDownloadButtonText.setText(R.string.manage_device_download_failed_retry);
         mDownloadButtonText.setTextColor(mColorOrange);
+        resetAfterDownload(isLoggingStateEditable(gadget), R.string.manage_device_download_failed_retry);
+    }
+
+    @Override
+    public void onDownloadCompleted(@NonNull Gadget gadget, @NonNull GadgetDownloadService service) {
+        resetAfterDownload(isLoggingStateEditable(gadget), R.string.manage_device_download_completed);
+    }
+
+    @Override
+    public void onDownloadNoData(@NonNull final Gadget gadget, @NonNull final GadgetDownloadService service) {
+        mDownloadButtonText.setTextColor(mColorOrange);
+        resetAfterDownload(isLoggingStateEditable(gadget), R.string.manage_device_download_no_data);
+    }
+
+    /*
+     * Private helpers
+     */
+
+    private void resetAfterDownload(boolean isLoggingStateEditable, int stringId) {
+        mDownloadProgressBar.setProgress(0);
+        mDownloadButtonText.setText(stringId);
+
+        if (isLoggingStateEditable) {
+            mLoggingToggle.setEnabled(true);
+            mLoggingIntervalButton.setEnabled(!mLoggingToggle.isChecked());
+        } else {
+            mLoggingIntervalButton.setEnabled(true);
+        }
+
+        mDownloadButtonReset = new Runnable() {
+            @Override
+            public void run() {
+                mDownloadProgressBar.setVisibility(View.GONE);
+                mDownloadButtonText.setText(R.string.label_download);
+                mDownloadButtonText.setEnabled(true);
+                mDownloadButtonText.setTextColor(mDeviceButtonColors);
+            }
+        };
+        mDownloadButtonText.postDelayed(mDownloadButtonReset, DOWNLOAD_COMPLETE_RESET_DELAY_MS);
     }
 
     /*
@@ -338,7 +351,9 @@ public class ManageDeviceFragment extends ParentFragment implements GadgetListen
         if (downloadService == null) {
             return;
         }
-        mDownloadButtonText.setText(String.format(Locale.GERMAN, getString(R.string.manage_device_download_progress), 0));
+        mDownloadButtonText.setText(R.string.manage_device_download_start);
+        mDownloadProgressBar.setProgress(0);
+        mDownloadProgressBar.setVisibility(View.VISIBLE);
         downloadService.download();
     }
 
