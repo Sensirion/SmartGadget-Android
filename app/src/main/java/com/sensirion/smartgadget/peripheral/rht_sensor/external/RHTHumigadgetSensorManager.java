@@ -194,20 +194,6 @@ public class RHTHumigadgetSensorManager implements GadgetManagerCallback, Gadget
     }
 
     /**
-     * Runtime request for ACCESS_FINE_LOCATION. This is required on Android 6.0 and higher in order
-     * to perform BLE scans.
-     *
-     * @param requestingActivity The activity requesting the permission.
-     * @param requestCode        The request code used to deliver the user feedback to the calling
-     *                           activity.
-     */
-    @SuppressWarnings("unused")
-    public void requestScanningPermission(@NonNull final Activity requestingActivity,
-                                          final int requestCode) {
-        BLEUtility.requestScanningPermission(requestingActivity, requestCode);
-    }
-
-    /**
      * Enables bluetooth in case it's disconnected.
      *
      * @param activity of the activity. Can't be <code>null</code>

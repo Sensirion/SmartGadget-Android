@@ -16,7 +16,6 @@ import com.sensirion.libsmartgadget.utils.BLEUtility;
 import com.sensirion.smartgadget.R;
 
 public final class PhoneSettingsSetup {
-    private static final String LOCATION_PERMISSION = Manifest.permission.ACCESS_COARSE_LOCATION;
     private static final int PERMISSION_REQUEST_CODE = 123;
     private static AlertDialog mDialog;
 
@@ -28,8 +27,7 @@ public final class PhoneSettingsSetup {
     }
 
     public static boolean isLocationPermitted(final Context context) {
-        return ContextCompat.checkSelfPermission(context, LOCATION_PERMISSION)
-                == PackageManager.PERMISSION_GRANTED;
+        return BLEUtility.hasScanningPermission(context);
     }
 
     public static boolean isLocationEnabled(final Context context) {
@@ -57,10 +55,7 @@ public final class PhoneSettingsSetup {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             dialog.dismiss();
-                            if (!isLocationPermitted(activity.getApplicationContext())) {
-                                ActivityCompat.requestPermissions(activity,
-                                        new String[]{LOCATION_PERMISSION}, PERMISSION_REQUEST_CODE);
-                            }
+                            BLEUtility.requestScanningPermission(activity, PERMISSION_REQUEST_CODE);
                             if (!isLocationEnabled(activity.getApplicationContext())) {
                                 activity.startActivity(new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS));
                             }
