@@ -3,7 +3,7 @@
           xmlns:android="http://schemas.android.com/apk/res/android"
           xmlns:tools="http://schemas.android.com/tools"
           android:versionCode="95"
-          android:versionName="1.8.6-SNAPSHOT">
+          android:versionName="1.8.6">
 
     <uses-feature
         android:name="android.hardware.bluetooth_le"
