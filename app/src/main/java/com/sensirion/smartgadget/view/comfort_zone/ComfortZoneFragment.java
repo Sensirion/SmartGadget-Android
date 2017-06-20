@@ -34,7 +34,6 @@ import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
 
-import butterknife.BindColor;
 import butterknife.BindInt;
 import butterknife.BindString;
 import butterknife.BindView;
@@ -48,9 +47,6 @@ import static com.sensirion.smartgadget.utils.XmlFloatExtractor.getFloatValueFro
 public class ComfortZoneFragment extends ParentFragment implements OnTouchListener, RHTSensorListener, SharedPreferences.OnSharedPreferenceChangeListener {
 
     private static final String TAG = ComfortZoneFragment.class.getSimpleName();
-
-    @BindString(R.string.graph_label_relative_humidity)
-    String GRAPH_LABEL_RELATIVE_HUMIDITY;
 
     @BindInt(R.integer.comfort_zone_min_y_axis_value)
     int GRAPH_MIN_Y_VALUE;
@@ -76,18 +72,6 @@ public class ComfortZoneFragment extends ParentFragment implements OnTouchListen
     @BindString(R.string.graph_label_temperature_fahrenheit)
     String GRAPH_X_LABEL_FAHRENHEIT;
 
-    @BindInt(R.integer.comfort_zone_plot_view_left_padding)
-    int GRAPH_LEFT_PADDING;
-
-    @BindInt(R.integer.comfort_zone_plot_view_right_padding)
-    int GRAPH_RIGHT_PADDING;
-
-    @BindInt(R.integer.comfort_zone_plot_view_bottom_padding)
-    int GRAPH_BOTTOM_PADDING;
-
-    @BindColor(R.color.sensirion_grey_dark)
-    int SENSIRION_GREY_DARK;
-
     @BindView(R.id.plotview)
     XyPlotView mPlotView;
 
@@ -102,15 +86,6 @@ public class ComfortZoneFragment extends ParentFragment implements OnTouchListen
 
     @BindView(R.id.textview_bottom)
     TextView mTextViewBottom;
-
-    @BindInt(R.integer.comfort_zone_temperature_humidity_value_text_size_graph)
-    int TEMPERATURE_HUMIDITY_TEXT_SIZE_GRAPH;
-
-    @BindInt(R.integer.comfort_zone_temperature_humidity_label_text_size)
-    int TEMPERATURE_HUMIDITY_TEXT_SIZE;
-
-    @BindInt(R.integer.comfort_zone_values_text_size)
-    int GRAPH_LABEL_TEXT_SIZE;
 
     @BindView(R.id.tv_sensor_name)
     TextView mSensorNameTextView;
@@ -139,9 +114,6 @@ public class ComfortZoneFragment extends ParentFragment implements OnTouchListen
     @BindInt(R.integer.comfort_zone_x_axis_grid_size_fahrenheit)
     int GRAPH_X_GRID_SIZE_FAHRENHEIT;
 
-    @BindInt(R.integer.comfort_zone_plot_stroke_width)
-    int GRAPH_STROKE_WIDTH;
-
     private final Map<String, XyPoint> mActiveSensorViews = Collections.synchronizedMap(new LinkedHashMap<String, XyPoint>());
 
     private boolean mIsFahrenheit;
@@ -168,30 +140,9 @@ public class ComfortZoneFragment extends ParentFragment implements OnTouchListen
     }
 
     private void initXyPlotView() {
-        mPlotView.setYAxisLabel(GRAPH_LABEL_RELATIVE_HUMIDITY);
         mPlotView.setYAxisScale(GRAPH_MIN_Y_VALUE, GRAPH_MAX_Y_VALUE, GRAPH_Y_GRID_SIZE);
         mPlotView.setXAxisScale(GRAPH_MIN_X_VALUE, GRAPH_MAX_X_VALUE, GRAPH_X_GRID_SIZE_CELSIUS);
         mPlotView.setXAxisLabel(GRAPH_X_LABEL_CELSIUS);
-        mPlotView.setCustomLeftPaddingPx(GRAPH_LEFT_PADDING);
-        mPlotView.setCustomRightPaddingPx(GRAPH_RIGHT_PADDING);
-        mPlotView.setCustomBottomPaddingPx(GRAPH_BOTTOM_PADDING);
-        mPlotView.getBorderPaint().setShadowLayer(7, 3, 3, SENSIRION_GREY_DARK);
-        mPlotView.getBorderPaint().setColor(Color.DKGRAY);
-        mPlotView.getBorderPaint().setStrokeWidth(GRAPH_STROKE_WIDTH);
-        mPlotView.getGridPaint().setColor(Color.GRAY);
-        mPlotView.getAxisGridPaint().setColor(Color.DKGRAY);
-        mPlotView.getAxisLabelPaint().setColor(Color.WHITE);
-        mPlotView.getAxisLabelPaint().setShadowLayer(3, 1, 1, Color.DKGRAY);
-        mPlotView.getAxisValuePaint().setColor(Color.WHITE);
-        mPlotView.getAxisValuePaint().setShadowLayer(1, 1, 1, Color.DKGRAY);
-
-        mPlotView.setAxisLabelTextSize(TEMPERATURE_HUMIDITY_TEXT_SIZE_GRAPH);
-        mPlotView.getAxisValuePaint().setTextSize(TEMPERATURE_HUMIDITY_TEXT_SIZE);
-        mPlotView.setAxisValueTextSize(GRAPH_LABEL_TEXT_SIZE);
-
-        mPlotView.setBackgroundImage(R.drawable.img_background_overlay);
-        final float cornerRadius = getFloatValueFromId(getContext(), R.dimen.comfort_zone_grid_corner_radius);
-        mPlotView.setGridCornerRadius(getDipFor(cornerRadius));
 
         mTextViewLeft.bringToFront();
         mTextViewTop.bringToFront();
@@ -260,13 +211,11 @@ public class ComfortZoneFragment extends ParentFragment implements OnTouchListen
             sensorPoint.setVisibility(View.INVISIBLE);
             sensorPoint.setTag(address);
             sensorPoint.setRadius(
-                    getDipFor(
-                            getFloatValueFromId(getContext(), R.dimen.comfort_zone_radius_sensor_point)
-                    )
+                    getDipFor(getResources().getInteger(R.integer.comfort_zone_radius_sensor_point))
             );
             sensorPoint.setOutlineRadius(
                     getDipFor(
-                            getFloatValueFromId(getContext(), R.dimen.comfort_zone_radius_sensor_point) +
+                            getResources().getInteger(R.integer.comfort_zone_radius_sensor_point) +
                                     getFloatValueFromId(getContext(), R.dimen.comfort_zone_outline_radius_offset)
                     )
             );
@@ -300,7 +249,8 @@ public class ComfortZoneFragment extends ParentFragment implements OnTouchListen
         getParent().runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                mPlotView.setComfortZoneWinter(isSeasonWinter);
+                mPlotView.updateComfortZone();
+                mPlotView.invalidate();
             }
         });
     }
@@ -335,6 +285,7 @@ public class ComfortZoneFragment extends ParentFragment implements OnTouchListen
         parent.runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                mPlotView.updateComfortZone();
                 mPlotView.invalidate();
             }
         });
@@ -622,10 +573,10 @@ public class ComfortZoneFragment extends ParentFragment implements OnTouchListen
                 Log.e(TAG, "updateViewPositionFor -> Cannot obtain the clipped point");
                 return;
             } else {
-                canvasPosition = mPlotView.mapCanvasCoordinatesFor(mPlotView.getClippedPoint());
+                canvasPosition = mPlotView.coordinates(mPlotView.getClippedPoint());
             }
         } else {
-            canvasPosition = mPlotView.mapCanvasCoordinatesFor(p);
+            canvasPosition = mPlotView.coordinates(p);
         }
         animateSensorViewPointTo(selectedPoint, canvasPosition.x, canvasPosition.y);
     }
@@ -637,10 +588,10 @@ public class ComfortZoneFragment extends ParentFragment implements OnTouchListen
             return;
         }
         final float relativeX =
-                x - (getDipFor(getFloatValueFromId(parent, R.dimen.comfort_zone_radius_sensor_point) +
+                x - (getDipFor(getResources().getInteger(R.integer.comfort_zone_radius_sensor_point) +
                         getFloatValueFromId(parent, R.dimen.comfort_zone_outline_radius_offset)));
         final float relativeY =
-                y - (getDipFor(getFloatValueFromId(parent, R.dimen.comfort_zone_radius_sensor_point) +
+                y - (getDipFor(getResources().getInteger(R.integer.comfort_zone_radius_sensor_point) +
                         getFloatValueFromId(parent, R.dimen.comfort_zone_outline_radius_offset)));
         parent.runOnUiThread(new Runnable() {
             @Override

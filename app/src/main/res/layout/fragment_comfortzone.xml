@@ -11,7 +11,7 @@
         android:layout_height="match_parent"
         android:adjustViewBounds="true"
         android:contentDescription="@string/desc_imgview_generic"
-        android:scaleType="fitXY"
+        android:scaleType="centerCrop"
         android:src="@drawable/img_background" />
 
     <TextView
@@ -87,13 +87,8 @@
 
         <com.sensirion.smartgadget.view.comfort_zone.graph.XyPlotView
             android:id="@+id/plotview"
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            android:layout_gravity="right|bottom"
-            android:layout_marginBottom="@dimen/comfort_zone_graph_label_margin_bottom"
-            android:layout_marginLeft="@dimen/comfort_zone_graph_label_margin_left"
-            android:layout_marginRight="@dimen/comfort_zone_graph_label_margin_right"
-            android:layout_marginTop="@dimen/comfort_zone_graph_label_margin_top" />
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
 
         <LinearLayout
             android:id="@+id/layout_text_ambTemp_RH"

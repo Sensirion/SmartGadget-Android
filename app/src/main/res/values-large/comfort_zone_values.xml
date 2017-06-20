@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <integer name="comfort_zone_plot_view_left_padding">150</integer>
+    <integer name="comfort_zone_plot_view_right_padding">80</integer>
+    <integer name="comfort_zone_plot_view_bottom_padding">150</integer>
+    <integer name="comfort_zone_plot_view_top_padding">150</integer>
+
+    <integer name="comfort_zone_graph_view_x_value_indicator_line_offset">50</integer>
+    <integer name="comfort_zone_graph_view_y_value_indicator_line_offset">80</integer>
+
+</resources>

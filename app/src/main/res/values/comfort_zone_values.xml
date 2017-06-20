@@ -11,25 +11,25 @@
     <integer name="comfort_zone_max_x_axis_value">30</integer>
     <integer name="comfort_zone_min_x_axis_value">15</integer>
 
-    <item name="comfort_zone_grid_corner_radius" format="float" type="dimen">5.0</item>
-    <item name="comfort_zone_radius_sensor_point" format="float" type="dimen">5.0</item>
+    <integer name="comfort_zone_grid_corner_radius">5</integer>
+    <integer name="comfort_zone_radius_sensor_point">5</integer>
     <item name="comfort_zone_outline_radius_offset" format="float" type="dimen">1.67</item>
 
-    <integer name="comfort_zone_plot_view_left_padding">150</integer>
-    <integer name="comfort_zone_plot_view_right_padding">50</integer>
-    <integer name="comfort_zone_plot_view_bottom_padding">50</integer>
+    <integer name="comfort_zone_plot_view_left_padding">100</integer>
+    <integer name="comfort_zone_plot_view_right_padding">60</integer>
+    <integer name="comfort_zone_plot_view_bottom_padding">100</integer>
+    <integer name="comfort_zone_plot_view_top_padding">150</integer>
+
+    <integer name="comfort_zone_plot_view_x_axis_height">30</integer>
+    <integer name="comfort_zone_plot_view_y_axis_width">30</integer>
+
     <integer name="comfort_zone_plot_stroke_width">0</integer>
 
     <!-- Point movement duration-->
     <integer name="comfort_zone_point_movement_duration">500</integer>
 
-    <!-- XyPlotView -->
-    <integer name="comfort_zone_axis_label_text_size">360</integer>
-
     <!-- GraphView -->
-    <item name="comfort_zone_graph_view_grid_stroke_width" format="float" type="dimen">1.0</item>
-    <item name="comfort_zone_graph_view_border_stroke_width" format="float" type="dimen">2.0</item>
-    <item name="comfort_zone_graph_view_grid_corner_radius" format="float" type="dimen">25</item>
+    <integer name="comfort_zone_graph_view_grid_stroke_width">1</integer>
 
     <integer name="comfort_zone_graph_view_y_value_indicator_line_offset">40</integer>
     <integer name="comfort_zone_graph_view_y_value_indicator_line_gap">15</integer>
@@ -40,19 +40,4 @@
 
     <string name="comfort_zone_unit_text_format">%.0f</string>
 
-    <integer name="comfort_zone_design_width_px">1280</integer>
-    <integer name="comfort_zone_design_height_px">720</integer>
-    <integer name="comfort_zone_design_left_padding_px">172</integer>
-    <integer name="comfort_zone_design_right_padding_px">92</integer>
-
-    <integer name="comfort_zone_top_padding_px">67</integer>
-    <integer name="comfort_zone_bottom_padding_px">99</integer>
-    <integer name="comfort_zone_span_threshold_y_px">2</integer>
-    <integer name="comfort_zone_diff_threshold_y_px">5</integer>
-
-    <integer name="comfort_zone_limit_celsius_fahrenheit">40</integer>
-    <integer name="comfort_zone_graph_width_celsius">15</integer>
-    <integer name="comfort_zone_graph_width_fahrenheit">59</integer>
-    <integer name="comfort_zone_temperature_difference_celsius">15</integer>
-    <integer name="comfort_zone_temperature_difference_fahrenheit">27</integer>
 </resources>

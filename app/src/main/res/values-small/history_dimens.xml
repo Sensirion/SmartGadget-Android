@@ -7,7 +7,7 @@
     <dimen name="history_fragment_tabs_layout_height">50dp</dimen>
     <dimen name="history_fragment_tabs_margin_bottom">5dp</dimen>
     <integer name="history_fragment_interval_tabs_text_size">11</integer>
-    <integer name="history_fragment_value_tabs_text_size">12</integer>
+    <integer name="history_fragment_value_tabs_text_size">11</integer>
 
     <!-- Plot-->
     <dimen name="history_fragment_plot_min_height">290dp</dimen>
