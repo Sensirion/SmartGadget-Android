@@ -30,6 +30,7 @@ import android.widget.Switch;
 import android.widget.TextView;
 
 import com.sensirion.libsmartgadget.Gadget;
+import com.sensirion.libsmartgadget.GadgetDataPoint;
 import com.sensirion.libsmartgadget.GadgetDownloadService;
 import com.sensirion.libsmartgadget.GadgetListener;
 import com.sensirion.libsmartgadget.GadgetService;
@@ -223,7 +224,17 @@ public class ManageDeviceFragment extends ParentFragment implements GadgetListen
     }
 
     @Override
-    public void onGadgetDownloadDataReceived(@NonNull Gadget gadget, @NonNull GadgetDownloadService service, @NonNull GadgetValue[] values, int progress) {
+    public void onGadgetNewDataPoint(@NonNull Gadget gadget, @NonNull GadgetService service, GadgetDataPoint dataPoint) {
+        // Ignore...
+    }
+
+    @Override
+    public void onGadgetDownloadNewDataPoints(@NonNull Gadget gadget, @NonNull GadgetDownloadService service, @NonNull GadgetDataPoint[] dataPoints) {
+        // Ignore...
+    }
+
+    @Override
+    public void onGadgetDownloadProgress(@NonNull Gadget gadget, @NonNull GadgetDownloadService service, int progress) {
         mDownloadProgressBar.setProgressDrawable(mDownloadProgressDrawable);
         mDownloadButtonText.setText(String.format(Locale.GERMAN, getString(R.string.manage_device_download_progress), progress));
         mDownloadProgressBar.setProgress(progress);
@@ -235,14 +246,14 @@ public class ManageDeviceFragment extends ParentFragment implements GadgetListen
     }
 
     @Override
-    public void onSetLoggerIntervalSuccess(@NonNull final Gadget gadget){
+    public void onSetLoggerIntervalSuccess(@NonNull final Gadget gadget) {
         final int valueInMilliseconds = getLoggerInterval(gadget);
         if (valueInMilliseconds == UNKNOWN_LOGGING_INTERVAL) {
             return;
         }
         final int intervalSeconds = valueInMilliseconds / Interval.ONE_SECOND.getNumberMilliseconds();
         mLoggingIntervalButton.setText(new TimeFormatter(intervalSeconds).getShortTime(getContext().getApplicationContext()));
-        if(!isDownloading(gadget)){
+        if (!isDownloading(gadget)) {
             mLoggingIntervalButton.setEnabled(true);
         }
     }
@@ -260,8 +271,13 @@ public class ManageDeviceFragment extends ParentFragment implements GadgetListen
     }
 
     @Override
-    public void onDownloadCompleted(@NonNull Gadget gadget, @NonNull GadgetDownloadService service) {
-        resetAfterDownload(isLoggingStateEditable(gadget), R.string.manage_device_download_completed);
+    public void onDownloadCompleted(@NonNull final Gadget gadget, @NonNull GadgetDownloadService service) {
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                resetAfterDownload(isLoggingStateEditable(gadget), R.string.manage_device_download_completed);
+            }
+        });
     }
 
     @Override
@@ -424,7 +440,7 @@ public class ManageDeviceFragment extends ParentFragment implements GadgetListen
         mLoggingIntervalButton.setText(new TimeFormatter(intervalSeconds).getShortTime(getContext().getApplicationContext()));
         mLoggingIntervalButton.setTextColor(mDeviceButtonColors);
         mLoggingIntervalButton.setEnabled(!(isLoggingStateEditable(mSelectedGadget) && isLoggingStateEnabled(mSelectedGadget)) &&
-                                          !isDownloading(mSelectedGadget));
+                !isDownloading(mSelectedGadget));
         mLoggingIntervalButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(@NonNull final View v) {
@@ -460,7 +476,7 @@ public class ManageDeviceFragment extends ParentFragment implements GadgetListen
                         mGadgetNameEditText.setText(deviceAddress);
                     }
                     mGadgetNameEditText.clearFocus(); // triggers a focus change
-                    InputMethodManager imm = (InputMethodManager)getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+                    InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
                     imm.hideSoftInputFromWindow(mGadgetNameEditText.getWindowToken(), 0);
                     return true;
                 }

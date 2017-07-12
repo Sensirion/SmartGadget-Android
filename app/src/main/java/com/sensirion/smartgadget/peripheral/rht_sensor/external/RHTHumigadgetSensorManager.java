@@ -7,6 +7,7 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.sensirion.libsmartgadget.Gadget;
+import com.sensirion.libsmartgadget.GadgetDataPoint;
 import com.sensirion.libsmartgadget.GadgetDownloadService;
 import com.sensirion.libsmartgadget.GadgetListener;
 import com.sensirion.libsmartgadget.GadgetManager;
@@ -43,7 +44,6 @@ public class RHTHumigadgetSensorManager implements GadgetManagerCallback, Gadget
     private final Set<HumiSensorListener> mSensorListeners = Collections.synchronizedSet(new HashSet<HumiSensorListener>());
     private final Map<String, Gadget> mDiscoveredGadgets = Collections.synchronizedMap(new HashMap<String, Gadget>());
     private final Map<String, Gadget> mConnectedGadgets = Collections.synchronizedMap(new HashMap<String, Gadget>());
-    private final Map<AggregatorType, RHTValueAggregator> mAggregators = new HashMap<>();
 
     private HumiGadgetConnectionStateListener mConnectionStateListener;
     // TODO: find a better way to filter devices, right now we have to register the service UUID
@@ -56,16 +56,9 @@ public class RHTHumigadgetSensorManager implements GadgetManagerCallback, Gadget
             SHTC1TemperatureAndHumidityService.SERVICE_UUID,
             SensorTagTemperatureAndHumidityService.SERVICE_UUID};
 
-    public enum AggregatorType {
-        LIVE,
-        HISTORY
-    }
-
     private RHTHumigadgetSensorManager(@NonNull final Context context) {
         mGadgetManager = GadgetManagerFactory.create(this);
         mGadgetManager.initialize(context.getApplicationContext());
-        mAggregators.put(AggregatorType.LIVE, new LiveValueAggregator());
-        mAggregators.put(AggregatorType.HISTORY, new HistoryValueAggregator());
     }
 
     /**
@@ -284,15 +277,28 @@ public class RHTHumigadgetSensorManager implements GadgetManagerCallback, Gadget
     public void onGadgetValuesReceived(@NonNull final Gadget gadget,
                                        @NonNull final GadgetService service,
                                        @NonNull final GadgetValue[] values) {
-        aggregateRHTAndNotify(gadget.getAddress(), values, AggregatorType.LIVE);
+        // Ignore... This is currently only used by the battery service
     }
 
     @Override
-    public void onGadgetDownloadDataReceived(@NonNull final Gadget gadget,
-                                             @NonNull final GadgetDownloadService service,
-                                             @NonNull final GadgetValue[] values,
-                                             final int progress) {
-        aggregateRHTAndNotify(gadget.getAddress(), values, AggregatorType.HISTORY);
+    public void onGadgetNewDataPoint(@NonNull final Gadget gadget,
+                                     @NonNull final GadgetService service,
+                                     final GadgetDataPoint dataPoint) {
+        RHTDataPoint rhtDataPoint = new RHTDataPoint(dataPoint.getTemperature(), dataPoint.getHumidity(), dataPoint.getTimestamp());
+        notifyRHTDataPoint(gadget.getAddress(), rhtDataPoint, false);
+    }
+
+    @Override
+    public void onGadgetDownloadProgress(@NonNull Gadget gadget, @NonNull GadgetDownloadService service, int progress) {
+        // Ignore...
+    }
+
+    @Override
+    public void onGadgetDownloadNewDataPoints(@NonNull Gadget gadget, @NonNull GadgetDownloadService service, @NonNull GadgetDataPoint[] dataPoints) {
+        for (GadgetDataPoint dataPoint : dataPoints) {
+            RHTDataPoint rhtDataPoint = new RHTDataPoint(dataPoint.getTemperature(), dataPoint.getHumidity(), dataPoint.getTimestamp());
+            notifyRHTDataPoint(gadget.getAddress(), rhtDataPoint, true);
+        }
     }
 
     @Override
@@ -326,7 +332,7 @@ public class RHTHumigadgetSensorManager implements GadgetManagerCallback, Gadget
 
     @Override
     public void onDownloadNoData(@NonNull final Gadget gadget,
-                                 @NonNull final GadgetDownloadService service){
+                                 @NonNull final GadgetDownloadService service) {
         Log.w(TAG, String.format("No data available to download for gadget %s", gadget.getAddress()));
     }
 
@@ -359,26 +365,6 @@ public class RHTHumigadgetSensorManager implements GadgetManagerCallback, Gadget
         }
     }
 
-    private void aggregateRHTAndNotify(@NonNull final String deviceAddress,
-                                       @NonNull final GadgetValue[] values,
-                                       AggregatorType aggregatorType) {
-        for (GadgetValue value : values) {
-            RHTDataPoint rhtDataPoint;
-            if (isTemperatureValue(value)) {
-                rhtDataPoint = mAggregators.get(aggregatorType).aggregateTemperatureValue(deviceAddress, value);
-            } else if (isHumidityValue(value)) {
-                rhtDataPoint = mAggregators.get(aggregatorType).aggregateHumidityValue(deviceAddress, value);
-            } else {
-                Log.w(TAG, "Can not aggregate RHT data for value that isn't RH or T");
-                continue;
-            }
-
-            if (rhtDataPoint != null) {
-                notifyRHTDataPoint(deviceAddress, rhtDataPoint, aggregatorType == AggregatorType.HISTORY);
-            }
-        }
-    }
-
     private void notifyRHTDataPoint(@NonNull String deviceAddress, @NonNull RHTDataPoint dataPoint,
                                     final boolean isHistory) {
         if (!isHistory) {
@@ -389,18 +375,6 @@ public class RHTHumigadgetSensorManager implements GadgetManagerCallback, Gadget
             }
         }
         HistoryDatabaseManager.getInstance().addRHTData(deviceAddress, dataPoint, isHistory);
-    }
-
-    private boolean isHumidityValue(@NonNull final GadgetValue value) {
-        return value.getUnit().equals(SHTC1TemperatureAndHumidityService.UNIT_RH) ||
-                value.getUnit().equals(SHT3xHumidityService.UNIT) ||
-                value.getUnit().equals(SensorTagTemperatureAndHumidityService.UNIT_RH);
-    }
-
-    private boolean isTemperatureValue(@NonNull final GadgetValue value) {
-        return value.getUnit().equals(SHTC1TemperatureAndHumidityService.UNIT_T) ||
-                value.getUnit().equals(SHT3xTemperatureService.UNIT) ||
-                value.getUnit().equals(SensorTagTemperatureAndHumidityService.UNIT_T);
     }
 
     public boolean startDiscovery(final int durationMs) {
