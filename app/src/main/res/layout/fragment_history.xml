@@ -8,9 +8,12 @@
     android:overScrollMode="never">
 
     <LinearLayout
+        android:id="@+id/history_plot_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
         android:padding="@dimen/history_fragment_padding">
 
         <LinearLayout

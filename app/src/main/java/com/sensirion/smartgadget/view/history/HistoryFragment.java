@@ -60,6 +60,8 @@ public class HistoryFragment extends ParentFragment
     private static final HistoryIntervalType DEFAULT_TIME_INTERVAL = HistoryIntervalType.INTERVAL_OF_10_MINUTES;
 
     // Injected application Views
+    @BindView(R.id.history_plot_container)
+    LinearLayout mContainer;
     @BindView(R.id.history_device_nested_list_view)
     ListView mDeviceListView;
     @BindView(R.id.history_interval_tabs)
@@ -114,6 +116,7 @@ public class HistoryFragment extends ParentFragment
                 }
             }
         });
+        mContainer.requestFocus();
         return historyView;
     }
 

@@ -18,6 +18,7 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.sensirion.smartgadget.R;
@@ -57,6 +58,8 @@ public class DashboardFragment extends ParentFragment implements RHTSensorListen
     private static final String BUTTON_VALUE_FORMAT = "%s%s %s";
 
     //VIEWS
+    @BindView(R.id.dashboard_content_layout)
+    ScrollView mTotalView;
     @BindView(R.id.dashboard_connected_device_nested_list_view)
     ListView mConnectedDeviceView;
     @BindView(R.id.dashboard_temperature_button)
@@ -130,6 +133,7 @@ public class DashboardFragment extends ParentFragment implements RHTSensorListen
         Log.i(TAG, "OnCreateView()");
         final View view = inflater.inflate(R.layout.fragment_dashboard, container, false);
         unbinder = ButterKnife.bind(this, view);
+        mTotalView.requestFocus();
         return view;
     }
 

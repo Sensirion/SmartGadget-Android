@@ -26,6 +26,8 @@
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:overScrollMode="never"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
         android:layout_above="@id/button_find_gadget">
 
         <RelativeLayout
