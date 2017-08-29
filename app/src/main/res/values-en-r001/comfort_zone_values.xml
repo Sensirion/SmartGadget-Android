@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Comfort zone Fragment -->
+    <integer name="comfort_zone_y_axis_grid_size">10</integer>
+    <integer name="comfort_zone_max_y_axis_value">100</integer>
+    <integer name="comfort_zone_min_y_axis_value">0</integer>
+
+    <integer name="comfort_zone_x_axis_grid_size_celsius">1</integer>
+    <integer name="comfort_zone_x_axis_grid_size_fahrenheit">2</integer>
+    <integer name="comfort_zone_max_x_axis_value">30</integer>
+    <integer name="comfort_zone_min_x_axis_value">15</integer>
+
+
+    <integer name="comfort_zone_plot_view_left_padding">150</integer>
+    <integer name="comfort_zone_plot_view_right_padding">50</integer>
+    <integer name="comfort_zone_plot_view_bottom_padding">50</integer>
+    <integer name="comfort_zone_plot_stroke_width">0</integer>
+
+    <!-- Point movement duration-->
+    <integer name="comfort_zone_point_movement_duration">500</integer>
+
+    <!-- XyPlotView -->
+    <integer name="comfort_zone_axis_label_text_size">360</integer>
+
+    <!-- GraphView -->
+
+    <integer name="comfort_zone_graph_view_y_value_indicator_line_offset">40</integer>
+    <integer name="comfort_zone_graph_view_y_value_indicator_line_gap">15</integer>
+    <integer name="comfort_zone_graph_view_y_text_offset">5</integer>
+    <integer name="comfort_zone_graph_view_x_value_indicator_line_offset">25</integer>
+    <integer name="comfort_zone_graph_view_x_value_indicator_line_gap">8</integer>
+    <integer name="comfort_zone_graph_view_x_text_offset">5</integer>
+
+    <string name="comfort_zone_unit_text_format">%.0f</string>
+
+    <integer name="comfort_zone_design_width_px">1280</integer>
+    <integer name="comfort_zone_design_height_px">720</integer>
+    <integer name="comfort_zone_design_left_padding_px">172</integer>
+    <integer name="comfort_zone_design_right_padding_px">92</integer>
+
+    <integer name="comfort_zone_top_padding_px">67</integer>
+    <integer name="comfort_zone_bottom_padding_px">99</integer>
+    <integer name="comfort_zone_span_threshold_y_px">2</integer>
+    <integer name="comfort_zone_diff_threshold_y_px">5</integer>
+
+    <integer name="comfort_zone_limit_celsius_fahrenheit">40</integer>
+    <integer name="comfort_zone_graph_width_celsius">15</integer>
+    <integer name="comfort_zone_graph_width_fahrenheit">59</integer>
+    <integer name="comfort_zone_temperature_difference_celsius">15</integer>
+    <integer name="comfort_zone_temperature_difference_fahrenheit">27</integer>
+</resources>
