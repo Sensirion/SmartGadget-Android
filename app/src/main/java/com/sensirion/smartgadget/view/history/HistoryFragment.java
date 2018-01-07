@@ -50,6 +50,7 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 
 import com.androidplot.xy.SimpleXYSeries;
+import com.androidplot.xy.XYPlot;
 import com.sensirion.smartgadget.R;
 import com.sensirion.smartgadget.peripheral.rht_sensor.RHTSensorFacade;
 import com.sensirion.smartgadget.peripheral.rht_sensor.RHTSensorListener;
@@ -63,7 +64,6 @@ import com.sensirion.smartgadget.utils.view.ColorManager;
 import com.sensirion.smartgadget.utils.view.ParentFragment;
 import com.sensirion.smartgadget.view.MainActivity;
 import com.sensirion.smartgadget.view.history.adapter.HistoryDeviceAdapter;
-import com.sensirion.smartgadget.view.history.graph.HistoryPlot;
 import com.sensirion.smartgadget.view.history.type.HistoryIntervalType;
 import com.sensirion.smartgadget.view.history.type.HistoryUnitType;
 
@@ -99,7 +99,7 @@ public class HistoryFragment extends ParentFragment
     @BindView(R.id.history_type_of_value_tabs)
     LinearLayout mValueTabs;
     @BindView(R.id.history_fragment_plot)
-    HistoryPlot mPlot;
+    XYPlot mPlot;
 
     // Extracted constants from the XML resources
     @BindInt(R.integer.history_fragment_value_tabs_text_size)
