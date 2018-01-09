@@ -51,7 +51,6 @@ import com.androidplot.xy.SimpleXYSeries;
 import com.androidplot.xy.StepMode;
 import com.androidplot.xy.XYGraphWidget;
 import com.androidplot.xy.XYPlot;
-import com.androidplot.xy.XYSeries;
 import com.sensirion.smartgadget.R;
 import com.sensirion.smartgadget.utils.Converter;
 import com.sensirion.smartgadget.utils.Settings;
@@ -141,57 +140,29 @@ public class PlotHandler {
     public void format(final String domainLabel, final String rangeLabel,
                               final Format xAxisFormat, final Format yAxisFormat) {
         Resources resources = mViewPlot.getContext().getResources();
-        configurePlotLookAndFeel(mViewPlot);
-        preparePlotGrid(resources);
-        configurePlotTitle(resources);
+        configurePlotLookAndFeel();
         preparePlotRange(resources, rangeLabel, yAxisFormat);
         preparePlotDomain(resources, domainLabel, xAxisFormat);
         layout(resources);
     }
 
-    private void configurePlotLookAndFeel(XYPlot mViewPlot) {
+    private void configurePlotLookAndFeel() {
         mViewPlot.setMarkupEnabled(false);
-        mViewPlot.setBorderStyle(Plot.BorderStyle.NONE, null, null);
         mViewPlot.getLayoutManager().remove(mViewPlot.getLegend());
         mViewPlot.getLayoutManager().remove(mViewPlot.getTitle());
     }
 
-    private void configurePlotTitle(@NonNull final Resources resources) {
-        mViewPlot.getTitle().getLabelPaint().setTextSize(resources.getDimensionPixelSize(R.dimen.history_fragment_axis_text_size));
-    }
-
-    private void preparePlotGrid(@NonNull final Resources resources) {
-        XYGraphWidget widget = mViewPlot.getGraph();
-        widget.getBackgroundPaint().setColor(Color.WHITE);
-        widget.getGridBackgroundPaint().setColor(Color.WHITE);
-        widget.getGridBackgroundPaint().setColor(Color.WHITE);
-        mViewPlot.getRangeTitle().getLabelPaint().setColor(resources.getColor(R.color.font_dark));
-        mViewPlot.getRangeTitle().getLabelPaint().setTextSize(resources.getDimensionPixelSize(R.dimen.history_fragment_axis_text_size));
-        mViewPlot.getDomainTitle().getLabelPaint().setColor(resources.getColor(R.color.font_dark));
-        mViewPlot.getDomainTitle().getLabelPaint().setTextSize(resources.getDimensionPixelSize(R.dimen.history_fragment_axis_text_size));
-        widget.getDomainOriginLinePaint().setColor(Color.TRANSPARENT);
-        widget.getDomainGridLinePaint().setColor(Color.TRANSPARENT);
-    }
-
     private void preparePlotRange(@NonNull final Resources resources, final String rangeLabel, final Format yAxisFormat) {
-        Paint rangeLabelPaint = mViewPlot.getRangeTitle().getLabelPaint();
-        rangeLabelPaint.setColor(resources.getColor(R.color.font_dark));
-        rangeLabelPaint.setTextSize(resources.getDimensionPixelSize(R.dimen.history_fragment_axis_text_size));
         mViewPlot.setRangeLabel(rangeLabel);
         mViewPlot.setRangeBoundaries(0, 100, BoundaryMode.FIXED);
-//        mViewPlot.setRangeValueFormat(yAxisFormat);
+        setRangeValueFormat(yAxisFormat);
         mViewPlot.setRangeStep(StepMode.SUBDIVIDE, resources.getInteger(R.integer.history_graph_view_num_default_range_labels));
-//        mViewPlot.getGraph().setRangeAxisPosition(true, false, 0, resources.getString(R.string.history_graph_range_label));
     }
 
     private void preparePlotDomain(@NonNull final Resources resources, final String domainLabel, final Format xAxisFormat) {
-        Paint domainLabelPaint = mViewPlot.getDomainTitle().getLabelPaint();
-        domainLabelPaint.setColor(resources.getColor(R.color.font_dark));
-        domainLabelPaint.setTextSize(resources.getDimensionPixelSize(R.dimen.history_fragment_axis_text_size));
         mViewPlot.setDomainLabel(domainLabel);
-//        mViewPlot.setDomainValueFormat(xAxisFormat);
+        setDomainValueFormat(xAxisFormat);
         mViewPlot.setDomainStep(StepMode.SUBDIVIDE, resources.getInteger(R.integer.history_graph_view_default_num_domain_labels));
-//        mViewPlot.getGraph().setDomainAxisPosition(true, false, 0, resources.getString(R.string.history_graph_domain_label));
     }
 
     private void layout(@NonNull Resources resources) {
@@ -212,9 +183,17 @@ public class PlotHandler {
                 domainHeight, SizeMode.FILL,
                 rangeWidth, SizeMode.FILL));
 
-        // we need a top padding because the y-axis labels are cut of otherwise
+        // we need a top padding because the y-axis labels are cut off otherwise
         final int topPadding = resources.getInteger(R.integer.history_fragment_plot_top_padding);
         mViewPlot.getGraph().setPaddingTop(topPadding);
+    }
+
+    public void setRangeValueFormat(final Format yAxisFormat) {
+        mViewPlot.getGraph().getLineLabelStyle(XYGraphWidget.Edge.LEFT).setFormat(yAxisFormat);
+    }
+
+    public void setDomainValueFormat(final Format xAxisFormat) {
+        mViewPlot.getGraph().getLineLabelStyle(XYGraphWidget.Edge.BOTTOM).setFormat(xAxisFormat);
     }
 
     public synchronized void updateSeries(@NonNull final Context context,
@@ -235,13 +214,14 @@ public class PlotHandler {
                                         @NonNull final HistoryIntervalType interval) {
         mLastInterval = interval;
         mViewPlot.setDomainStep(StepMode.SUBDIVIDE, mLastInterval.getNumberDomainElements());
-//        mViewPlot.setDomainValueFormat(mLastInterval.getTimeFormat());
+        setDomainValueFormat(mLastInterval.getTimeFormat());
         mViewPlot.setDomainLabel(mLastInterval.getGraphLabel(context));
     }
 
     private void updatePlotRangeFormat(@NonNull final Context context, @NonNull final HistoryUnitType type) {
         mLastUnit = type;
-//        mViewPlot.setRangeValueFormat(type.getValueFormat(context));
+
+        setRangeValueFormat(type.getValueFormat(context));
         mViewPlot.setRangeStep(StepMode.SUBDIVIDE, DEFAULT_NUMBER_RANGE_LABELS);
         if (type == HistoryUnitType.TEMPERATURE) {
             updateRangeFormatToTemperature();
@@ -291,8 +271,8 @@ public class PlotHandler {
         if (validSeriesFound) {
             adjustGraphBoundaries(biggestTimestampSeries);
         } else {
-//            mViewPlot.setRangeValueFormat(new ShowNothingFormat());
-//            mViewPlot.setDomainValueFormat(new ShowNothingFormat());
+            setRangeValueFormat(new ShowNothingFormat());
+            setDomainValueFormat(new ShowNothingFormat());
             mViewPlot.setRangeLabel(TEMPERATURE_LABEL);
             mViewPlot.redraw();
         }
@@ -449,8 +429,8 @@ public class PlotHandler {
         }
 */
         mViewPlot.clear();
-//        mViewPlot.setDomainValueFormat(null);
-//        mViewPlot.setRangeValueFormat(null);
+        setDomainValueFormat(null);
+        setRangeValueFormat(null);
         mViewPlot.getRendererList().clear();
     }
 
