@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/history_scroll_view"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -38,13 +39,35 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content">
 
-            <com.sensirion.smartgadget.view.history.graph.HistoryPlot
+            <com.androidplot.xy.XYPlot
                 android:id="@+id/history_fragment_plot"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="8dp"
                 android:minHeight="@dimen/history_fragment_plot_min_height"
-                android:padding="@dimen/history_fragment_plot_general_padding" />
+                android:padding="@dimen/history_fragment_plot_general_padding"
+                app:borderThickness="2dp"
+                app:borderColor="@color/ap_white"
+                app:backgroundColor="@color/ap_white"
+                app:gridBackgroundColor="@color/ap_white"
+                app:graphBackgroundColor="@color/ap_white"
+                app:domainLineColor="@color/ap_transparent"
+                app:domainOriginLineColor="@color/ap_transparent"
+                app:lineLabels="left|bottom"
+                app:domainTitleTextColor="@color/font_dark"
+                app:rangeTitleTextColor="@color/font_dark"
+                app:lineLabelTextColorLeft="@color/font_dark"
+                app:lineLabelTextColorBottom="@color/font_dark"
+                app:domainTitleTextSize="@dimen/history_fragment_axis_text_size"
+                app:rangeTitleTextSize="@dimen/history_fragment_axis_text_size"
+                app:lineLabelTextSizeLeft="@dimen/history_fragment_axis_text_size"
+                app:lineLabelTextSizeBottom="@dimen/history_fragment_axis_text_size"
+                app:gridInsetBottom="@dimen/history_fragment_axis_text_size"
+                app:gridInsetLeft="25dp"
+                app:lineLabelAlignLeft="left"
+                app:lineLabelAlignBottom="right"
+                app:lineExtensionLeft="3dp"
+            />
         </FrameLayout>
 
         <com.sensirion.smartgadget.utils.view.NestedListView

@@ -46,7 +46,7 @@ public class DaysElapsedTimeFormat extends Format {
     @NonNull
     @Override
     public StringBuffer format(@NonNull final Object timestamp, @NonNull final StringBuffer buffer, @Nullable final FieldPosition field) {
-        final Long objectTimestamp = ((Double) timestamp).longValue();
+        final Long objectTimestamp = ((Number) timestamp).longValue();
         final int dayOfWeek = (new Date(objectTimestamp)).getDay();
         buffer.append(getDayOfTheWeekString(dayOfWeek));
         return buffer;

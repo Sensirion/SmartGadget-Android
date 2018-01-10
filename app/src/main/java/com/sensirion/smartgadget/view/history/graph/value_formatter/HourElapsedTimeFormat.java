@@ -48,7 +48,7 @@ public class HourElapsedTimeFormat extends Format {
     @NonNull
     @Override
     public StringBuffer format(@NonNull final Object timestamp, @NonNull final StringBuffer buffer, @Nullable final FieldPosition field) {
-        final Long objectTimestamp = ((Double) timestamp).longValue();
+        final Long objectTimestamp = ((Number) timestamp).longValue();
         final long elapsedMinutes = -((objectTimestamp - System.currentTimeMillis()) / ONE_SECOND_MS) / 60;
         final float elapsedHours = ((float) elapsedMinutes) / 60f;
 
