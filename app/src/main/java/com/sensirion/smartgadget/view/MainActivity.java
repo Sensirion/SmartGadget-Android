@@ -164,7 +164,7 @@ public class MainActivity extends FragmentActivity implements View.OnTouchListen
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_USER_PORTRAIT);
         }
     }
-
+//comment
     private void initFragmentNavigator() {
         if (mIsTablet) {
             initFragmentNavigatorTablet();
